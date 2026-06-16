@@ -1,0 +1,42 @@
+import { NextResponse } from 'next/server';
+import pool from '@/lib/db';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
+
+export async function GET(request: Request) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const role = (session.user as any)?.role;
+    if (role !== 'superadmin' && role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+
+    const url = new URL(request.url);
+    const unit = url.searchParams.get('unit');
+    const status = url.searchParams.get('status');
+    const search = url.searchParams.get('search');
+
+    let query = 'SELECT * FROM ppdb_submissions WHERE 1=1';
+    const params: any[] = [];
+
+    if (unit) {
+      query += ' AND unit = ?';
+      params.push(unit);
+    }
+    if (status) {
+      query += ' AND status = ?';
+      params.push(status);
+    }
+    if (search) {
+      query += ' AND (student_name LIKE ? OR registration_number LIKE ?)';
+      params.push(`%${search}%`, `%${search}%`);
+    }
+
+    query += ' ORDER BY created_at DESC';
+
+    const [rows] = await pool.execute(query, params);
+    return NextResponse.json(rows);
+  } catch (error) {
+    console.error(error);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+  }
+}

@@ -1,36 +1,34 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Website Yayasan Nuurul Muttaqiin
 
-## Getting Started
+Proyek website fullstack dengan Next.js 14 (App Router), Tailwind CSS, MySQL (mysql2), dan NextAuth.
 
-First, run the development server:
+## Persiapan Environment
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+1. Copy file `.env.example` menjadi `.env`.
+2. Sesuaikan kredensial `DATABASE_URL` dengan database MySQL lokal Anda.
+3. Buat database `yayasan_db` di MySQL.
+4. Import struktur tabel dengan menjalankan: `mysql -u root -p < schema.sql`
+5. (Opsional tapi disarankan) Import data dummy awal: `mysql -u root -p yayasan_db < seed.sql`
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Menjalankan Aplikasi
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. Install dependensi: `npm install`
+2. Jalankan development server: `npm run dev`
+3. Buka `http://localhost:5000`
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Akses Admin (CMS)
 
-## Learn More
+- URL: `http://localhost:5000/admin/login`
+- Jika menggunakan data seed, login menggunakan:
+  - Email: `admin@yayasan.com`
+  - Password: `password123`
 
-To learn more about Next.js, take a look at the following resources:
+## Struktur Direktori Utama
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- `src/app/` - Halaman Publik (Beranda, PPDB)
+- `src/app/admin/` - Halaman CMS (Dashboard, dll)
+- `src/app/api/` - Endpoint API (Auth, Submit PPDB, dll)
+- `src/components/` - Komponen React reusable (Header, Footer, Providers)
+- `src/lib/` - Utility seperti database connection (`db.ts`) dan otentikasi (`auth.ts`)
+- `schema.sql` - Skema tabel database
+- `seed.sql` - Data awal (dummy data) untuk testing
