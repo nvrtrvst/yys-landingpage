@@ -62,7 +62,12 @@ export function PPDBForm() {
         setRegNumber(data.registration_number);
         setStep(6); // Success Step
       } else {
-        alert("Gagal: " + data.message);
+        if (data.errors && Array.isArray(data.errors)) {
+          const errorMsgs = data.errors.map((err: any) => err.message).join("\\n");
+          alert("Gagal: " + data.message + "\\n" + errorMsgs);
+        } else {
+          alert("Gagal: " + data.message);
+        }
       }
     } catch (error) {
       alert("Terjadi kesalahan sistem.");
@@ -163,7 +168,7 @@ export function PPDBForm() {
             
             <div className="flex justify-between pt-6 border-t border-gray-100">
               <button onClick={prevStep} className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50">&larr; Kembali</button>
-              <button onClick={nextStep} disabled={!formData.student_name || !formData.birth_place || !formData.birth_date || !formData.address} className="px-6 py-3 bg-primary-600 text-white rounded-lg font-medium hover:bg-primary-700 disabled:opacity-50">Selanjutnya &rarr;</button>
+              <button onClick={nextStep} disabled={formData.student_name.length < 3 || formData.birth_place.length < 3 || !formData.birth_date || formData.address.length < 10} className="px-6 py-3 bg-primary-600 text-white rounded-lg font-medium hover:bg-primary-700 disabled:opacity-50">Selanjutnya &rarr;</button>
             </div>
           </div>
         )}
@@ -192,16 +197,39 @@ export function PPDBForm() {
             
             <div className="flex justify-between pt-6 border-t border-gray-100">
               <button onClick={prevStep} className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50">&larr; Kembali</button>
-              <button onClick={nextStep} disabled={!formData.father_name || !formData.mother_name || !/^(08|62)\d{8,13}$/.test(formData.phone)} className="px-6 py-3 bg-primary-600 text-white rounded-lg font-medium hover:bg-primary-700 disabled:opacity-50">Selanjutnya &rarr;</button>
+              <button onClick={nextStep} disabled={formData.father_name.length < 3 || formData.mother_name.length < 3 || !/^(08|62)\d{8,13}$/.test(formData.phone)} className="px-6 py-3 bg-primary-600 text-white rounded-lg font-medium hover:bg-primary-700 disabled:opacity-50">Selanjutnya &rarr;</button>
             </div>
           </div>
         )}
 
         {step === 4 && (
           <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Upload Dokumen</h2>
-            <div className="bg-yellow-50 p-4 rounded-lg text-yellow-800 text-sm mb-6 border border-yellow-200">
-              <p>Fitur upload dokumen disederhanakan untuk versi demo. Anda dapat melewati langkah ini atau langsung lanjut.</p>
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">Upload Dokumen (Opsional)</h2>
+            <div className="bg-blue-50 p-4 rounded-lg text-blue-800 text-sm mb-6 border border-blue-200">
+              <p>Anda dapat mengunggah dokumen pendukung sekarang atau nanti saat daftar ulang. Kosongkan jika belum ada.</p>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Kartu Keluarga (KK)</label>
+                <input type="file" accept=".pdf,.jpg,.jpeg,.png" className="w-full p-2 border border-gray-300 rounded-lg bg-white" />
+                <span className="text-xs text-gray-500 mt-1 block">Format: PDF, JPG, PNG (Maks 2MB)</span>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Akta Kelahiran</label>
+                <input type="file" accept=".pdf,.jpg,.jpeg,.png" className="w-full p-2 border border-gray-300 rounded-lg bg-white" />
+                <span className="text-xs text-gray-500 mt-1 block">Format: PDF, JPG, PNG (Maks 2MB)</span>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Ijazah / SKL</label>
+                <input type="file" accept=".pdf,.jpg,.jpeg,.png" className="w-full p-2 border border-gray-300 rounded-lg bg-white" />
+                <span className="text-xs text-gray-500 mt-1 block">Format: PDF, JPG, PNG (Maks 2MB)</span>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Pas Foto (3x4)</label>
+                <input type="file" accept=".jpg,.jpeg,.png" className="w-full p-2 border border-gray-300 rounded-lg bg-white" />
+                <span className="text-xs text-gray-500 mt-1 block">Format: JPG, PNG (Maks 1MB)</span>
+              </div>
             </div>
             
             <div className="flex justify-between pt-6 border-t border-gray-100">
@@ -274,8 +302,9 @@ export function PPDBForm() {
             </div>
             <p className="text-sm text-gray-500">Silakan simpan nomor ini untuk mengecek status pendaftaran Anda.</p>
             
-            <div className="pt-8">
-              <button onClick={() => window.location.href = '/'} className="px-6 py-3 bg-gray-900 text-white rounded-lg font-medium hover:bg-gray-800">Kembali ke Beranda</button>
+            <div className="pt-8 flex flex-col sm:flex-row justify-center gap-4">
+              <button onClick={() => window.location.href = '/'} className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50">Kembali ke Beranda</button>
+              <button onClick={() => window.location.href = `/ppdb/status?reg=${regNumber}`} className="px-6 py-3 bg-primary-600 text-white rounded-lg font-medium hover:bg-primary-700">Cek Status Pendaftaran</button>
             </div>
           </div>
         )}

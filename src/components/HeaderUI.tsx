@@ -35,7 +35,7 @@ export function HeaderUI({ settings, units }: { settings: Record<string, string>
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 z-50">
             {settings.site_logo && !settings.site_logo.includes('e2ef58d9') ? (
-              <img src={settings.site_logo} alt="Logo" className="w-8 h-8 object-contain" />
+              <img src={settings.site_logo} alt="Logo" className="h-20 w-auto object-contain" />
             ) : (
               <img src="/uploads/dummy/site_logo.png" alt="Logo" className="w-8 h-8 object-contain" />
             )}

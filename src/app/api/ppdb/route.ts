@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import pool from "@/lib/db";
+import { sendPPDBSingleEmail } from "@/lib/mailer";
 
 // Simple in-memory rate limiting (per instance)
 const rateLimitMap = new Map<string, { count: number, timestamp: number }>();
@@ -113,6 +114,17 @@ export async function POST(req: Request) {
         } catch (simError) {
           console.warn("External SIM API unreachable:", simError);
         }
+      }
+
+      // Send email asynchronously if email is provided
+      if (parsed.email) {
+        sendPPDBSingleEmail({
+          to: parsed.email,
+          registration_number,
+          student_name: parsed.student_name,
+          unit: parsed.unit,
+          grade: parsed.grade
+        }).catch(err => console.error("Failed sending email:", err));
       }
 
       return NextResponse.json({ success: true, registration_number });
