@@ -70,13 +70,21 @@ export async function POST(req: Request) {
     try {
       await connection.beginTransaction();
       
-      // Get count to generate sequence number
-      const [rows] = await connection.execute<any[]>(
-        "SELECT COUNT(*) as count FROM ppdb_submissions WHERE unit = ? AND YEAR(created_at) = ?",
+      // --- Race-condition-safe sequence generation ---
+      // Using MAX() instead of COUNT() avoids the TOCTOU (Time-of-Check to Time-of-Use) race:
+      //   COUNT-based: Two concurrent requests both read count=5, both try to create #6 → DUPLICATE.
+      //   MAX-based + FOR UPDATE: The first request locks the row; the second waits, then reads the
+      //   updated MAX, so they correctly generate #6 and #7 sequentially.
+      const [seqRows] = await connection.execute<any[]>(
+        `SELECT MAX(CAST(SUBSTRING_INDEX(registration_number, '-', -1) AS UNSIGNED)) as maxSeq
+         FROM ppdb_submissions
+         WHERE unit = ? AND YEAR(created_at) = ?
+         FOR UPDATE`,
         [parsed.unit, year]
       );
       
-      const seq = (rows[0].count + 1).toString().padStart(4, '0');
+      const maxSeq = seqRows[0]?.maxSeq ?? 0;
+      const seq = (maxSeq + 1).toString().padStart(4, '0');
       const registration_number = `${prefix}${seq}`;
 
       // Insert into local database

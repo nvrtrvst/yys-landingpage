@@ -15,14 +15,24 @@ export async function GET(request: Request) {
     const status = url.searchParams.get('status');
     const search = url.searchParams.get('search');
 
-    let query = 'SELECT * FROM ppdb_submissions WHERE 1=1';
+    let query = `SELECT 
+      id, registration_number, status, sync_status, unit, grade, major,
+      student_name, nisn, birth_place, birth_date, gender, phone, email,
+      previous_school, father_name, mother_name, created_at
+      FROM ppdb_submissions WHERE 1=1`;
     const params: any[] = [];
 
     if (unit) {
+      // Validate unit against allowed values to prevent unexpected input
+      const allowedUnits = ['LPQ', 'TK', 'SD', 'SMP', 'SMK'];
+      if (!allowedUnits.includes(unit)) return NextResponse.json({ error: 'Invalid unit filter' }, { status: 400 });
       query += ' AND unit = ?';
       params.push(unit);
     }
     if (status) {
+      // Validate status against allowed values
+      const allowedStatuses = ['Proses', 'Diterima', 'Ditolak'];
+      if (!allowedStatuses.includes(status)) return NextResponse.json({ error: 'Invalid status filter' }, { status: 400 });
       query += ' AND status = ?';
       params.push(status);
     }
@@ -31,7 +41,7 @@ export async function GET(request: Request) {
       params.push(`%${search}%`, `%${search}%`);
     }
 
-    query += ' ORDER BY created_at DESC';
+    query += ' ORDER BY created_at DESC LIMIT 500'; // cap result size
 
     const [rows] = await pool.execute(query, params);
     return NextResponse.json(rows);

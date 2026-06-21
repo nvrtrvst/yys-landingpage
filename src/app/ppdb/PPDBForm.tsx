@@ -12,6 +12,9 @@ export function PPDBForm() {
   const [captchaB, setCaptchaB] = useState(0);
   const [captchaAnswer, setCaptchaAnswer] = useState("");
 
+  const [majors, setMajors] = useState<{id: string, name: string, code?: string}[]>([]);
+  const [loadingMajors, setLoadingMajors] = useState(false);
+
   useEffect(() => {
     setCaptchaA(Math.floor(Math.random() * 10) + 1);
     setCaptchaB(Math.floor(Math.random() * 10) + 1);
@@ -34,7 +37,36 @@ export function PPDBForm() {
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    
+    // Reset major and fetch if unit changes
+    if (name === "unit") {
+      setFormData({ ...formData, unit: value, major: "" });
+      
+      if (value) {
+        setLoadingMajors(true);
+        fetch(`/api/ppdb/majors?unit=${value}`)
+          .then(res => res.json())
+          .then(data => {
+            if (data.success) {
+              setMajors(data.data || []);
+            } else {
+              setMajors([]);
+            }
+          })
+          .catch(err => {
+            console.error("Failed to fetch majors:", err);
+            setMajors([]);
+          })
+          .finally(() => {
+            setLoadingMajors(false);
+          });
+      } else {
+        setMajors([]);
+      }
+    } else {
+      setFormData({ ...formData, [name]: value });
+    }
   };
 
   const nextStep = () => setStep(step + 1);
@@ -97,7 +129,7 @@ export function PPDBForm() {
             <h2 className="text-2xl font-bold text-gray-900 mb-6">Pilih Unit & Jenjang</h2>
             
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Unit Sekolah Tujuan</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Unit Sekolah Tujuan <span className="text-red-500">*</span></label>
               <select required name="unit" value={formData.unit} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500 bg-white">
                 <option value="">-- Pilih Unit --</option>
                 <option value="LPQ">LPQ</option>
@@ -110,25 +142,25 @@ export function PPDBForm() {
 
             {formData.unit && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Kelas Tujuan</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Kelas Tujuan <span className="text-red-500">*</span></label>
                 <input type="text" required name="grade" value={formData.grade} onChange={handleChange} placeholder={formData.unit === 'SD' ? "Contoh: 1" : formData.unit === 'SMP' ? "Contoh: 7" : "Contoh: 10"} className="w-full p-3 border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500" />
               </div>
             )}
 
-            {formData.unit === "SMK" && (
+            {formData.unit && majors.length > 0 && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Pilih Jurusan</label>
-                <select required name="major" value={formData.major} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500 bg-white">
-                  <option value="">-- Pilih Jurusan --</option>
-                  <option value="TKJ">Teknik Komputer dan Jaringan</option>
-                  <option value="RPL">Rekayasa Perangkat Lunak</option>
-                  <option value="TKRO">Teknik Kendaraan Ringan Otomotif</option>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Pilih Jurusan <span className="text-red-500">*</span></label>
+                <select required name="major" value={formData.major} onChange={handleChange} disabled={loadingMajors} className="w-full p-3 border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500 bg-white">
+                  <option value="">{loadingMajors ? "Memuat jurusan..." : "-- Pilih Jurusan --"}</option>
+                  {majors.map(m => (
+                    <option key={m.id} value={m.name}>{m.name}</option>
+                  ))}
                 </select>
               </div>
             )}
 
             <div className="flex justify-end pt-6">
-              <button onClick={nextStep} disabled={!formData.unit || !formData.grade || (formData.unit === 'SMK' && !formData.major)} className="px-6 py-3 bg-primary-600 text-white rounded-lg font-medium hover:bg-primary-700 disabled:opacity-50">Selanjutnya &rarr;</button>
+              <button onClick={nextStep} disabled={!formData.unit || !formData.grade || (majors.length > 0 && !formData.major)} className="px-6 py-3 bg-primary-600 text-white rounded-lg font-medium hover:bg-primary-700 disabled:opacity-50">Selanjutnya &rarr;</button>
             </div>
           </div>
         )}
@@ -138,19 +170,19 @@ export function PPDBForm() {
             <h2 className="text-2xl font-bold text-gray-900 mb-6">Data Calon Siswa</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Nama Lengkap</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Nama Lengkap <span className="text-red-500">*</span></label>
                 <input type="text" required name="student_name" value={formData.student_name} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded-lg" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Tempat Lahir</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Tempat Lahir <span className="text-red-500">*</span></label>
                 <input type="text" required name="birth_place" value={formData.birth_place} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded-lg" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Tanggal Lahir</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Tanggal Lahir <span className="text-red-500">*</span></label>
                 <input type="date" required name="birth_date" value={formData.birth_date} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded-lg" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Jenis Kelamin</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Jenis Kelamin <span className="text-red-500">*</span></label>
                 <select name="gender" value={formData.gender} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded-lg">
                   <option value="Laki-laki">Laki-laki</option>
                   <option value="Perempuan">Perempuan</option>
@@ -161,7 +193,7 @@ export function PPDBForm() {
                 <input type="text" name="nisn" value={formData.nisn} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded-lg" />
               </div>
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Alamat Lengkap</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Alamat Lengkap <span className="text-red-500">*</span></label>
                 <textarea required name="address" value={formData.address} onChange={handleChange} rows={3} className="w-full p-3 border border-gray-300 rounded-lg"></textarea>
               </div>
             </div>
@@ -178,15 +210,15 @@ export function PPDBForm() {
             <h2 className="text-2xl font-bold text-gray-900 mb-6">Data Orang Tua / Wali</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Nama Ayah</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Nama Ayah <span className="text-red-500">*</span></label>
                 <input type="text" required name="father_name" value={formData.father_name} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded-lg" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Nama Ibu</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Nama Ibu <span className="text-red-500">*</span></label>
                 <input type="text" required name="mother_name" value={formData.mother_name} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded-lg" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">No. HP / WhatsApp Aktif</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">No. HP / WhatsApp Aktif <span className="text-red-500">*</span></label>
                 <input type="text" required name="phone" value={formData.phone} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded-lg" />
               </div>
               <div>
@@ -270,7 +302,7 @@ export function PPDBForm() {
             
             <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Verifikasi Keamanan: Berapa hasil dari {captchaA} + {captchaB}?
+                Verifikasi Keamanan: Berapa hasil dari {captchaA} + {captchaB}? <span className="text-red-500">*</span>
               </label>
               <input 
                 type="number" 

@@ -20,11 +20,14 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
   try {
     const session = await getServerSession(authOptions);
     if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const role = (session.user as any)?.role;
+    if (role !== 'superadmin' && role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
     const [rows] = await pool.execute<RowDataPacket[]>('SELECT * FROM news WHERE id = ?', [(await params).id]);
     if (rows.length === 0) return NextResponse.json({ error: 'Not Found' }, { status: 404 });
     return NextResponse.json(rows[0]);
   } catch (error) {
+    console.error('Error fetching news:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
@@ -66,7 +69,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   } catch (error: any) {
     console.error('Error updating news:', error);
     if (error.code === 'ER_DUP_ENTRY') return NextResponse.json({ error: 'Slug sudah digunakan.' }, { status: 400 });
-    return NextResponse.json({ error: 'Internal Server Error: ' + (error.message || '') }, { status: 500 });
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
 
@@ -74,6 +77,8 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
   try {
     const session = await getServerSession(authOptions);
     if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const role = (session.user as any)?.role;
+    if (role !== 'superadmin' && role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
     await pool.execute('DELETE FROM news WHERE id = ?', [(await params).id]);
     
@@ -82,6 +87,7 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
     
     return NextResponse.json({ success: true });
   } catch (error) {
+    console.error('Error deleting news:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
