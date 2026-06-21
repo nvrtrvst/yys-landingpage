@@ -67,12 +67,12 @@ export default async function PPDBStatusPage({
                     <div className="flex items-center justify-between mb-6">
                       <h3 className="text-2xl font-bold text-gray-900">Hasil Pencarian</h3>
                       <span className={`px-4 py-2 rounded-full font-bold text-sm uppercase tracking-wider ${
-                        submission.status === 'approved' ? 'bg-green-100 text-green-700' :
-                        submission.status === 'rejected' ? 'bg-red-100 text-red-700' :
+                        submission.status === 'Diterima' ? 'bg-green-100 text-green-700' :
+                        submission.status === 'Ditolak' ? 'bg-red-100 text-red-700' :
                         'bg-yellow-100 text-yellow-700'
                       }`}>
-                        {submission.status === 'approved' ? 'LULUS / DITERIMA' :
-                         submission.status === 'rejected' ? 'TIDAK DITERIMA' : 'SEDANG DIPROSES'}
+                        {submission.status === 'Diterima' ? 'LULUS / DITERIMA' :
+                         submission.status === 'Ditolak' ? 'TIDAK DITERIMA' : 'SEDANG DIPROSES'}
                       </span>
                     </div>
 
@@ -95,13 +95,13 @@ export default async function PPDBStatusPage({
                       </div>
                     </div>
 
-                    {submission.status === 'approved' && (
+                    {submission.status === 'Diterima' && (
                       <div className="bg-green-50 border border-green-200 p-6 rounded-xl text-green-800">
                         <h4 className="font-bold text-lg mb-2">Selamat! Anda Dinyatakan Lulus.</h4>
                         <p>Silakan melakukan proses daftar ulang dengan datang langsung ke tata usaha unit sekolah tujuan atau menghubungi panitia PPDB kami.</p>
                       </div>
                     )}
-                    {submission.status === 'pending' && (
+                    {submission.status === 'Proses' && (
                       <div className="bg-yellow-50 border border-yellow-200 p-6 rounded-xl text-yellow-800">
                         <h4 className="font-bold text-lg mb-2">Data Sedang Diverifikasi</h4>
                         <p>Tim panitia sedang melakukan pengecekan data Anda. Silakan cek kembali halaman ini secara berkala.</p>

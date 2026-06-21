@@ -66,8 +66,8 @@ export default async function AdminDashboard() {
                       <td className="p-4"><span className="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded font-bold">{row.unit}</span></td>
                       <td className="p-4">
                         <span className={`px-2 py-1 rounded text-xs font-semibold ${
-                          row.status === 'diterima' ? 'bg-green-100 text-green-700' :
-                          row.status === 'ditolak' ? 'bg-red-100 text-red-700' :
+                          row.status === 'Diterima' ? 'bg-green-100 text-green-700' :
+                          row.status === 'Ditolak' ? 'bg-red-100 text-red-700' :
                           'bg-yellow-100 text-yellow-700'
                         }`}>
                           {row.status.toUpperCase()}

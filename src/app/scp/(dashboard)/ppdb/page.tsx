@@ -127,9 +127,9 @@ export default function PPDBPage() {
           <label className="block text-sm font-medium text-gray-700 mb-1">Filter Status</label>
           <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="w-full border rounded p-2 focus:ring-2 focus:ring-green-500">
             <option value="">Semua Status</option>
-            <option value="pending">Pending</option>
-            <option value="diterima">Diterima</option>
-            <option value="ditolak">Ditolak</option>
+            <option value="Proses">Pending</option>
+            <option value="Diterima">Diterima</option>
+            <option value="Ditolak">Ditolak</option>
           </select>
         </div>
       </div>
@@ -169,14 +169,14 @@ export default function PPDBPage() {
                         value={row.status} 
                         onChange={(e) => updateStatus(row.id, e.target.value)}
                         className={`text-sm rounded p-1 font-semibold outline-none border ${
-                          row.status === 'diterima' ? 'bg-green-100 text-green-700 border-green-200' :
-                          row.status === 'ditolak' ? 'bg-red-100 text-red-700 border-red-200' :
+                          row.status === 'Diterima' ? 'bg-green-100 text-green-700 border-green-200' :
+                          row.status === 'Ditolak' ? 'bg-red-100 text-red-700 border-red-200' :
                           'bg-yellow-100 text-yellow-700 border-yellow-200'
                         }`}
                       >
-                        <option value="pending">Pending</option>
-                        <option value="diterima">Diterima</option>
-                        <option value="ditolak">Ditolak</option>
+                        <option value="Proses">Pending</option>
+                        <option value="Diterima">Diterima</option>
+                        <option value="Ditolak">Ditolak</option>
                       </select>
                     </td>
                     <td className="p-4 text-right">

@@ -6,7 +6,7 @@ import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
 
 const updateSchema = z.object({
-  status: z.enum(['pending', 'diterima', 'ditolak']).nullable().optional(),
+  status: z.enum(['Proses', 'Diterima', 'Ditolak', 'pending', 'diterima', 'ditolak']).nullable().optional(),
   sync_status: z.enum(['pending', 'success', 'failed']).nullable().optional(),
 });
 
@@ -26,8 +26,12 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     const values = [];
 
     if (data.status) {
+      let dbStatus = data.status;
+      if (dbStatus === 'pending' || dbStatus === 'Proses') dbStatus = 'Proses';
+      if (dbStatus === 'diterima' || dbStatus === 'Diterima') dbStatus = 'Diterima';
+      if (dbStatus === 'ditolak' || dbStatus === 'Ditolak') dbStatus = 'Ditolak';
       updates.push('status = ?');
-      values.push(data.status);
+      values.push(dbStatus);
     }
     if (data.sync_status) {
       updates.push('sync_status = ?');

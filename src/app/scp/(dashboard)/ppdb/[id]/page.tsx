@@ -85,14 +85,14 @@ export default function PPDBDetailPage() {
                 value={data.status} 
                 onChange={(e) => updateStatus(e.target.value)}
                 className={`text-sm rounded px-3 py-1.5 font-semibold outline-none border cursor-pointer ${
-                  data.status === 'diterima' ? 'bg-green-100 text-green-700 border-green-200' :
-                  data.status === 'ditolak' ? 'bg-red-100 text-red-700 border-red-200' :
+                  data.status === 'Diterima' ? 'bg-green-100 text-green-700 border-green-200' :
+                  data.status === 'Ditolak' ? 'bg-red-100 text-red-700 border-red-200' :
                   'bg-yellow-100 text-yellow-700 border-yellow-200'
                 }`}
               >
-                <option value="pending">Pending</option>
-                <option value="diterima">Terima Siswa</option>
-                <option value="ditolak">Tolak Siswa</option>
+                <option value="Proses">Pending</option>
+                <option value="Diterima">Terima Siswa</option>
+                <option value="Ditolak">Tolak Siswa</option>
               </select>
             </div>
           </div>
