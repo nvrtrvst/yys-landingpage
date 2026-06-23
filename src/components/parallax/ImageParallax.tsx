@@ -1,5 +1,5 @@
 "use client";
-import { useRef } from "react";
+import { useRef, useState, useEffect } from "react";
 import { motion, useScroll, useTransform, useReducedMotion } from "framer-motion";
 
 export function ImageParallax({ 
@@ -12,20 +12,26 @@ export function ImageParallax({
   className?: string;
 }) {
   const ref = useRef(null);
+  // isMounted ensures the initial client render matches the server render.
+  // Only after mount do we check the OS preference and potentially switch
+  // to a static image — at that point hydration is already complete.
+  const [isMounted, setIsMounted] = useState(false);
   const shouldReduceMotion = useReducedMotion();
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const { scrollYProgress } = useScroll({
     target: ref,
     offset: ["start end", "end start"]
   });
 
-  // Responsive percentage-based translation for a highly noticeable parallax effect.
-  // -25% to 25% of the image's own height (which is 200% of the container height).
-  // This guarantees a total parallax movement of 100% of the container height.
   const y = useTransform(scrollYProgress, [0, 1], ["-25%", "25%"]);
 
-  // When reduced motion is preferred, render a simple static image — no parallax scroll
-  if (shouldReduceMotion) {
+  // After mounting: if the user prefers reduced motion, render a static image.
+  // Before mounting: always render the motion version so it matches the server HTML.
+  if (isMounted && shouldReduceMotion) {
     return (
       <div className={`overflow-hidden relative ${className}`}>
         <img
@@ -41,10 +47,10 @@ export function ImageParallax({
 
   return (
     <div ref={ref} className={`overflow-hidden relative ${className}`}>
-      <motion.img 
-        style={{ y }} 
-        src={src} 
-        alt={alt} 
+      <motion.img
+        style={{ y }}
+        src={src}
+        alt={alt}
         className="absolute inset-x-0 w-full h-[200%] object-cover -top-[50%] will-change-transform"
         loading="lazy"
         decoding="async"
