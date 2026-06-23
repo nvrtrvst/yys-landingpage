@@ -48,7 +48,7 @@ export default async function Home() {
       
       {/* HERO SECTION */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-primary-900">
-        {settings.hero_background && !settings.hero_background.includes('e2ef58d9') ? (
+        {settings.hero_background && !settings.hero_background.startsWith('/uploads/dummy/') ? (
           <div className="absolute inset-0">
             <ImageParallax src={settings.hero_background} alt="Hero Background" className="w-full h-full" />
             <div className="absolute inset-0 bg-primary-900/60 z-10"></div>
@@ -127,10 +127,10 @@ export default async function Home() {
             <div className="relative">
               {/* Image Placeholder or Uploaded Image */}
               <div className="aspect-[4/5] rounded-2xl bg-gray-200 overflow-hidden relative shadow-2xl">
-                {settings.profile_image && !settings.profile_image.includes('e2ef58d9') ? (
-                  <img src={settings.profile_image} alt="Gedung Yayasan" className="w-full h-full object-cover" />
+                {settings.profile_image && !settings.profile_image.startsWith('/uploads/dummy/') ? (
+                  <img src={settings.profile_image} alt="Gedung Yayasan" className="w-full h-full object-cover" loading="lazy" decoding="async" />
                 ) : (
-                  <img src="/uploads/dummy/about_img.png" alt="Gedung Yayasan" className="w-full h-full object-cover" />
+                  <img src="/uploads/dummy/about_img.png" alt="Gedung Yayasan" className="w-full h-full object-cover" loading="lazy" decoding="async" />
                 )}
               </div>
               {/* Decorative Card */}
@@ -163,7 +163,7 @@ export default async function Home() {
                   <TiltCard className="bg-gray-50 rounded-2xl overflow-hidden transition-all duration-300 hover:shadow-xl border border-gray-100 h-full flex flex-col">
                     <div className="aspect-video bg-gray-200 relative overflow-hidden">
                       {unit.image_url ? (
-                         <img src={unit.image_url} alt={unit.name} className="w-full h-full object-cover" />
+                         <img src={unit.image_url} alt={unit.name} className="w-full h-full object-cover" loading="lazy" decoding="async" />
                       ) : (
                         <div className="absolute inset-0 flex items-center justify-center text-gray-400 text-sm">
                           [Foto {unit.name}]
@@ -208,7 +208,7 @@ export default async function Home() {
             {programs.map((prog) => (
               <TiltCard key={prog.id} className="bg-white/95 backdrop-blur-sm p-8 rounded-2xl shadow-lg border border-white/10 flex flex-col items-center text-center transition-all duration-300 hover:shadow-2xl">
                 {prog.image_url ? (
-                   <img src={prog.image_url} alt={prog.title} className="w-20 h-20 object-cover rounded-full mb-6 shadow-md" />
+                   <img src={prog.image_url} alt={prog.title} className="w-20 h-20 object-cover rounded-full mb-6 shadow-md" loading="lazy" decoding="async" />
                 ) : (
                   <div className="w-20 h-20 bg-primary-100 rounded-full mb-6 flex items-center justify-center text-primary-600 text-2xl font-bold">
                     {prog.title.charAt(0)}
@@ -243,7 +243,7 @@ export default async function Home() {
                   <div className="bg-white rounded-2xl shadow-md overflow-hidden transition-all duration-300 hover:shadow-xl border border-gray-100 flex flex-col h-full">
                     <div className="aspect-[16/10] relative overflow-hidden bg-gray-100">
                       {n.image_url ? (
-                        <img src={n.image_url} alt={n.title} className="w-full h-full object-cover" />
+                        <img src={n.image_url} alt={n.title} className="w-full h-full object-cover" loading="lazy" decoding="async" />
                       ) : (
                         <div className="absolute inset-0 flex items-center justify-center text-gray-400">Tidak ada gambar</div>
                       )}
@@ -283,7 +283,7 @@ export default async function Home() {
             <div className="columns-1 sm:columns-2 md:columns-3 gap-6 space-y-6">
               {galleries.map((img) => (
                 <div key={img.id} className="break-inside-avoid relative group rounded-xl overflow-hidden">
-                  <img src={img.image_url} alt={img.title || "Galeri"} className="w-full h-auto object-cover transition-transform duration-500 group-hover:scale-105" />
+                  <img src={img.image_url} alt={img.title || "Galeri"} className="w-full h-auto object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" decoding="async" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-6">
                     <h4 className="font-bold text-lg text-white">{img.title}</h4>
                     {img.created_at && (

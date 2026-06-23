@@ -1,5 +1,22 @@
 import nodemailer from "nodemailer";
 
+// Cache transporter at module level — avoids creating a new connection object on each request
+let _transporter: ReturnType<typeof nodemailer.createTransport> | null = null;
+
+function getTransporter() {
+  if (_transporter) return _transporter;
+  _transporter = nodemailer.createTransport({
+    host: process.env.SMTP_HOST,
+    port: parseInt(process.env.SMTP_PORT || "465", 10),
+    secure: process.env.SMTP_PORT === "465",
+    auth: {
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASS,
+    },
+  });
+  return _transporter;
+}
+
 export async function sendPPDBSingleEmail({
   to,
   registration_number,
@@ -18,15 +35,7 @@ export async function sendPPDBSingleEmail({
     return;
   }
 
-  const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port: parseInt(process.env.SMTP_PORT || "465", 10),
-    secure: process.env.SMTP_PORT === "465", // true for 465, false for other ports
-    auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS,
-    },
-  });
+  const transporter = getTransporter();
 
   const mailOptions = {
     from: `"Panitia PPDB Yayasan" <${process.env.SMTP_USER}>`,

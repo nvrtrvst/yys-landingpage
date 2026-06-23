@@ -8,8 +8,10 @@ import { motion } from "framer-motion";
 export function HeaderUI({ settings, units }: { settings: Record<string, string>, units: any[] }) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
+    setIsMounted(true);
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 10);
     };
@@ -34,10 +36,20 @@ export function HeaderUI({ settings, units }: { settings: Record<string, string>
         <div className="flex items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 z-50">
-            {settings.site_logo && !settings.site_logo.includes('e2ef58d9') ? (
-              <img src={settings.site_logo} alt="Logo" className="h-20 w-auto object-contain" />
+            {isMounted && settings.site_logo && !settings.site_logo.startsWith('/uploads/dummy/') ? (
+              <img 
+                src={settings.site_logo} 
+                alt="Logo" 
+                className="h-12 w-auto object-contain" 
+                loading="eager"
+                decoding="async"
+                onError={(e) => {
+                  e.currentTarget.onerror = null;
+                  e.currentTarget.src = "/uploads/dummy/site_logo.png";
+                }}
+              />
             ) : (
-              <img src="/uploads/dummy/site_logo.png" alt="Logo" className="w-8 h-8 object-contain" />
+              <img src="/uploads/dummy/site_logo.png" alt="Logo" className="h-12 w-auto object-contain" loading="eager" decoding="async" />
             )}
             <div className={`font-serif text-2xl font-bold tracking-tight ${isScrolled ? 'text-primary-800' : 'text-white drop-shadow-md'}`}>
               {settings.site_name || "Nuurul Muttaqiin"}

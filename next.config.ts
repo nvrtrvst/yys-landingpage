@@ -17,10 +17,7 @@ const nextConfig: NextConfig = {
           },
           // HSTS only in production — enabling in dev can lock local HTTPS out
           ...(process.env.NODE_ENV === "production"
-            ? [{
-                key: "Strict-Transport-Security",
-                value: "max-age=63072000; includeSubDomains; preload",
-              }]
+            ? [{ key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains; preload" }]
             : []),
           {
             key: "Content-Security-Policy",
@@ -39,6 +36,19 @@ const nextConfig: NextConfig = {
               "frame-ancestors 'none'",
             ].join("; "),
           },
+        ],
+      },
+      // Prevent search engines from indexing admin and API routes
+      {
+        source: "/scp/(.*)",
+        headers: [
+          { key: "X-Robots-Tag", value: "noindex, nofollow" },
+        ],
+      },
+      {
+        source: "/api/(.*)",
+        headers: [
+          { key: "X-Robots-Tag", value: "noindex, nofollow" },
         ],
       },
     ];

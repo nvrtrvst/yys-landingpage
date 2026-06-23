@@ -6,6 +6,7 @@ export function PPDBForm() {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [successMsg, setSuccessMsg] = useState("");
+  const [errorMsg, setErrorMsg] = useState("");
   const [regNumber, setRegNumber] = useState("");
   
   const [captchaA, setCaptchaA] = useState(0);
@@ -82,7 +83,7 @@ export function PPDBForm() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...formData,
-          child_order: 1, // Defaulting for simple demo
+          child_order: 1,
           siblings_count: 0
         }),
       });
@@ -92,17 +93,17 @@ export function PPDBForm() {
       if (res.ok && data.success) {
         setSuccessMsg("Pendaftaran berhasil!");
         setRegNumber(data.registration_number);
+        setErrorMsg("");
         setStep(6); // Success Step
       } else {
         if (data.errors && Array.isArray(data.errors)) {
-          const errorMsgs = data.errors.map((err: any) => err.message).join("\\n");
-          alert("Gagal: " + data.message + "\\n" + errorMsgs);
+          setErrorMsg(data.message + ": " + data.errors.map((err: any) => err.message).join(", "));
         } else {
-          alert("Gagal: " + data.message);
+          setErrorMsg(data.message || "Terjadi kesalahan. Silakan coba lagi.");
         }
       }
     } catch (error) {
-      alert("Terjadi kesalahan sistem.");
+      setErrorMsg("Terjadi kesalahan sistem. Periksa koneksi internet Anda.");
     } finally {
       setLoading(false);
     }
@@ -312,6 +313,13 @@ export function PPDBForm() {
                 className="w-full p-3 border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500 max-w-xs"
               />
             </div>
+
+            {errorMsg && (
+              <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm flex items-start gap-3">
+                <span className="text-red-500 text-lg leading-none mt-0.5">✕</span>
+                <span>{errorMsg}</span>
+              </div>
+            )}
 
             <div className="flex justify-between pt-6 border-t border-gray-100">
               <button onClick={prevStep} className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50">&larr; Kembali</button>

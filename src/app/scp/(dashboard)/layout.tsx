@@ -3,7 +3,8 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { Home, SettingsIcon, Users, Image as ImageIcon, MessageSquare, Calendar, FileText, Menu, LogOut } from "lucide-react";
+import { Home, SettingsIcon, Users, Image as ImageIcon, MessageSquare, Calendar, FileText, LogOut } from "lucide-react";
+import { SignOutButton } from "./SignOutButton";
 
 export default async function AdminLayout({
   children,
@@ -50,10 +51,7 @@ export default async function AdminLayout({
           ))}
         </nav>
         <div className="p-4 border-t border-gray-200">
-          <Link href="/api/auth/signout" className="flex items-center px-3 py-2 text-sm font-medium text-red-600 rounded-md hover:bg-red-50">
-            <LogOut className="mr-3 h-5 w-5 flex-shrink-0 text-red-500" />
-            Logout
-          </Link>
+          <SignOutButton />
         </div>
       </aside>
 
