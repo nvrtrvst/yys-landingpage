@@ -131,10 +131,11 @@ CREATE TABLE IF NOT EXISTS events (
     id          INT AUTO_INCREMENT PRIMARY KEY,
     title       VARCHAR(255) NOT NULL,
     description TEXT,
-    event_date  DATE NOT NULL,
-    unit_id     INT NULL,
-    created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (unit_id) REFERENCES units(id) ON DELETE CASCADE
+    start_date  DATETIME NOT NULL,
+    end_date    DATETIME,
+    location    VARCHAR(255),
+    image_url   VARCHAR(255),
+    created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- ============================================================
