@@ -8,6 +8,7 @@ import { getSettings } from "@/lib/db";
 import { HeroParallax } from "@/components/parallax/HeroParallax";
 import { ImageParallax } from "@/components/parallax/ImageParallax";
 import { TiltCard } from "@/components/parallax/TiltCard";
+import DOMPurify from "isomorphic-dompurify";
 
 // Revalidate page every 60 seconds (ISR)
 export const revalidate = 60;
@@ -65,7 +66,7 @@ export default async function Home() {
           <span className="inline-block py-1 px-3 rounded-full bg-primary-800 text-primary-200 text-sm font-semibold mb-6 tracking-wider uppercase fade-in">
             {settings.site_tagline || "Pendidikan Islam Terpadu"}
           </span>
-          <h1 className="font-serif text-5xl md:text-7xl font-bold text-white mb-6 leading-tight fade-in" dangerouslySetInnerHTML={{ __html: settings.hero_title || "Membentuk Generasi <br /><span class=\"text-accent-default italic\">Qurani & Berprestasi</span>" }}>
+          <h1 className="font-serif text-5xl md:text-7xl font-bold text-white mb-6 leading-tight fade-in" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(settings.hero_title || "Membentuk Generasi <br /><span class=\"text-accent-default italic\">Qurani & Berprestasi</span>") }}>
           </h1>
           <p className="text-lg md:text-xl text-primary-100 max-w-2xl mx-auto mb-10 fade-in">
             {settings.hero_subtitle || "Yayasan Nuurul Muttaqiin menghadirkan pendidikan berkualitas dari jenjang LPQ hingga SMK dengan mengedepankan adab, ilmu, dan teknologi."}
@@ -97,7 +98,7 @@ export default async function Home() {
               <div className="w-20 h-1.5 bg-primary-500 mb-8 rounded-full"></div>
               
               {settings.profile_history ? (
-                <div className="text-gray-600 text-lg leading-relaxed mb-8 prose prose-lg" dangerouslySetInnerHTML={{ __html: settings.profile_history }} />
+                <div className="text-gray-600 text-lg leading-relaxed mb-8 prose prose-lg" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(settings.profile_history) }} />
               ) : (
                 <>
                   <p className="text-gray-600 text-lg leading-relaxed mb-6">

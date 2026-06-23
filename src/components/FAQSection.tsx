@@ -1,5 +1,6 @@
 "use client";
 import React, { useState } from "react";
+import DOMPurify from "isomorphic-dompurify";
 
 export function FAQSection({ data }: { data: any[] }) {
   const [openId, setOpenId] = useState<number | null>(null);
@@ -54,7 +55,7 @@ export function FAQSection({ data }: { data: any[] }) {
                         className={`transition-all duration-300 ease-in-out px-6 overflow-hidden ${isOpen ? 'max-h-[800px] pb-6 opacity-100' : 'max-h-0 opacity-0'}`}
                       >
                         <div className="pt-4 border-t border-primary-100/50">
-                          <div className="text-gray-600 leading-relaxed text-lg prose max-w-none" dangerouslySetInnerHTML={{ __html: faq.answer }} />
+                          <div className="text-gray-600 leading-relaxed text-lg prose max-w-none" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(faq.answer) }} />
                         </div>
                       </div>
                     </div>
