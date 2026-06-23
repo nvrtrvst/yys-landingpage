@@ -145,6 +145,7 @@ CREATE TABLE IF NOT EXISTS ppdb_submissions (
     id                   INT AUTO_INCREMENT PRIMARY KEY,
     registration_number  VARCHAR(50) NOT NULL UNIQUE,
     status               ENUM('Proses', 'Diterima', 'Ditolak') DEFAULT 'Proses',
+    sync_status          ENUM('pending', 'success', 'failed') DEFAULT 'pending',
     unit                 VARCHAR(50) NOT NULL,
     grade                VARCHAR(50) NOT NULL,
     major                VARCHAR(100),
