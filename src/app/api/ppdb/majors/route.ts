@@ -29,8 +29,8 @@ export async function GET(request: Request) {
         'Authorization': `Bearer ${API_KEY}`,
         'Content-Type': 'application/json'
       },
-      // CACHING: Dinonaktifkan sementara untuk mem-bypass cache error sebelumnya
-      cache: 'no-store'
+      // CACHING: Disetel ke 1 jam (3600 detik) agar performa frontend sangat cepat
+      next: { revalidate: 3600 }
     });
 
     if (!response.ok) {

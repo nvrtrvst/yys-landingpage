@@ -17,11 +17,14 @@ const ppdbSchema = z.object({
   nisn: z.string().optional(),
   birth_place: z.string().min(3, "Tempat lahir wajib diisi"),
   birth_date: z.string().min(1, "Tanggal lahir wajib diisi"),
+  nik: z.string().optional(),
+  religion: z.string().optional(),
   gender: z.enum(["Laki-laki", "Perempuan"]),
   address: z.string().min(10, "Alamat terlalu pendek"),
   child_order: z.number().int().min(1).optional(),
   siblings_count: z.number().int().min(0).optional(),
   previous_school: z.string().optional(),
+  is_pip: z.enum(["YA", "TIDAK"]).optional(),
   father_name: z.string().min(3, "Nama ayah wajib diisi"),
   father_job: z.string().optional(),
   mother_name: z.string().min(3, "Nama ibu wajib diisi"),
@@ -29,7 +32,7 @@ const ppdbSchema = z.object({
   guardian_name: z.string().optional(),
   guardian_job: z.string().optional(),
   phone: z.string().min(10, "Nomor HP tidak valid"),
-  email: z.string().email("Format email tidak valid").optional().or(z.literal("")),
+  email: z.string().min(1, "Email wajib diisi").email("Format email tidak valid"),
 });
 
 export async function POST(req: Request) {
@@ -90,16 +93,16 @@ export async function POST(req: Request) {
       // Insert into local database
       await connection.execute(
         `INSERT INTO ppdb_submissions (
-          registration_number, unit, grade, major, student_name, nisn, 
-          birth_place, birth_date, gender, address, child_order, siblings_count, 
-          previous_school, father_name, father_job, mother_name, mother_job, 
+          registration_number, unit, grade, major, student_name, nisn, nik, 
+          birth_place, birth_date, gender, religion, address, child_order, siblings_count, 
+          previous_school, is_pip, father_name, father_job, mother_name, mother_job, 
           guardian_name, guardian_job, phone, email
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           registration_number, parsed.unit, parsed.grade, parsed.major || null, 
-          parsed.student_name, parsed.nisn || null, parsed.birth_place, parsed.birth_date, 
-          parsed.gender, parsed.address, parsed.child_order || null, parsed.siblings_count || null, 
-          parsed.previous_school || null, parsed.father_name, parsed.father_job || null, 
+          parsed.student_name, parsed.nisn || null, parsed.nik || null, parsed.birth_place, parsed.birth_date, 
+          parsed.gender, parsed.religion || null, parsed.address, parsed.child_order || null, parsed.siblings_count || null, 
+          parsed.previous_school || null, parsed.is_pip || 'TIDAK', parsed.father_name, parsed.father_job || null, 
           parsed.mother_name, parsed.mother_job || null, parsed.guardian_name || null, 
           parsed.guardian_job || null, parsed.phone, parsed.email || null
         ]

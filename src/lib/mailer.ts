@@ -38,7 +38,7 @@ export async function sendPPDBSingleEmail({
   const transporter = getTransporter();
 
   const mailOptions = {
-    from: `"Panitia PPDB Yayasan" <${process.env.SMTP_USER}>`,
+    from: `"Panitia PPDB ${unit}" <info@nuurulmuttaqiin.or.id>`,
     to: to,
     subject: `Bukti Pendaftaran PPDB - ${student_name}`,
     html: `
@@ -84,5 +84,69 @@ export async function sendPPDBSingleEmail({
     console.log("Email sent successfully to", to);
   } catch (error) {
     console.error("Error sending email:", error);
+  }
+}
+
+export async function sendPPDBStatusEmail({
+  to,
+  registration_number,
+  student_name,
+  status,
+  unit
+}: {
+  to: string;
+  registration_number: string;
+  student_name: string;
+  status: string;
+  unit: string;
+}) {
+  if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASS) {
+    console.warn("SMTP settings are not configured. Email will not be sent.");
+    return;
+  }
+
+  const transporter = getTransporter();
+
+  const statusColor = status === 'Diterima' ? '#16a34a' : (status === 'Ditolak' ? '#dc2626' : '#ca8a04');
+  let statusMessage = 'Status Anda saat ini sedang dalam <b>PROSES</b>';
+  if (status === 'Diterima') {
+    statusMessage = 'Selamat! Anda telah dinyatakan <b>DITERIMA</b>';
+  } else if (status === 'Ditolak') {
+    statusMessage = 'Mohon maaf, Anda dinyatakan <b>DITOLAK</b>';
+  }
+
+  const mailOptions = {
+    from: `"Panitia PPDB ${unit} Nuurul Muttaqiin" <info@nuurulmuttaqiin.or.id>`,
+    to: to,
+    subject: `Update Status PPDB - ${student_name}`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
+        <h2 style="color: ${statusColor}; text-align: center;">Update Status Pendaftaran</h2>
+        <p>Halo,</p>
+        <p>Berikut adalah update status pendaftaran peserta didik baru (PPDB) atas nama <b>${student_name}</b> dengan nomor pendaftaran <b>${registration_number}</b>.</p>
+        
+        <div style="background-color: #f8fafc; padding: 15px; border-radius: 6px; margin: 20px 0; text-align: center;">
+            <p style="margin: 0; font-size: 16px;">${statusMessage}.</p>
+        </div>
+
+        <p>Anda dapat mengecek detail pendaftaran Anda secara berkala melalui tautan berikut:</p>
+        <p style="text-align: center; margin: 30px 0;">
+          <a href="${process.env.NEXTAUTH_URL || 'http://localhost:5000'}/ppdb/status" style="background-color: #16a34a; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">Cek Status Pendaftaran</a>
+        </p>
+
+        <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 20px 0;" />
+        <p style="color: #94a3b8; font-size: 12px; text-align: center;">
+          Panitia PPDB Yayasan Nuurul Muttaqiin<br/>
+          Pesan ini dikirim secara otomatis oleh sistem.
+        </p>
+      </div>
+    `
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log("Email status sent successfully to", to);
+  } catch (error) {
+    console.error("Error sending status email:", error);
   }
 }

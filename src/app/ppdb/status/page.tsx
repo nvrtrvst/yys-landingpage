@@ -19,7 +19,7 @@ export default async function PPDBStatusPage({
     searched = true;
     try {
       const [rows] = await pool.execute<RowDataPacket[]>(
-        "SELECT * FROM ppdb_submissions WHERE registration_number = ?",
+        "SELECT registration_number, student_name, unit, grade, major, status, created_at FROM ppdb_submissions WHERE registration_number = ?",
         [regNumber]
       );
       if (rows.length > 0) {

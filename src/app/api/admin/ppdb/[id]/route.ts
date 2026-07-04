@@ -4,6 +4,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
+import { sendPPDBStatusEmail } from '@/lib/mailer';
 
 const updateSchema = z.object({
   status: z.enum(['Proses', 'Diterima', 'Ditolak', 'pending', 'diterima', 'ditolak']).nullable().optional(),
@@ -41,6 +42,24 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     if (updates.length > 0) {
       values.push((await params).id);
       await pool.execute(`UPDATE ppdb_submissions SET ${updates.join(', ')} WHERE id = ?`, values);
+
+      if (data.status) {
+        try {
+          const [rows] = await pool.execute('SELECT email, registration_number, student_name, status, unit FROM ppdb_submissions WHERE id = ?', [(await params).id]);
+          const applicant = (rows as any[])[0];
+          if (applicant && applicant.email) {
+            sendPPDBStatusEmail({
+              to: applicant.email,
+              registration_number: applicant.registration_number,
+              student_name: applicant.student_name,
+              status: applicant.status,
+              unit: applicant.unit
+            }).catch(err => console.error("Failed to send status email:", err));
+          }
+        } catch (emailErr) {
+          console.error("Error preparing status email:", emailErr);
+        }
+      }
     }
 
     revalidatePath('/scp/ppdb');
