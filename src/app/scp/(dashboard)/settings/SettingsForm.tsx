@@ -105,6 +105,7 @@ export function SettingsForm({ initialData }: { initialData: Record<string, stri
               <input type="text" name="site_logo" value={formData.site_logo} onChange={handleChange} className="w-full border rounded p-2 bg-gray-50" readOnly />
               <input type="file" accept="image/*" onChange={(e) => handleFileUpload(e, "site_logo")} className="text-sm" />
             </div>
+            <p className="text-xs text-gray-500 mt-1">Optimal: 200 x 80 px (Transparan PNG)</p>
             {formData.site_logo && (
               <div className="mt-2 flex items-end gap-4">
                 <img src={formData.site_logo} alt="Logo" className="h-16 object-contain" />
@@ -125,6 +126,7 @@ export function SettingsForm({ initialData }: { initialData: Record<string, stri
               <input type="text" name="profile_image" value={formData.profile_image} onChange={handleChange} className="w-full border rounded p-2 bg-gray-50" readOnly />
               <input type="file" accept="image/*" onChange={(e) => handleFileUpload(e, "profile_image")} className="text-sm" />
             </div>
+            <p className="text-xs text-gray-500 mt-1">Optimal: 600 x 600 px (Persegi 1:1)</p>
             {formData.profile_image && (
               <div className="mt-2 flex items-end gap-4">
                 <img src={formData.profile_image} alt="Profile" className="h-24 object-cover rounded" />
@@ -153,6 +155,7 @@ export function SettingsForm({ initialData }: { initialData: Record<string, stri
               <input type="text" name="hero_background" value={formData.hero_background} onChange={handleChange} className="w-full border rounded p-2 bg-gray-50" readOnly />
               <input type="file" accept="image/*" onChange={(e) => handleFileUpload(e, "hero_background")} className="text-sm" />
             </div>
+            <p className="text-xs text-gray-500 mt-1">Optimal: 1920 x 1080 px (Rasio 16:9)</p>
             {formData.hero_background && (
               <div className="mt-2 flex items-end gap-4">
                 <img src={formData.hero_background} alt="Hero BG" className="h-24 object-cover rounded" />
@@ -166,6 +169,7 @@ export function SettingsForm({ initialData }: { initialData: Record<string, stri
               <input type="text" name="programs_background" value={formData.programs_background} onChange={handleChange} className="w-full border rounded p-2 bg-gray-50" readOnly />
               <input type="file" accept="image/*" onChange={(e) => handleFileUpload(e, "programs_background")} className="text-sm" />
             </div>
+            <p className="text-xs text-gray-500 mt-1">Optimal: 1920 x 1080 px (Rasio 16:9)</p>
             {formData.programs_background && (
               <div className="mt-2 flex items-end gap-4">
                 <img src={formData.programs_background} alt="Programs BG" className="h-24 object-cover rounded" />

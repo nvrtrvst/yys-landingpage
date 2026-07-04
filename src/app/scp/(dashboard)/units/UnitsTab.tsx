@@ -100,6 +100,7 @@ export function UnitsTab({ units, refresh }: { units: Unit[], refresh: () => voi
               <input type="text" value={editingUnit.image_url || ""} onChange={e => setEditingUnit({...editingUnit, image_url: e.target.value})} className="w-full border rounded p-2 bg-gray-50" readOnly />
               <input type="file" accept="image/*" onChange={(e) => handleUpload(e, "image_url")} className="text-sm" />
             </div>
+            <p className="text-xs text-gray-500 mt-1">Optimal: 1200 x 800 px (Rasio 3:2)</p>
             {editingUnit.image_url && <img src={editingUnit.image_url} alt="Preview" className="mt-2 h-20 object-contain" />}
           </div>
 

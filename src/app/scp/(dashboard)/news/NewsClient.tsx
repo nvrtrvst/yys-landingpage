@@ -124,6 +124,7 @@ export function NewsClient() {
                 <input type="text" value={editingItem.image_url || ""} onChange={e => setEditingItem({...editingItem, image_url: e.target.value})} className="w-full border rounded p-2 bg-gray-50" readOnly />
                 <input type="file" accept="image/*" onChange={handleUpload} className="text-sm" />
               </div>
+              <p className="text-xs text-gray-500 mt-1">Optimal: 800 x 600 px (Rasio 4:3)</p>
               {editingItem.image_url && <img src={editingItem.image_url} alt="Cover" className="mt-2 h-32 object-cover rounded" />}
             </div>
 

@@ -102,7 +102,7 @@ export function GalleryClient() {
       <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 mb-6 flex flex-col md:flex-row justify-between items-center gap-4">
         <div>
           <h3 className="text-lg font-bold">Unggah Foto Baru</h3>
-          <p className="text-sm text-gray-500">Pilih satu atau beberapa foto sekaligus.</p>
+          <p className="text-sm text-gray-500">Pilih satu atau beberapa foto sekaligus. (Optimal: 1200x800 px, Rasio 3:2)</p>
         </div>
         <div className="relative">
           <input 

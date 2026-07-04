@@ -103,6 +103,7 @@ export function ProgramsTab({ programs, units, refresh }: { programs: Program[],
               <input type="text" value={editingProgram.image_url || ""} onChange={e => setEditingProgram({...editingProgram, image_url: e.target.value})} className="w-full border rounded p-2 bg-gray-50" readOnly />
               <input type="file" accept="image/*" onChange={(e) => handleUpload(e, "image_url")} className="text-sm" />
             </div>
+            <p className="text-xs text-gray-500 mt-1">Optimal: 800 x 600 px (Rasio 4:3)</p>
             {editingProgram.image_url && <img src={editingProgram.image_url} alt="Preview" className="mt-2 h-20 object-contain" />}
           </div>
 

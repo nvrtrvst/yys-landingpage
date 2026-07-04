@@ -168,6 +168,7 @@ export function TestimonialsFaqManager() {
                         <input type="text" value={editingTesti.image_url || ""} readOnly className="flex-1 border rounded p-2 bg-gray-50" />
                         <input type="file" onChange={handleUpload} className="text-sm border p-1 rounded" />
                       </div>
+                      <p className="text-xs text-gray-500 mt-1">Optimal: 400 x 400 px (Persegi 1:1)</p>
                     </div>
                     <div>
                       <label className="block text-sm font-medium mb-1">Urutan</label>
