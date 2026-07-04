@@ -25,6 +25,7 @@ export default async function AdminLayout({
     { name: "Testimonials & FAQ", href: "/scp/testimonials", icon: MessageSquare, roles: ["superadmin", "admin"] },
     { name: "Events Calendar", href: "/scp/events", icon: Calendar, roles: ["superadmin", "admin", "editor"] },
     { name: "PPDB Data", href: "/scp/ppdb", icon: Users, roles: ["superadmin", "admin"] },
+    { name: "Pengaturan PPDB", href: "/scp/ppdb/settings", icon: SettingsIcon, roles: ["superadmin", "admin"] },
     { name: "Manajemen Pengguna", href: "/scp/users", icon: UserCog, roles: ["superadmin", "admin"] },
     { name: "Profil Saya", href: "/scp/profile", icon: UserCircle, roles: ["superadmin", "admin", "editor"] },
     { name: "Settings", href: "/scp/settings", icon: SettingsIcon, roles: ["superadmin", "admin"] },

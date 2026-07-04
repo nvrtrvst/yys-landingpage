@@ -65,11 +65,20 @@ export default function PPDBDetailPage() {
 
   return (
     <div className="max-w-4xl mx-auto pb-12">
-      <div className="flex items-center gap-4 mb-6">
-        <Link href="/scp/ppdb" className="text-gray-500 hover:text-gray-900 font-medium">
-          &larr; Kembali
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-4">
+          <Link href="/scp/ppdb" className="text-gray-500 hover:text-gray-900 font-medium">
+            &larr; Kembali
+          </Link>
+          <h2 className="text-3xl font-bold text-gray-800 ml-2">Detail Pendaftar PPDB</h2>
+        </div>
+        <Link 
+          href={`/print/ppdb/${id}`}
+          target="_blank"
+          className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded font-semibold shadow-sm flex items-center gap-2"
+        >
+          🖨️ Cetak Kartu Peserta
         </Link>
-        <h2 className="text-3xl font-bold text-gray-800 ml-2">Detail Pendaftar PPDB</h2>
       </div>
 
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-6">
