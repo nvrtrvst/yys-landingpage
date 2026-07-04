@@ -13,6 +13,7 @@ export default withAuth(
       "/scp/ppdb",
       "/scp/units",
       "/scp/testimonials",
+      "/scp/users",
     ];
 
     if (adminOnlyRoutes.some(route => path.startsWith(route))) {
