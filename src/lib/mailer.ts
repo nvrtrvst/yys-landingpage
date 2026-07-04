@@ -43,7 +43,10 @@ export async function sendPPDBSingleEmail({
     subject: `Bukti Pendaftaran PPDB - ${student_name}`,
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
-        <h2 style="color: #166534; text-align: center;">Pendaftaran Berhasil!</h2>
+        <div style="text-align: center; padding-bottom: 10px; border-bottom: 2px solid #166534; margin-bottom: 20px;">
+          <img src="${process.env.NEXTAUTH_URL || 'http://localhost:5000'}/logo/${unit.toLowerCase()}.png" alt="Logo ${unit}" style="height: 70px; margin-bottom: 10px;" onerror="this.src='${process.env.NEXTAUTH_URL || 'http://localhost:5000'}/logo/logo.png'" />
+          <h2 style="color: #166534; margin: 0;">Pendaftaran Berhasil!</h2>
+        </div>
         <p>Halo,</p>
         <p>Terima kasih telah melakukan pendaftaran peserta didik baru (PPDB) di Yayasan Nuurul Muttaqiin. Berikut adalah data pendaftaran Anda:</p>
         
@@ -121,7 +124,10 @@ export async function sendPPDBStatusEmail({
     subject: `Update Status PPDB - ${student_name}`,
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
-        <h2 style="color: ${statusColor}; text-align: center;">Update Status Pendaftaran</h2>
+        <div style="text-align: center; padding-bottom: 10px; border-bottom: 2px solid ${statusColor}; margin-bottom: 20px;">
+          <img src="${process.env.NEXTAUTH_URL || 'http://localhost:5000'}/logo/${unit.toLowerCase()}.png" alt="Logo ${unit}" style="height: 70px; margin-bottom: 10px;" onerror="this.src='${process.env.NEXTAUTH_URL || 'http://localhost:5000'}/logo/logo.png'" />
+          <h2 style="color: ${statusColor}; margin: 0;">Update Status Pendaftaran</h2>
+        </div>
         <p>Halo,</p>
         <p>Berikut adalah update status pendaftaran peserta didik baru (PPDB) atas nama <b>${student_name}</b> dengan nomor pendaftaran <b>${registration_number}</b>.</p>
         
