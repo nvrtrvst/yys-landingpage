@@ -33,7 +33,7 @@ export default function UsersPage() {
     setIsSubmitting(true);
     
     try {
-      const url = isEditing ? \`/api/admin/users/\${formData.id}\` : "/api/admin/users";
+      const url = isEditing ? `/api/admin/users/${formData.id}` : "/api/admin/users";
       const method = isEditing ? "PUT" : "POST";
       
       const res = await fetch(url, {
@@ -59,7 +59,7 @@ export default function UsersPage() {
     if (!confirm("Yakin ingin menghapus pengguna ini? Tindakan ini tidak dapat dibatalkan.")) return;
     
     try {
-      const res = await fetch(\`/api/admin/users/\${id}\`, { method: "DELETE" });
+      const res = await fetch(`/api/admin/users/${id}`, { method: "DELETE" });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Gagal menghapus pengguna");
       
@@ -109,11 +109,11 @@ export default function UsersPage() {
                 <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-900">{user.name}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-gray-500">{user.email}</td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <span className={\`px-3 py-1 rounded-full text-xs font-bold uppercase \${
+                  <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase ${
                     user.role === 'superadmin' ? 'bg-purple-100 text-purple-700' :
                     user.role === 'admin' ? 'bg-blue-100 text-blue-700' :
                     'bg-green-100 text-green-700'
-                  }\`}>
+                  }`}>
                     {user.role}
                   </span>
                 </td>
