@@ -76,7 +76,7 @@ export async function sendPPDBSingleEmail({
         <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 20px 0;" />
         <p style="color: #94a3b8; font-size: 12px; text-align: center;">
           Panitia PPDB Yayasan Nuurul Muttaqiin<br/>
-          Pesan ini dikirim secara otomatis oleh sistem.
+          Pesan ini dikirim secara otomatis oleh sistem pada ${new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' })}.
         </p>
       </div>
     `
@@ -143,7 +143,7 @@ export async function sendPPDBStatusEmail({
         <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 20px 0;" />
         <p style="color: #94a3b8; font-size: 12px; text-align: center;">
           Panitia PPDB Yayasan Nuurul Muttaqiin<br/>
-          Pesan ini dikirim secara otomatis oleh sistem.
+          Pesan ini dikirim secara otomatis oleh sistem pada ${new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' })}.
         </p>
       </div>
     `
