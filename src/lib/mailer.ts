@@ -17,6 +17,21 @@ function getTransporter() {
   return _transporter;
 }
 
+// Mengecek apakah file logo unit tersedia di folder public, jika tidak fallback ke logo utama
+import fs from 'fs';
+import path from 'path';
+
+function getUnitLogoUrl(unit: string): string {
+  const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:5000';
+  const unitFile = `${unit.toLowerCase()}.png`;
+  const logoPath = path.join(process.cwd(), 'public', 'logo', unitFile);
+  
+  if (fs.existsSync(logoPath)) {
+    return `${baseUrl}/logo/${unitFile}`;
+  }
+  return `${baseUrl}/logo/logo.png`;
+}
+
 export async function sendPPDBSingleEmail({
   to,
   registration_number,
@@ -36,6 +51,7 @@ export async function sendPPDBSingleEmail({
   }
 
   const transporter = getTransporter();
+  const logoUrl = getUnitLogoUrl(unit);
 
   const mailOptions = {
     from: `"Panitia PPDB ${unit}" <info@nuurulmuttaqiin.or.id>`,
@@ -44,7 +60,7 @@ export async function sendPPDBSingleEmail({
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
         <div style="text-align: center; padding-bottom: 10px; border-bottom: 2px solid #166534; margin-bottom: 20px;">
-          <img src="${process.env.NEXTAUTH_URL || 'http://localhost:5000'}/logo/${unit.toLowerCase()}.png" alt="Logo ${unit}" style="height: 70px; margin-bottom: 10px;" onerror="this.src='${process.env.NEXTAUTH_URL || 'http://localhost:5000'}/logo/logo.png'" />
+          <img src="${logoUrl}" alt="Logo ${unit}" style="height: 70px; margin-bottom: 10px;" />
           <h2 style="color: #166534; margin: 0;">Pendaftaran Berhasil!</h2>
         </div>
         <p>Halo,</p>
@@ -109,6 +125,7 @@ export async function sendPPDBStatusEmail({
   }
 
   const transporter = getTransporter();
+  const logoUrl = getUnitLogoUrl(unit);
 
   const statusColor = status === 'Diterima' ? '#16a34a' : (status === 'Ditolak' ? '#dc2626' : '#ca8a04');
   let statusMessage = 'Status Anda saat ini sedang dalam <b>PROSES</b>';
@@ -125,7 +142,7 @@ export async function sendPPDBStatusEmail({
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
         <div style="text-align: center; padding-bottom: 10px; border-bottom: 2px solid ${statusColor}; margin-bottom: 20px;">
-          <img src="${process.env.NEXTAUTH_URL || 'http://localhost:5000'}/logo/${unit.toLowerCase()}.png" alt="Logo ${unit}" style="height: 70px; margin-bottom: 10px;" onerror="this.src='${process.env.NEXTAUTH_URL || 'http://localhost:5000'}/logo/logo.png'" />
+          <img src="${logoUrl}" alt="Logo ${unit}" style="height: 70px; margin-bottom: 10px;" />
           <h2 style="color: ${statusColor}; margin: 0;">Update Status Pendaftaran</h2>
         </div>
         <p>Halo,</p>
