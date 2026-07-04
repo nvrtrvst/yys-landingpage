@@ -16,7 +16,7 @@ export async function GET(request: Request) {
     const search = url.searchParams.get('search');
 
     let query = `SELECT 
-      id, registration_number, status, sync_status, unit, grade, major,
+      id, registration_number, status, sync_status, unit, grade, major, is_printed,
       student_name, nisn, birth_place, birth_date, gender, phone, email,
       previous_school, father_name, mother_name, created_at
       FROM ppdb_submissions WHERE 1=1`;
@@ -39,6 +39,12 @@ export async function GET(request: Request) {
     if (search) {
       query += ' AND (student_name LIKE ? OR registration_number LIKE ?)';
       params.push(`%${search}%`, `%${search}%`);
+    }
+    const printStatus = url.searchParams.get('print_status');
+    if (printStatus === 'printed') {
+      query += ' AND is_printed = 1';
+    } else if (printStatus === 'unprinted') {
+      query += ' AND (is_printed = 0 OR is_printed IS NULL)';
     }
 
     query += ' ORDER BY created_at DESC LIMIT 500'; // cap result size

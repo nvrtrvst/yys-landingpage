@@ -8,6 +8,7 @@ export default function PPDBPage() {
   const [loading, setLoading] = useState(true);
   const [filterUnit, setFilterUnit] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
+  const [filterPrint, setFilterPrint] = useState("");
   const [search, setSearch] = useState("");
 
   const fetchData = async () => {
@@ -16,6 +17,7 @@ export default function PPDBPage() {
       const query = new URLSearchParams();
       if (filterUnit) query.append("unit", filterUnit);
       if (filterStatus) query.append("status", filterStatus);
+      if (filterPrint) query.append("print_status", filterPrint);
       if (search) query.append("search", search);
 
       const res = await fetch(`/api/admin/ppdb?${query.toString()}`);
@@ -34,7 +36,7 @@ export default function PPDBPage() {
       fetchData();
     }, 300);
     return () => clearTimeout(timer);
-  }, [filterUnit, filterStatus, search]);
+  }, [filterUnit, filterStatus, filterPrint, search]);
 
   const updateStatus = async (id: number, status: string) => {
     const toastId = toast.loading("Memperbarui status...");
@@ -49,6 +51,47 @@ export default function PPDBPage() {
       fetchData();
     } catch (err: any) {
       toast.error(err.message, { id: toastId });
+    }
+  };
+
+  const handlePrintCard = async (id: number) => {
+    try {
+      // Mark as printed
+      await fetch(`/api/admin/ppdb/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ is_printed: true })
+      });
+      fetchData(); // Refresh list to show printed status
+      // Open print page
+      window.open(`/print/ppdb/${id}`, "_blank");
+    } catch (err) {
+      toast.error("Gagal mencetak kartu");
+    }
+  };
+
+  const handleMassPrint = async () => {
+    const idsToPrint = data.map(row => row.id);
+    if (idsToPrint.length === 0) {
+      return toast.info("Tidak ada data pendaftar pada tabel saat ini.");
+    }
+    
+    // Open the mass print page
+    const url = `/print/ppdb/massal?ids=${idsToPrint.join(',')}`;
+    window.open(url, "_blank");
+
+    // Mark them as printed immediately
+    const toastId = toast.loading("Menandai sebagai dicetak...");
+    try {
+      await fetch('/api/admin/ppdb/mass-print', {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids: idsToPrint })
+      });
+      toast.success("Berhasil ditandai", { id: toastId });
+      fetchData();
+    } catch(err) {
+      toast.error("Gagal menandai status", { id: toastId });
     }
   };
 
@@ -97,6 +140,9 @@ export default function PPDBPage() {
           <p className="text-gray-500">Kelola dan tinjau data calon siswa baru.</p>
         </div>
         <div className="flex gap-2">
+          <button onClick={handleMassPrint} className="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 rounded-lg font-medium shadow flex items-center gap-1 text-sm">
+            🖨️ Cetak Masal (Sesuai Filter)
+          </button>
           <Link href="/scp/print-kelulusan?status=Diterima" target="_blank" className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg font-medium shadow flex items-center gap-1 text-sm">
             Cetak Lulus
           </Link>
@@ -135,12 +181,20 @@ export default function PPDBPage() {
           </select>
         </div>
         <div className="w-48">
-          <label className="block text-sm font-medium text-gray-700 mb-1">Filter Status</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Filter Status Lulus</label>
           <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="w-full border rounded p-2 focus:ring-2 focus:ring-green-500">
             <option value="">Semua Status</option>
             <option value="Proses">Pending</option>
             <option value="Diterima">Diterima</option>
             <option value="Ditolak">Ditolak</option>
+          </select>
+        </div>
+        <div className="w-48">
+          <label className="block text-sm font-medium text-gray-700 mb-1">Filter Cetak</label>
+          <select value={filterPrint} onChange={(e) => setFilterPrint(e.target.value)} className="w-full border rounded p-2 focus:ring-2 focus:ring-green-500">
+            <option value="">Semua Print Status</option>
+            <option value="unprinted">Belum Dicetak</option>
+            <option value="printed">Sudah Dicetak</option>
           </select>
         </div>
       </div>
@@ -191,9 +245,18 @@ export default function PPDBPage() {
                       </select>
                     </td>
                     <td className="p-4 text-right">
-                      <Link href={`/scp/ppdb/${row.id}`} className="text-blue-600 hover:text-blue-800 text-sm font-medium">
-                        Lihat Detail
-                      </Link>
+                      <div className="flex items-center justify-end gap-3">
+                        <button 
+                          onClick={() => handlePrintCard(row.id)}
+                          className={`text-sm font-medium flex items-center gap-1 ${row.is_printed ? 'text-gray-400 hover:text-gray-600' : 'text-green-600 hover:text-green-800'}`}
+                          title={row.is_printed ? "Sudah Dicetak" : "Cetak Kartu"}
+                        >
+                          🖨️ {row.is_printed ? "Dicetak" : "Cetak"}
+                        </button>
+                        <Link href={`/scp/ppdb/${row.id}`} className="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                          Lihat Detail
+                        </Link>
+                      </div>
                     </td>
                   </tr>
                 ))
