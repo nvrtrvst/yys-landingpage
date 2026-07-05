@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { Home, SettingsIcon, Users, Image as ImageIcon, MessageSquare, Calendar, FileText, LogOut, UserCog, UserCircle } from "lucide-react";
+import { Home, SettingsIcon, Users, Image as ImageIcon, MessageSquare, Calendar, FileText, LogOut, UserCog, UserCircle, Database } from "lucide-react";
 import { SignOutButton } from "./SignOutButton";
 
 export default async function AdminLayout({
@@ -27,6 +27,7 @@ export default async function AdminLayout({
     { name: "PPDB Data", href: "/scp/ppdb", icon: Users, roles: ["superadmin", "admin"] },
     { name: "Pengaturan PPDB", href: "/scp/ppdb/settings", icon: SettingsIcon, roles: ["superadmin", "admin"] },
     { name: "Manajemen Pengguna", href: "/scp/users", icon: UserCog, roles: ["superadmin", "admin"] },
+    { name: "Backup Database", href: "/scp/backup", icon: Database, roles: ["superadmin", "admin"] },
     { name: "Profil Saya", href: "/scp/profile", icon: UserCircle, roles: ["superadmin", "admin", "editor"] },
     { name: "Settings", href: "/scp/settings", icon: SettingsIcon, roles: ["superadmin", "admin"] },
   ];
