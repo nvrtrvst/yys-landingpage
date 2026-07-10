@@ -40,7 +40,7 @@ export default async function AgendaPage() {
                   
                   return (
                     <div key={evt.id} className={`flex flex-col md:flex-row gap-6 ${index !== events.length - 1 ? 'border-b border-gray-100 pb-8' : ''}`}>
-                      <div className="md:w-32 flex-shrink-0 flex flex-col items-center justify-center bg-primary-50 rounded-xl p-4 text-center border border-primary-100 h-32">
+                      <div className="md:w-32 w-20 h-20 md:h-32 flex-shrink-0 flex flex-col items-center justify-center bg-primary-50 rounded-xl p-2 md:p-4 text-center border border-primary-100">
                         <span className="text-primary-600 font-bold text-sm uppercase tracking-wider">{startDate.toLocaleDateString('id-ID', { month: 'short' })}</span>
                         <span className="text-4xl font-black text-primary-900">{startDate.getDate()}</span>
                         <span className="text-primary-600 text-sm">{startDate.getFullYear()}</span>
@@ -62,7 +62,7 @@ export default async function AgendaPage() {
                           )}
                         </div>
                         
-                        <p className="text-gray-600 leading-relaxed">{evt.description}</p>
+                        <p className="text-gray-600 leading-relaxed line-clamp-4 md:line-clamp-none">{evt.description}</p>
                       </div>
 
                       {evt.image_url && (

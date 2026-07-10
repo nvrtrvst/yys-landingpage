@@ -33,13 +33,13 @@ export async function Footer() {
             </p>
             <div className="flex gap-4">
               {/* Social Icons Placeholders */}
-              <a href="#" className="w-10 h-10 rounded-full bg-primary-800 flex items-center justify-center hover:bg-primary-700 transition">
+              <a href="#" aria-label="Facebook" className="w-11 h-11 md:w-10 md:h-10 rounded-full bg-primary-800 flex items-center justify-center hover:bg-primary-700 transition">
                 FB
               </a>
-              <a href="#" className="w-10 h-10 rounded-full bg-primary-800 flex items-center justify-center hover:bg-primary-700 transition">
+              <a href="#" aria-label="Instagram" className="w-11 h-11 md:w-10 md:h-10 rounded-full bg-primary-800 flex items-center justify-center hover:bg-primary-700 transition">
                 IG
               </a>
-              <a href="#" className="w-10 h-10 rounded-full bg-primary-800 flex items-center justify-center hover:bg-primary-700 transition">
+              <a href="#" aria-label="YouTube" className="w-11 h-11 md:w-10 md:h-10 rounded-full bg-primary-800 flex items-center justify-center hover:bg-primary-700 transition">
                 YT
               </a>
             </div>
@@ -87,7 +87,7 @@ export async function Footer() {
                       title="Peta Lokasi Yayasan"
                     ></iframe>
                     {/* Glassmorphic Badge */}
-                    <div className="absolute top-3 right-3 bg-primary-950/80 backdrop-blur-md px-3 py-1.5 rounded-full text-[10px] font-semibold text-accent-default tracking-wide uppercase shadow-md pointer-events-none border border-white/10">
+                    <div className="absolute top-3 right-3 bg-primary-950/80 backdrop-blur-md px-3 py-1.5 rounded-full text-xs font-semibold text-accent-default tracking-wide uppercase shadow-md pointer-events-none border border-white/10">
                       📍 Lokasi Yayasan
                     </div>
                   </div>

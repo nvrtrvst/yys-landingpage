@@ -218,8 +218,8 @@ export function NewsClient() {
                       {new Date(row.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
                     </td>
                     <td className="p-4 text-right">
-                      <button onClick={() => setEditingItem(row)} className="text-blue-600 hover:text-blue-800 text-sm font-medium mr-3">Edit</button>
-                      <button onClick={() => handleDelete(row.id)} className="text-red-600 hover:text-red-800 text-sm font-medium">Hapus</button>
+                      <button onClick={() => setEditingItem(row)} className="text-blue-600 hover:text-blue-800 text-sm font-medium px-3 py-2 mr-2">Edit</button>
+                      <button onClick={() => handleDelete(row.id)} className="text-red-600 hover:text-red-800 text-sm font-medium px-3 py-2">Hapus</button>
                     </td>
                   </tr>
                 ))

@@ -25,6 +25,11 @@ body {
   color: var(--color-gray-900);
 }
 
+img {
+  max-width: 100%;
+  height: auto;
+}
+
 /* Animations */
 .fade-in {
   animation: fadeIn 0.8s ease-in-out;

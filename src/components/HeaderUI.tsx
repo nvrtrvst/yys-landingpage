@@ -71,13 +71,13 @@ export function HeaderUI({ settings, units }: { settings: Record<string, string>
             ))}
 
             {/* Dropdown Unit */}
-            <div className="relative group">
-              <button className={`text-sm font-medium transition-colors hover:text-primary-400 flex items-center gap-1 ${
+            <div className="relative group focus-within:z-10">
+              <button aria-expanded="false" aria-haspopup="true" className={`text-sm font-medium transition-colors hover:text-primary-400 flex items-center gap-1 ${
                   isScrolled ? "text-gray-700" : "text-white drop-shadow-md"
                 }`}>
                 Unit Sekolah ▾
               </button>
-              <div className="absolute top-full left-0 mt-2 w-48 bg-white shadow-xl border border-gray-100 rounded-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 py-2">
+              <div role="menu" className="absolute top-full left-0 mt-2 w-48 bg-white shadow-xl border border-gray-100 rounded-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible focus-within:opacity-100 focus-within:visible transition-all duration-200 py-2 min-w-[200px] w-max max-w-xs">
                 {units.map(u => (
                   <Link key={u.slug} href={`/unit/${u.slug}`} className="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-600">
                     {u.name}
@@ -101,8 +101,12 @@ export function HeaderUI({ settings, units }: { settings: Record<string, string>
 
           {/* Mobile menu button */}
           <button
-            className="md:hidden z-50"
+            aria-label={isMobileMenuOpen ? "Tutup menu navigasi" : "Buka menu navigasi"}
+            aria-expanded={isMobileMenuOpen}
+            aria-controls="mobile-menu"
+            className="md:hidden z-50 p-2 focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 rounded"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setIsMobileMenuOpen(!isMobileMenuOpen); } }}
           >
             {isMobileMenuOpen ? (
               <X className={`h-6 w-6 ${isScrolled || isMobileMenuOpen ? 'text-gray-900' : 'text-white'}`} />
@@ -116,6 +120,9 @@ export function HeaderUI({ settings, units }: { settings: Record<string, string>
       {/* Mobile Nav */}
       {isMobileMenuOpen && (
         <motion.div
+          id="mobile-menu"
+          role="navigation"
+          aria-label="Navigasi mobile"
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -20 }}

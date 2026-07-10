@@ -208,7 +208,7 @@ export function PPDBForm() {
         <div className="bg-gray-50 px-8 py-4 border-b border-gray-100 flex justify-between">
             {[1, 2, 3, 4, 5].map((s) => (
               <div key={s} className="flex flex-col items-center">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${step >= s ? 'bg-primary-600 text-white' : 'bg-gray-200 text-gray-400'}`}>
+                <div className={`w-10 h-10 md:w-8 md:h-8 rounded-full flex items-center justify-center font-bold text-sm md:text-sm ${step >= s ? 'bg-primary-600 text-white' : 'bg-gray-200 text-gray-400'}`}>
                   {s}
                 </div>
               </div>
@@ -223,7 +223,7 @@ export function PPDBForm() {
             
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Unit Sekolah Tujuan <span className="text-red-500">*</span></label>
-              <select required name="unit" value={formData.unit} onChange={handleChange} className="w-full p-2.5 text-sm border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500 bg-white">
+              <select required name="unit" value={formData.unit} onChange={handleChange} className="w-full p-3 md:p-2.5 text-[16px] md:text-sm border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500 bg-white">
                 <option className="text-sm" value="">-- Pilih Unit --</option>
                 <option className="text-sm" value="LPQ">LPQ Nuurul Muttaqiin</option>
                 <option className="text-sm" value="TK">TK Nuurul Muttaqiin</option>
@@ -237,7 +237,7 @@ export function PPDBForm() {
             {formData.unit && majors.length > 0 && (
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Pilih Jurusan <span className="text-red-500">*</span></label>
-                <select required name="major" value={formData.major} onChange={handleChange} disabled={loadingMajors} className="w-full p-2.5 text-sm border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500 bg-white">
+                <select required name="major" value={formData.major} onChange={handleChange} disabled={loadingMajors} className="w-full p-3 md:p-2.5 text-[16px] md:text-sm border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500 bg-white">
                   <option className="text-sm" value="">{loadingMajors ? "Memuat jurusan..." : "-- Pilih Jurusan --"}</option>
                   {majors.map(m => (
                     <option className="text-sm" key={m.id} value={m.name}>{m.name}</option>
@@ -378,22 +378,22 @@ export function PPDBForm() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Kartu Keluarga (KK)</label>
-                <input type="file" accept=".pdf,.jpg,.jpeg,.png" className="w-full p-2 border border-gray-300 rounded-lg bg-white" />
+                <input type="file" accept=".pdf,.jpg,.jpeg,.png" className="w-full p-3 border border-gray-300 rounded-lg bg-white" />
                 <span className="text-xs text-gray-500 mt-1 block">Format: PDF, JPG, PNG (Maks 2MB)</span>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Akta Kelahiran</label>
-                <input type="file" accept=".pdf,.jpg,.jpeg,.png" className="w-full p-2 border border-gray-300 rounded-lg bg-white" />
+                <input type="file" accept=".pdf,.jpg,.jpeg,.png" className="w-full p-3 border border-gray-300 rounded-lg bg-white" />
                 <span className="text-xs text-gray-500 mt-1 block">Format: PDF, JPG, PNG (Maks 2MB)</span>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Ijazah / SKL</label>
-                <input type="file" accept=".pdf,.jpg,.jpeg,.png" className="w-full p-2 border border-gray-300 rounded-lg bg-white" />
+                <input type="file" accept=".pdf,.jpg,.jpeg,.png" className="w-full p-3 border border-gray-300 rounded-lg bg-white" />
                 <span className="text-xs text-gray-500 mt-1 block">Format: PDF, JPG, PNG (Maks 2MB)</span>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Pas Foto (3x4)</label>
-                <input type="file" accept=".jpg,.jpeg,.png" className="w-full p-2 border border-gray-300 rounded-lg bg-white" />
+                <input type="file" accept=".jpg,.jpeg,.png" className="w-full p-3 border border-gray-300 rounded-lg bg-white" />
                 <span className="text-xs text-gray-500 mt-1 block">Format: JPG, PNG (Maks 1MB)</span>
               </div>
             </div>

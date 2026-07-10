@@ -90,9 +90,9 @@ export default async function Home() {
       </section>
 
       {/* TENTANG SECTION */}
-      <section id="tentang" className="py-24 bg-gray-50 relative">
+      <section id="tentang" className="py-16 md:py-24 bg-gray-50 relative">
         <div className="container mx-auto px-4 md:px-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center">
             <div>
               <h2 className="font-serif text-4xl md:text-5xl font-bold text-gray-900 mb-6">Sejarah & Visi Kami</h2>
               <div className="w-20 h-1.5 bg-primary-500 mb-8 rounded-full"></div>
@@ -110,7 +110,7 @@ export default async function Home() {
                 </>
               )}
               
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
                 <div>
                   <div className="text-4xl font-bold text-primary-600 mb-2">{units.length || 5}</div>
                   <div className="text-sm text-gray-500 font-medium">Unit Sekolah</div>
@@ -150,7 +150,7 @@ export default async function Home() {
       </section>
 
       {/* UNIT SEKOLAH SECTION */}
-      <section id="unit" className="py-24 bg-white">
+      <section id="unit" className="py-16 md:py-24 bg-white">
         <div className="container mx-auto px-4 md:px-6">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <h2 className="font-serif text-4xl font-bold text-gray-900 mb-4">Layanan Pendidikan</h2>
@@ -193,7 +193,7 @@ export default async function Home() {
 
       {/* PROGRAM UNGGULAN SECTION */}
       {programs.length > 0 && (
-      <section className="relative py-24 overflow-hidden bg-primary-950">
+      <section className="relative py-16 md:py-24 overflow-hidden bg-primary-950">
         {/* Parallax Background Image */}
         <div className="absolute inset-0 z-0">
           <ImageParallax src={settings.programs_background || "/uploads/dummy/programs_bg.png"} alt="Programs Background" className="w-full h-full" />
@@ -226,7 +226,7 @@ export default async function Home() {
 
       {/* BERITA & KEGIATAN TERBARU */}
       {news.length > 0 && (
-        <section className="py-24 bg-white">
+        <section className="py-16 md:py-24 bg-white">
           <div className="container mx-auto px-4 md:px-6">
             <div className="flex justify-between items-end mb-12">
               <div>
@@ -274,7 +274,7 @@ export default async function Home() {
 
       {/* GALERI KEGIATAN */}
       {galleries.length > 0 && (
-        <section className="py-24 bg-gray-900 text-white">
+        <section className="py-16 md:py-24 bg-gray-900 text-white">
           <div className="container mx-auto px-4 md:px-6">
             <div className="text-center max-w-3xl mx-auto mb-16">
               <h2 className="font-serif text-4xl font-bold mb-4">Galeri Kegiatan</h2>
