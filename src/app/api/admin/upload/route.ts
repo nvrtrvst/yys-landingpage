@@ -5,6 +5,7 @@ import { writeFile, mkdir } from 'fs/promises';
 import { join } from 'path';
 import crypto from 'crypto';
 import sharp from 'sharp';
+import { checkRateLimit, getClientIp } from '@/lib/rate-limit';
 
 function checkMagicNumber(buffer: Buffer): boolean {
   // JPEG: FF D8 FF
@@ -30,6 +31,11 @@ export async function POST(request: Request) {
     const session = await getServerSession(authOptions);
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const rl = checkRateLimit(`admin:upload:${getClientIp(request)}`, 20, 60 * 1000);
+    if (!rl.allowed) {
+      return NextResponse.json({ error: 'Terlalu banyak permintaan. Coba lagi nanti.' }, { status: 429 });
     }
 
     const formData = await request.formData();

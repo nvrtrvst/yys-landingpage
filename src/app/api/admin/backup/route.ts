@@ -66,6 +66,6 @@ export async function GET(request: Request) {
 
   } catch(error: unknown) {
     console.error('Database backup error:', error);
-    return NextResponse.json({ error: 'Internal Server Error: ' + ((error instanceof Error ? error.message : String(error)) || String(error)) }, { status: 500 });
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }

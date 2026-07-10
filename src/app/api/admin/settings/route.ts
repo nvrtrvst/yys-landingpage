@@ -4,6 +4,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
+import { checkRateLimit, getClientIp } from '@/lib/rate-limit';
 
 const settingsSchema = z.record(z.string(), z.string().nullable());
 
@@ -40,6 +41,11 @@ export async function POST(request: Request) {
     const role = session.user.role;
     if (role !== 'superadmin' && role !== 'admin') {
       return NextResponse.json({ error: 'Forbidden: Insufficient permissions' }, { status: 403 });
+    }
+
+    const rl = checkRateLimit(`admin:settings:${getClientIp(request)}`, 10, 60 * 1000);
+    if (!rl.allowed) {
+      return NextResponse.json({ error: 'Terlalu banyak permintaan. Coba lagi nanti.' }, { status: 429 });
     }
 
     const body = await request.json();

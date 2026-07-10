@@ -5,6 +5,7 @@ import { authOptions } from '@/lib/auth';
 import bcrypt from 'bcrypt';
 import { sendNewUserEmail } from '@/lib/mailer';
 import { RowDataPacket } from 'mysql2';
+import { checkRateLimit, getClientIp } from '@/lib/rate-limit';
 
 export async function GET(request: Request) {
   try {
@@ -32,6 +33,11 @@ export async function POST(request: Request) {
     // Only superadmin and admin can create users
     if (sessionRole !== 'superadmin' && sessionRole !== 'admin') {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    const rl = checkRateLimit(`admin:users:${getClientIp(request)}`, 10, 60 * 1000);
+    if (!rl.allowed) {
+      return NextResponse.json({ error: 'Terlalu banyak permintaan. Coba lagi nanti.' }, { status: 429 });
     }
 
     const { name, email, password, role } = await request.json();

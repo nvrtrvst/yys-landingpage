@@ -4,6 +4,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import bcrypt from 'bcrypt';
 import { RowDataPacket, ResultSetHeader } from 'mysql2';
+import { checkRateLimit, getClientIp } from '@/lib/rate-limit';
 
 export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -12,6 +13,11 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     const sessionRole = session.user.role;
     if (sessionRole !== 'superadmin' && sessionRole !== 'admin') {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    const rl = checkRateLimit(`admin:user-edit:${getClientIp(request)}`, 20, 60 * 1000);
+    if (!rl.allowed) {
+      return NextResponse.json({ error: 'Terlalu banyak permintaan. Coba lagi nanti.' }, { status: 429 });
     }
 
     const { id } = await params;
@@ -62,6 +68,11 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
     const sessionId = session.user.id;
     if (sessionRole !== 'superadmin' && sessionRole !== 'admin') {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    const rlDel = checkRateLimit(`admin:user-delete:${getClientIp(request)}`, 20, 60 * 1000);
+    if (!rlDel.allowed) {
+      return NextResponse.json({ error: 'Terlalu banyak permintaan. Coba lagi nanti.' }, { status: 429 });
     }
 
     const { id } = await params;
