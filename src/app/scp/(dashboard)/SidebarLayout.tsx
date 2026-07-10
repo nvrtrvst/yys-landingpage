@@ -6,18 +6,32 @@ import Link from "next/link";
 import { Home, SettingsIcon, Users, Image as ImageIcon, MessageSquare, Calendar, FileText, LogOut, UserCog, UserCircle, Database, Menu, X } from "lucide-react";
 import { SignOutButton } from "./SignOutButton";
 
+const navItems = [
+  { name: "Dashboard", href: "/scp", icon: Home, roles: ["superadmin", "admin", "editor"] },
+  { name: "Units & Programs", href: "/scp/units", icon: Users, roles: ["superadmin", "admin"] },
+  { name: "News & Articles", href: "/scp/news", icon: FileText, roles: ["superadmin", "admin", "editor"] },
+  { name: "Gallery", href: "/scp/gallery", icon: ImageIcon, roles: ["superadmin", "admin", "editor"] },
+  { name: "Testimonials & FAQ", href: "/scp/testimonials", icon: MessageSquare, roles: ["superadmin", "admin"] },
+  { name: "Events Calendar", href: "/scp/events", icon: Calendar, roles: ["superadmin", "admin", "editor"] },
+  { name: "PPDB Data", href: "/scp/ppdb", icon: Users, roles: ["superadmin", "admin"] },
+  { name: "Pengaturan PPDB", href: "/scp/ppdb/settings", icon: SettingsIcon, roles: ["superadmin", "admin"] },
+  { name: "Manajemen Pengguna", href: "/scp/users", icon: UserCog, roles: ["superadmin", "admin"] },
+  { name: "Backup Database", href: "/scp/backup", icon: Database, roles: ["superadmin", "admin"] },
+  { name: "Profil Saya", href: "/scp/profile", icon: UserCircle, roles: ["superadmin", "admin", "editor"] },
+  { name: "Settings", href: "/scp/settings", icon: SettingsIcon, roles: ["superadmin", "admin"] },
+];
+
 export function SidebarLayout({
   children,
-  navItems,
   userName,
   userRole,
 }: {
   children: React.ReactNode;
-  navItems: { name: string; href: string; icon: any }[];
   userName?: string | null;
   userRole: string;
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const filteredNavItems = navItems.filter(item => item.roles.includes(userRole));
 
   return (
     <div className="min-h-screen bg-gray-100 flex">
@@ -37,7 +51,7 @@ export function SidebarLayout({
           </button>
         </div>
         <nav className="flex-1 px-4 py-4 space-y-1 overflow-y-auto">
-          {navItems.map((item) => (
+          {filteredNavItems.map((item) => (
             <Link
               key={item.name}
               href={item.href}

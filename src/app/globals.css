@@ -25,9 +25,11 @@ body {
   color: var(--color-gray-900);
 }
 
-img {
-  max-width: 100%;
-  height: auto;
+@layer base {
+  img {
+    max-width: 100%;
+    height: auto;
+  }
 }
 
 /* Animations */
