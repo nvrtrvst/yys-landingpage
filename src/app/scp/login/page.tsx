@@ -1,9 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import Script from "next/script";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -11,65 +10,32 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [siteKey, setSiteKey] = useState("");
-  const [scriptLoaded, setScriptLoaded] = useState(false);
-
-  useEffect(() => {
-    fetch("/api/public/recaptcha-site")
-      .then((res) => res.json())
-      .then((data) => setSiteKey(data.siteKey || ""))
-      .catch(() => setSiteKey(""));
-  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError("");
 
-    if (siteKey) {
-      const token = (window as any).grecaptcha?.getResponse();
-      if (!token) {
-        setError("Silakan verifikasi bahwa Anda bukan robot.");
-        setLoading(false);
-        return;
-      }
-      const res = await signIn("credentials", {
-        email,
-        password,
-        recaptcha: token,
-        redirect: false,
-      });
-      if (res?.error) {
-        setError("Email atau password salah.");
-        (window as any).grecaptcha?.reset();
-        setLoading(false);
+    const res = await signIn("credentials", {
+      email,
+      password,
+      redirect: false,
+    });
+
+    if (res?.error) {
+      if (res.error === "LOCKED" || res.error.includes("LOCKED")) {
+        setError("Akun terkunci 15 menit. Coba lagi nanti.");
       } else {
-        router.push("/scp");
+        setError("Email atau password salah.");
       }
+      setLoading(false);
     } else {
-      const res = await signIn("credentials", {
-        email,
-        password,
-        redirect: false,
-      });
-      if (res?.error) {
-        setError("Email atau password salah.");
-        setLoading(false);
-      } else {
-        router.push("/scp");
-      }
+      router.push("/scp");
     }
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      {siteKey && (
-        <Script
-          src="https://www.google.com/recaptcha/api.js"
-          onLoad={() => setScriptLoaded(true)}
-          strategy="afterInteractive"
-        />
-      )}
       <div className="max-w-md w-full p-8 bg-white rounded-lg shadow-md">
         <div className="text-center mb-8">
           <h2 className="text-2xl font-bold text-gray-900">Login Admin</h2>
@@ -107,12 +73,6 @@ export default function LoginPage() {
               autoComplete="current-password"
             />
           </div>
-
-          {siteKey && scriptLoaded && (
-            <div className="flex justify-center">
-              <div className="g-recaptcha" data-sitekey={siteKey} />
-            </div>
-          )}
 
           <button
             type="submit"

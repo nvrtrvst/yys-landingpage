@@ -1,7 +1,7 @@
 import NextAuth, { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcrypt";
-import pool, { getSettings } from "@/lib/db";
+import pool from "@/lib/db";
 import { RowDataPacket } from "mysql2";
 import { checkRateLimit } from "@/lib/rate-limit";
 
@@ -33,25 +33,6 @@ function getClientIp(req: unknown): string {
   return get("x-real-ip") || "unknown";
 }
 
-async function verifyRecaptcha(token: string | undefined, secret: string | undefined): Promise<boolean> {
-  if (!secret) {
-    console.warn("[auth] recaptcha_secret belum dikonfigurasi di Settings — verifikasi CAPTCHA dilewati.");
-    return true;
-  }
-  if (!token) return false;
-  try {
-    const res = await fetch("https://www.google.com/recaptcha/api/siteverify", {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: `secret=${encodeURIComponent(secret)}&response=${encodeURIComponent(token)}`,
-    });
-    const data = await res.json();
-    return data.success === true;
-  } catch {
-    return false;
-  }
-}
-
 export const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
@@ -59,7 +40,6 @@ export const authOptions: NextAuthOptions = {
       credentials: {
         email: { label: "Email", type: "email", placeholder: "admin@yayasan.com" },
         password: { label: "Password", type: "password" },
-        recaptcha: { label: "Captcha", type: "text" },
       },
       async authorize(credentials, req) {
         if (!credentials?.email || !credentials?.password) {
@@ -76,11 +56,6 @@ export const authOptions: NextAuthOptions = {
         const emailLimit = checkRateLimit(`login:email:${credentials.email.toLowerCase()}`, 5, 15 * 60 * 1000);
         if (!emailLimit.allowed) return null;
 
-        // 3. Verifikasi CAPTCHA
-        const settings = await getSettings();
-        const recaptchaOk = await verifyRecaptcha(credentials.recaptcha, settings.recaptcha_secret);
-        if (!recaptchaOk) return null;
-
         try {
           const [rows] = await pool.execute<UserRow[]>(
             "SELECT id, name, email, password, role, failed_attempts, locked_until FROM users WHERE email = ?",
@@ -93,9 +68,9 @@ export const authOptions: NextAuthOptions = {
             return null;
           }
 
-          // 4. Cek lockout
+          // 3. Cek lockout
           if (user.locked_until && new Date(user.locked_until).getTime() > Date.now()) {
-            return null;
+            throw new Error("LOCKED");
           }
 
           const isPasswordValid = await bcrypt.compare(credentials.password, user.password);
@@ -116,7 +91,7 @@ export const authOptions: NextAuthOptions = {
             return null;
           }
 
-          // 5. Sukses — reset lockout
+          // 4. Sukses — reset lockout
           await pool.execute(
             "UPDATE users SET failed_attempts = 0, locked_until = NULL WHERE id = ?",
             [user.id]
@@ -129,6 +104,9 @@ export const authOptions: NextAuthOptions = {
             role: user.role,
           };
         } catch (error) {
+          if (error instanceof Error && error.message === "LOCKED") {
+            throw error;
+          }
           console.error("Auth error:", error);
           return null;
         }
