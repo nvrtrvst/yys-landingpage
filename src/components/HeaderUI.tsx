@@ -40,7 +40,7 @@ export function HeaderUI({ settings, units }: { settings: Record<string, string>
               <img 
                 src={settings.site_logo} 
                 alt="Logo" 
-                className="h-12 w-auto object-contain" 
+                className="h-10 md:h-12 w-auto object-contain" 
                 loading="eager"
                 decoding="async"
                 onError={(e) => {
@@ -49,9 +49,9 @@ export function HeaderUI({ settings, units }: { settings: Record<string, string>
                 }}
               />
             ) : (
-              <img src="/uploads/dummy/site_logo.png" alt="Logo" className="h-12 w-auto object-contain" loading="eager" decoding="async" />
+              <img src="/uploads/dummy/site_logo.png" alt="Logo" className="h-10 md:h-12 w-auto object-contain" loading="eager" decoding="async" />
             )}
-            <div className={`font-serif text-2xl font-bold tracking-tight ${isScrolled ? 'text-primary-800' : 'text-white drop-shadow-md'}`}>
+            <div className={`font-serif text-xl md:text-2xl font-bold tracking-tight ${isScrolled ? 'text-primary-800' : 'text-white drop-shadow-md'}`}>
               {settings.site_name || "Nuurul Muttaqiin"}
             </div>
           </Link>

@@ -1,4 +1,3 @@
-import { Toaster } from "sonner";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
@@ -35,11 +34,8 @@ export default async function AdminLayout({
   const filteredNavItems = navItems.filter(item => item.roles.includes(userRole as any));
 
   return (
-    <>
-      <Toaster position="top-right" richColors />
-      <SidebarLayout navItems={filteredNavItems} userName={session.user?.name} userRole={userRole}>
-        {children}
-      </SidebarLayout>
-    </>
+    <SidebarLayout navItems={filteredNavItems} userName={session.user?.name} userRole={userRole}>
+      {children}
+    </SidebarLayout>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Toaster } from "sonner";
 import Link from "next/link";
 import { Home, SettingsIcon, Users, Image as ImageIcon, MessageSquare, Calendar, FileText, LogOut, UserCog, UserCircle, Database, Menu, X } from "lucide-react";
 import { SignOutButton } from "./SignOutButton";
@@ -55,6 +56,7 @@ export function SidebarLayout({
 
       {/* Main content */}
       <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
+        <Toaster position="top-right" richColors />
         <header className="h-16 bg-white shadow-sm flex items-center justify-between px-4 md:px-6 flex-shrink-0">
           <div className="flex items-center gap-3">
             <button className="md:hidden p-2 rounded-md text-gray-700 hover:bg-gray-100" onClick={() => setSidebarOpen(true)} aria-label="Buka sidebar">
