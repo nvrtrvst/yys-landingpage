@@ -185,7 +185,7 @@ export function TestimonialsFaqManager() {
                   <button type="submit" disabled={isSaving} className="w-full bg-green-600 text-white p-3 rounded font-bold hover:bg-green-700">Simpan Testimoni</button>
                 </form>
               ) : (
-                <div>
+                <div className="overflow-x-auto">
                   <button onClick={() => setEditingTesti({})} className="bg-green-600 text-white px-4 py-2 rounded mb-4">+ Tambah Testimoni</button>
                   <table className="w-full text-left border-collapse">
                     <thead>
@@ -246,7 +246,7 @@ export function TestimonialsFaqManager() {
                   <button type="submit" disabled={isSaving} className="w-full bg-green-600 text-white p-3 rounded font-bold hover:bg-green-700">Simpan FAQ</button>
                 </form>
               ) : (
-                <div>
+                <div className="overflow-x-auto">
                   <button onClick={() => setEditingFaq({})} className="bg-green-600 text-white px-4 py-2 rounded mb-4">+ Tambah FAQ</button>
                   <table className="w-full text-left border-collapse">
                     <thead>

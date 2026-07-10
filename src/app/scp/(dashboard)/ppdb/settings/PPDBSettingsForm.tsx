@@ -134,7 +134,7 @@ export function PPDBSettingsForm({ initialConfig }: { initialConfig: PPDBConfig 
                       type="text" 
                       value={item.activity} 
                       onChange={(e) => handleScheduleChange(index, "activity", e.target.value)} 
-                      className="w-full border-gray-300 rounded px-2 py-1 focus:ring-1 focus:ring-primary-500" 
+                      className="w-full border-gray-300 rounded px-3 py-2 md:px-2 md:py-1 text-[16px] md:text-sm focus:ring-1 focus:ring-primary-500" 
                       placeholder="Nama Kegiatan..."
                     />
                   </td>
@@ -143,7 +143,7 @@ export function PPDBSettingsForm({ initialConfig }: { initialConfig: PPDBConfig 
                       type="text" 
                       value={item.wave1} 
                       onChange={(e) => handleScheduleChange(index, "wave1", e.target.value)} 
-                      className="w-full border-gray-300 rounded px-2 py-1 focus:ring-1 focus:ring-primary-500"
+                      className="w-full border-gray-300 rounded px-3 py-2 md:px-2 md:py-1 text-[16px] md:text-sm focus:ring-1 focus:ring-primary-500"
                       placeholder="Misal: 1 Maret - 24 April"
                     />
                   </td>
@@ -152,7 +152,7 @@ export function PPDBSettingsForm({ initialConfig }: { initialConfig: PPDBConfig 
                       type="text" 
                       value={item.wave2} 
                       onChange={(e) => handleScheduleChange(index, "wave2", e.target.value)} 
-                      className="w-full border-gray-300 rounded px-2 py-1 focus:ring-1 focus:ring-primary-500"
+                      className="w-full border-gray-300 rounded px-3 py-2 md:px-2 md:py-1 text-[16px] md:text-sm focus:ring-1 focus:ring-primary-500"
                       placeholder="Kosongkan jika tidak ada"
                     />
                   </td>

@@ -80,7 +80,7 @@ export default function ProfilePage() {
               required 
               value={formData.oldPassword} 
               onChange={e => setFormData({...formData, oldPassword: e.target.value})} 
-              className="w-full p-2 border rounded-lg focus:ring-primary-500 focus:border-primary-500" 
+              className="w-full p-3 border rounded-lg focus:ring-primary-500 focus:border-primary-500" 
             />
           </div>
           <div>
@@ -90,7 +90,7 @@ export default function ProfilePage() {
               required 
               value={formData.newPassword} 
               onChange={e => setFormData({...formData, newPassword: e.target.value})} 
-              className="w-full p-2 border rounded-lg focus:ring-primary-500 focus:border-primary-500" 
+              className="w-full p-3 border rounded-lg focus:ring-primary-500 focus:border-primary-500" 
             />
           </div>
           <div>
@@ -100,7 +100,7 @@ export default function ProfilePage() {
               required 
               value={formData.confirmPassword} 
               onChange={e => setFormData({...formData, confirmPassword: e.target.value})} 
-              className="w-full p-2 border rounded-lg focus:ring-primary-500 focus:border-primary-500" 
+              className="w-full p-3 border rounded-lg focus:ring-primary-500 focus:border-primary-500" 
             />
           </div>
           <div className="pt-2">

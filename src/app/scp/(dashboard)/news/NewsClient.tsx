@@ -156,8 +156,8 @@ export function NewsClient() {
   return (
     <div>
       <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200 mb-6 flex flex-wrap gap-4 items-end justify-between">
-        <div className="flex gap-4 flex-1">
-          <div className="w-64">
+        <div className="flex flex-col md:flex-row gap-4 flex-1">
+          <div className="w-full md:w-64">
             <label className="block text-sm font-medium text-gray-700 mb-1">Cari Judul</label>
             <input 
               type="text" 
@@ -167,7 +167,7 @@ export function NewsClient() {
               className="w-full border rounded p-2 focus:ring-2 focus:ring-green-500"
             />
           </div>
-          <div className="w-48">
+          <div className="w-full md:w-48">
             <label className="block text-sm font-medium text-gray-700 mb-1">Filter Status</label>
             <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="w-full border rounded p-2 focus:ring-2 focus:ring-green-500">
               <option value="">Semua Status</option>

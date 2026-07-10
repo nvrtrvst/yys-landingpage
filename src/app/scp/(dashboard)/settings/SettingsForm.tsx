@@ -93,16 +93,16 @@ export function SettingsForm({ initialData }: { initialData: Record<string, stri
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label className="block text-sm font-medium mb-1">Nama Yayasan</label>
-            <input type="text" name="site_name" value={formData.site_name} onChange={handleChange} className="w-full border rounded p-2 focus:ring-2 focus:ring-primary-500" required />
+            <input type="text" name="site_name" value={formData.site_name} onChange={handleChange} className="w-full border rounded p-3 focus:ring-2 focus:ring-primary-500" required />
           </div>
           <div>
             <label className="block text-sm font-medium mb-1">Tagline</label>
-            <input type="text" name="site_tagline" value={formData.site_tagline} onChange={handleChange} className="w-full border rounded p-2 focus:ring-2 focus:ring-primary-500" />
+            <input type="text" name="site_tagline" value={formData.site_tagline} onChange={handleChange} className="w-full border rounded p-3 focus:ring-2 focus:ring-primary-500" />
           </div>
           <div className="md:col-span-2">
             <label className="block text-sm font-medium mb-1">Logo URL</label>
             <div className="flex gap-2 items-center">
-              <input type="text" name="site_logo" value={formData.site_logo} onChange={handleChange} className="w-full border rounded p-2 bg-gray-50" readOnly />
+              <input type="text" name="site_logo" value={formData.site_logo} onChange={handleChange} className="w-full border rounded p-3 bg-gray-50" readOnly />
               <input type="file" accept="image/*" onChange={(e) => handleFileUpload(e, "site_logo")} className="text-sm" />
             </div>
             <p className="text-xs text-gray-500 mt-1">Optimal: 200 x 80 px (Transparan PNG)</p>
@@ -123,7 +123,7 @@ export function SettingsForm({ initialData }: { initialData: Record<string, stri
           <div>
             <label className="block text-sm font-medium mb-1">Foto Gedung/Sejarah</label>
             <div className="flex gap-2 items-center">
-              <input type="text" name="profile_image" value={formData.profile_image} onChange={handleChange} className="w-full border rounded p-2 bg-gray-50" readOnly />
+              <input type="text" name="profile_image" value={formData.profile_image} onChange={handleChange} className="w-full border rounded p-3 bg-gray-50" readOnly />
               <input type="file" accept="image/*" onChange={(e) => handleFileUpload(e, "profile_image")} className="text-sm" />
             </div>
             <p className="text-xs text-gray-500 mt-1">Optimal: 600 x 600 px (Persegi 1:1)</p>
@@ -143,16 +143,16 @@ export function SettingsForm({ initialData }: { initialData: Record<string, stri
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium mb-1">Judul Hero</label>
-            <input type="text" name="hero_title" value={formData.hero_title} onChange={handleChange} className="w-full border rounded p-2 focus:ring-2 focus:ring-primary-500" />
+            <input type="text" name="hero_title" value={formData.hero_title} onChange={handleChange} className="w-full border rounded p-3 focus:ring-2 focus:ring-primary-500" />
           </div>
           <div>
             <label className="block text-sm font-medium mb-1">Subjudul Hero</label>
-            <textarea name="hero_subtitle" value={formData.hero_subtitle} onChange={handleChange} rows={2} className="w-full border rounded p-2 focus:ring-2 focus:ring-primary-500"></textarea>
+            <textarea name="hero_subtitle" value={formData.hero_subtitle} onChange={handleChange} rows={2} className="w-full border rounded p-3 focus:ring-2 focus:ring-primary-500"></textarea>
           </div>
           <div>
             <label className="block text-sm font-medium mb-1">Gambar Background URL (Hero)</label>
             <div className="flex gap-2 items-center">
-              <input type="text" name="hero_background" value={formData.hero_background} onChange={handleChange} className="w-full border rounded p-2 bg-gray-50" readOnly />
+              <input type="text" name="hero_background" value={formData.hero_background} onChange={handleChange} className="w-full border rounded p-3 bg-gray-50" readOnly />
               <input type="file" accept="image/*" onChange={(e) => handleFileUpload(e, "hero_background")} className="text-sm" />
             </div>
             <p className="text-xs text-gray-500 mt-1">Optimal: 1920 x 1080 px (Rasio 16:9)</p>
@@ -166,7 +166,7 @@ export function SettingsForm({ initialData }: { initialData: Record<string, stri
           <div>
             <label className="block text-sm font-medium mb-1">Gambar Background Parallax (Program Unggulan)</label>
             <div className="flex gap-2 items-center">
-              <input type="text" name="programs_background" value={formData.programs_background} onChange={handleChange} className="w-full border rounded p-2 bg-gray-50" readOnly />
+              <input type="text" name="programs_background" value={formData.programs_background} onChange={handleChange} className="w-full border rounded p-3 bg-gray-50" readOnly />
               <input type="file" accept="image/*" onChange={(e) => handleFileUpload(e, "programs_background")} className="text-sm" />
             </div>
             <p className="text-xs text-gray-500 mt-1">Optimal: 1920 x 1080 px (Rasio 16:9)</p>
@@ -186,7 +186,7 @@ export function SettingsForm({ initialData }: { initialData: Record<string, stri
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="md:col-span-2">
             <label className="block text-sm font-medium mb-1">Alamat Lengkap</label>
-            <textarea name="contact_address" value={formData.contact_address} onChange={handleChange} rows={2} className="w-full border rounded p-2 focus:ring-2 focus:ring-primary-500"></textarea>
+            <textarea name="contact_address" value={formData.contact_address} onChange={handleChange} rows={2} className="w-full border rounded p-3 focus:ring-2 focus:ring-primary-500"></textarea>
           </div>
           <div className="md:col-span-2">
             <label className="block text-sm font-medium mb-1">URL Embed Google Maps</label>
@@ -196,7 +196,7 @@ export function SettingsForm({ initialData }: { initialData: Record<string, stri
               onChange={handleChange} 
               rows={3} 
               placeholder="https://www.google.com/maps/embed?pb=..."
-              className="w-full border rounded p-2 focus:ring-2 focus:ring-primary-500 font-mono text-sm"
+              className="w-full border rounded p-3 focus:ring-2 focus:ring-primary-500 font-mono text-sm"
             ></textarea>
             <p className="text-xs text-gray-500 mt-1">
               Buka Google Maps, cari lokasi, klik Bagikan &gt; Sematkan peta (Embed a map), salin URL dari atribut src iframe (berawalan https://www.google.com/maps/embed...), lalu tempel di sini.
@@ -204,23 +204,23 @@ export function SettingsForm({ initialData }: { initialData: Record<string, stri
           </div>
           <div>
             <label className="block text-sm font-medium mb-1">Telepon</label>
-            <input type="text" name="contact_phone" value={formData.contact_phone} onChange={handleChange} className="w-full border rounded p-2 focus:ring-2 focus:ring-primary-500" />
+            <input type="text" name="contact_phone" value={formData.contact_phone} onChange={handleChange} className="w-full border rounded p-3 focus:ring-2 focus:ring-primary-500" />
           </div>
           <div>
             <label className="block text-sm font-medium mb-1">Email</label>
-            <input type="email" name="contact_email" value={formData.contact_email} onChange={handleChange} className="w-full border rounded p-2 focus:ring-2 focus:ring-primary-500" />
+            <input type="email" name="contact_email" value={formData.contact_email} onChange={handleChange} className="w-full border rounded p-3 focus:ring-2 focus:ring-primary-500" />
           </div>
           <div>
             <label className="block text-sm font-medium mb-1">Link Instagram</label>
-            <input type="text" name="social_instagram" value={formData.social_instagram} onChange={handleChange} className="w-full border rounded p-2 focus:ring-2 focus:ring-primary-500" />
+            <input type="text" name="social_instagram" value={formData.social_instagram} onChange={handleChange} className="w-full border rounded p-3 focus:ring-2 focus:ring-primary-500" />
           </div>
           <div>
             <label className="block text-sm font-medium mb-1">Link Facebook</label>
-            <input type="text" name="social_facebook" value={formData.social_facebook} onChange={handleChange} className="w-full border rounded p-2 focus:ring-2 focus:ring-primary-500" />
+            <input type="text" name="social_facebook" value={formData.social_facebook} onChange={handleChange} className="w-full border rounded p-3 focus:ring-2 focus:ring-primary-500" />
           </div>
           <div>
             <label className="block text-sm font-medium mb-1">Link YouTube</label>
-            <input type="text" name="social_youtube" value={formData.social_youtube} onChange={handleChange} className="w-full border rounded p-2 focus:ring-2 focus:ring-primary-500" />
+            <input type="text" name="social_youtube" value={formData.social_youtube} onChange={handleChange} className="w-full border rounded p-3 focus:ring-2 focus:ring-primary-500" />
           </div>
         </div>
       </section>
@@ -231,11 +231,11 @@ export function SettingsForm({ initialData }: { initialData: Record<string, stri
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label className="block text-sm font-medium mb-1">Nomor WhatsApp (Contoh: 62812...)</label>
-            <input type="text" name="wa_number" value={formData.wa_number} onChange={handleChange} className="w-full border rounded p-2 focus:ring-2 focus:ring-primary-500" />
+            <input type="text" name="wa_number" value={formData.wa_number} onChange={handleChange} className="w-full border rounded p-3 focus:ring-2 focus:ring-primary-500" />
           </div>
           <div>
             <label className="block text-sm font-medium mb-1">Pesan Default</label>
-            <input type="text" name="wa_message" value={formData.wa_message} onChange={handleChange} className="w-full border rounded p-2 focus:ring-2 focus:ring-primary-500" />
+            <input type="text" name="wa_message" value={formData.wa_message} onChange={handleChange} className="w-full border rounded p-3 focus:ring-2 focus:ring-primary-500" />
           </div>
         </div>
       </section>
