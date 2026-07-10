@@ -10,7 +10,7 @@ export async function PUT(request: Request) {
     const session = await getServerSession(authOptions);
     if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     
-    const userId = (session.user as any)?.id;
+    const userId = session.user.id;
     if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const { oldPassword, newPassword } = await request.json();

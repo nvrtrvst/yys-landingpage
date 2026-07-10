@@ -23,8 +23,8 @@ export default function PPDBPage() {
       const res = await fetch(`/api/admin/ppdb?${query.toString()}`);
       if (!res.ok) throw new Error("Gagal memuat data");
       setData(await res.json());
-    } catch (err: any) {
-      toast.error(err.message);
+    } catch(err: unknown) {
+      toast.error((err instanceof Error ? err.message : String(err)));
     } finally {
       setLoading(false);
     }
@@ -49,8 +49,8 @@ export default function PPDBPage() {
       if (!res.ok) throw new Error("Gagal memperbarui");
       toast.success("Status diperbarui", { id: toastId });
       fetchData();
-    } catch (err: any) {
-      toast.error(err.message, { id: toastId });
+    } catch(err: unknown) {
+      toast.error((err instanceof Error ? err.message : String(err)), { id: toastId });
     }
   };
 

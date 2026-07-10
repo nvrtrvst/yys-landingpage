@@ -22,8 +22,8 @@ export function ProgramsTab({ programs, units, refresh }: { programs: Program[],
       
       setEditingProgram(prev => ({ ...prev, [fieldName]: data.url }));
       toast.success("Berhasil diunggah", { id: toastId });
-    } catch (err: any) {
-      toast.error(err.message, { id: toastId });
+    } catch(err: unknown) {
+      toast.error((err instanceof Error ? err.message : String(err)), { id: toastId });
     }
   };
 
@@ -50,8 +50,8 @@ export function ProgramsTab({ programs, units, refresh }: { programs: Program[],
       toast.success("Tersimpan!", { id: toastId });
       setEditingProgram(null);
       refresh();
-    } catch (err: any) {
-      toast.error(err.message, { id: toastId });
+    } catch(err: unknown) {
+      toast.error((err instanceof Error ? err.message : String(err)), { id: toastId });
     } finally {
       setIsSaving(false);
     }
@@ -66,8 +66,8 @@ export function ProgramsTab({ programs, units, refresh }: { programs: Program[],
       if (!res.ok) throw new Error(data.error || "Gagal");
       toast.success("Dihapus!", { id: toastId });
       refresh();
-    } catch (err: any) {
-      toast.error(err.message, { id: toastId });
+    } catch(err: unknown) {
+      toast.error((err instanceof Error ? err.message : String(err)), { id: toastId });
     }
   };
 

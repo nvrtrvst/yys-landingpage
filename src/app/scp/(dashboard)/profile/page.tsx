@@ -43,8 +43,8 @@ export default function ProfilePage() {
       
       toast.success(data.message || "Password berhasil diubah");
       setFormData({ oldPassword: "", newPassword: "", confirmPassword: "" });
-    } catch (error: any) {
-      toast.error(error.message);
+    } catch(error: unknown) {
+      toast.error((error instanceof Error ? error.message : String(error)));
     } finally {
       setLoading(false);
     }

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import pool from '@/lib/db';
+import { ResultSetHeader } from 'mysql2';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { z } from 'zod';
@@ -53,7 +54,7 @@ export async function POST(request: Request) {
       publishedAt = new Date().toISOString().slice(0, 19).replace('T', ' '); // format for MySQL
     }
 
-    const [insertResult] = await pool.execute(
+    const [insertResult] = await pool.execute<ResultSetHeader>(
       `INSERT INTO news (title, slug, content, image_url, category, status, published_at) VALUES (?, ?, ?, ?, ?, ?, ?)`,
       [data.title, data.slug, data.content || null, data.image_url || null, data.category || null, data.status, publishedAt]
     );
@@ -62,9 +63,9 @@ export async function POST(request: Request) {
     revalidatePath('/berita');
     revalidatePath(`/berita/${data.slug}`);
     
-    return NextResponse.json({ success: true, id: (insertResult as any).insertId });
-  } catch (error: any) {
-    if (error.code === 'ER_DUP_ENTRY') {
+    return NextResponse.json({ success: true, id: insertResult.insertId });
+  } catch(error: unknown) {
+    if ((error as any).code === 'ER_DUP_ENTRY') {
       return NextResponse.json({ error: 'Slug sudah digunakan. Silakan gunakan slug/judul lain.' }, { status: 400 });
     }
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });

@@ -45,8 +45,8 @@ export async function GET(request: Request) {
     // 4. Kirim ke Frontend (Browser)
     return NextResponse.json({ success: true, data: result.data || [] });
     
-  } catch (error: any) {
-    console.error('Error in CMS integration proxy:', error.message);
+  } catch(error: unknown) {
+    console.error('Error in CMS integration proxy:', (error instanceof Error ? error.message : String(error)));
     return NextResponse.json({ error: 'Gagal menghubungi server pusat' }, { status: 500 });
   }
 }

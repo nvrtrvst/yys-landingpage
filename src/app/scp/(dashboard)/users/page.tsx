@@ -21,8 +21,8 @@ export default function UsersPage() {
       if (!res.ok) throw new Error("Gagal memuat daftar pengguna");
       const data = await res.json();
       setUsers(data);
-    } catch (error: any) {
-      toast.error(error.message);
+    } catch(error: unknown) {
+      toast.error((error instanceof Error ? error.message : String(error)));
     } finally {
       setLoading(false);
     }
@@ -48,8 +48,8 @@ export default function UsersPage() {
       toast.success(isEditing ? "Pengguna berhasil diperbarui" : "Pengguna berhasil ditambahkan dan email telah dikirim");
       setShowModal(false);
       fetchUsers();
-    } catch (error: any) {
-      toast.error(error.message);
+    } catch(error: unknown) {
+      toast.error((error instanceof Error ? error.message : String(error)));
     } finally {
       setIsSubmitting(false);
     }
@@ -65,8 +65,8 @@ export default function UsersPage() {
       
       toast.success("Pengguna berhasil dihapus");
       fetchUsers();
-    } catch (error: any) {
-      toast.error(error.message);
+    } catch(error: unknown) {
+      toast.error((error instanceof Error ? error.message : String(error)));
     }
   };
 

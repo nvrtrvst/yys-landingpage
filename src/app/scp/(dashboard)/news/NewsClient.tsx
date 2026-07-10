@@ -44,8 +44,8 @@ export function NewsClient() {
       if (!res.ok) throw new Error(resData.error || "Gagal upload");
       setEditingItem(prev => ({ ...prev, image_url: resData.url }));
       toast.success("Berhasil diunggah", { id: toastId });
-    } catch (err: any) {
-      toast.error(err.message, { id: toastId });
+    } catch(err: unknown) {
+      toast.error((err instanceof Error ? err.message : String(err)), { id: toastId });
     }
   };
 
@@ -67,8 +67,8 @@ export function NewsClient() {
       toast.success("Tersimpan!", { id: toastId });
       setEditingItem(null);
       fetchData();
-    } catch (err: any) {
-      toast.error(err.message, { id: toastId });
+    } catch(err: unknown) {
+      toast.error((err instanceof Error ? err.message : String(err)), { id: toastId });
     } finally {
       setIsSaving(false);
     }
@@ -82,8 +82,8 @@ export function NewsClient() {
       if (!res.ok) throw new Error("Gagal menghapus");
       toast.success("Dihapus!", { id: toastId });
       fetchData();
-    } catch (err: any) {
-      toast.error(err.message, { id: toastId });
+    } catch(err: unknown) {
+      toast.error((err instanceof Error ? err.message : String(err)), { id: toastId });
     }
   };
 

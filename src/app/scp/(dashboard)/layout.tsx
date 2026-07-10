@@ -32,7 +32,7 @@ export default async function AdminLayout({
     { name: "Settings", href: "/scp/settings", icon: SettingsIcon, roles: ["superadmin", "admin"] },
   ];
 
-  const userRole = (session.user as any)?.role || "editor";
+  const userRole = session.user.role || "editor";
   const filteredNavItems = navItems.filter(item => item.roles.includes(userRole));
 
   return (

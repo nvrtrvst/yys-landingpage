@@ -48,8 +48,8 @@ export function TestimonialsFaqManager() {
       if (!res.ok) throw new Error(data.error);
       setEditingTesti(prev => ({ ...prev, image_url: data.url }));
       toast.success("Berhasil", { id: toastId });
-    } catch (err: any) {
-      toast.error(err.message, { id: toastId });
+    } catch(err: unknown) {
+      toast.error((err instanceof Error ? err.message : String(err)), { id: toastId });
     }
   };
 

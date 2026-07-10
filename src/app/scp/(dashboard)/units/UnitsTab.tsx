@@ -22,8 +22,8 @@ export function UnitsTab({ units, refresh }: { units: Unit[], refresh: () => voi
       
       setEditingUnit(prev => ({ ...prev, [fieldName]: data.url }));
       toast.success("Berhasil diunggah", { id: toastId });
-    } catch (err: any) {
-      toast.error(err.message, { id: toastId });
+    } catch(err: unknown) {
+      toast.error((err instanceof Error ? err.message : String(err)), { id: toastId });
     }
   };
 
@@ -45,8 +45,8 @@ export function UnitsTab({ units, refresh }: { units: Unit[], refresh: () => voi
       toast.success("Tersimpan!", { id: toastId });
       setEditingUnit(null);
       refresh();
-    } catch (err: any) {
-      toast.error(err.message, { id: toastId });
+    } catch(err: unknown) {
+      toast.error((err instanceof Error ? err.message : String(err)), { id: toastId });
     } finally {
       setIsSaving(false);
     }
@@ -61,8 +61,8 @@ export function UnitsTab({ units, refresh }: { units: Unit[], refresh: () => voi
       if (!res.ok) throw new Error(data.error || "Gagal");
       toast.success("Dihapus!", { id: toastId });
       refresh();
-    } catch (err: any) {
-      toast.error(err.message, { id: toastId });
+    } catch(err: unknown) {
+      toast.error((err instanceof Error ? err.message : String(err)), { id: toastId });
     }
   };
 

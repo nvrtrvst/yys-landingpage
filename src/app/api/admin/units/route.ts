@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import pool from '@/lib/db';
+import { ResultSetHeader } from 'mysql2';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { z } from 'zod';
@@ -22,7 +23,7 @@ export async function GET(request: Request) {
   try {
     const session = await getServerSession(authOptions);
     if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    const role = (session.user as any)?.role;
+    const role = session.user.role;
     if (role !== 'superadmin' && role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
     const [rows] = await pool.execute('SELECT * FROM units ORDER BY order_index ASC, id DESC');
@@ -37,7 +38,7 @@ export async function POST(request: Request) {
   try {
     const session = await getServerSession(authOptions);
     if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    const role = (session.user as any)?.role;
+    const role = session.user.role;
     if (role !== 'superadmin' && role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
     const body = await request.json();
@@ -45,7 +46,7 @@ export async function POST(request: Request) {
     if (!result.success) return NextResponse.json({ error: 'Invalid data', details: result.error.issues }, { status: 400 });
 
     const data = result.data;
-    const [insertResult] = await pool.execute(
+    const [insertResult] = await pool.execute<ResultSetHeader>(
       `INSERT INTO units (name, slug, description, content, image_url, order_index, address, phone, map_coordinates, status) 
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [data.name, data.slug, data.description || null, data.content || null, data.image_url || null, data.order_index, data.address || null, data.phone || null, data.map_coordinates || null, data.status]
@@ -54,10 +55,10 @@ export async function POST(request: Request) {
     revalidatePath('/');
     revalidatePath('/unit/[slug]', 'page');
     
-    return NextResponse.json({ success: true, id: (insertResult as any).insertId });
-  } catch (error: any) {
+    return NextResponse.json({ success: true, id: insertResult.insertId });
+  } catch(error: unknown) {
     console.error(error);
-    if (error.code === 'ER_DUP_ENTRY') {
+    if ((error as any).code === 'ER_DUP_ENTRY') {
       return NextResponse.json({ error: 'Slug sudah digunakan. Silakan gunakan slug lain.' }, { status: 400 });
     }
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });

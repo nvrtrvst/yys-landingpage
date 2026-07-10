@@ -9,7 +9,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   try {
     const session = await getServerSession(authOptions);
     if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    const sessionRole = (session.user as any)?.role;
+    const sessionRole = session.user.role;
     if (sessionRole !== 'superadmin' && sessionRole !== 'admin') {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
@@ -58,8 +58,8 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
   try {
     const session = await getServerSession(authOptions);
     if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    const sessionRole = (session.user as any)?.role;
-    const sessionId = (session.user as any)?.id;
+    const sessionRole = session.user.role;
+    const sessionId = session.user.id;
     if (sessionRole !== 'superadmin' && sessionRole !== 'admin') {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }

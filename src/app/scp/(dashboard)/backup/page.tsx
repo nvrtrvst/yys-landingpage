@@ -45,9 +45,9 @@ export default function BackupPage() {
       document.body.removeChild(a);
 
       toast.success("Backup berhasil diunduh!", { id: toastId });
-    } catch (error: any) {
+    } catch(error: unknown) {
       console.error(error);
-      toast.error(error.message || "Terjadi kesalahan saat membackup database");
+      toast.error((error instanceof Error ? error.message : String(error)) || "Terjadi kesalahan saat membackup database");
     } finally {
       setIsDownloading(false);
     }

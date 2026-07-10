@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import pool from '@/lib/db';
+import { ResultSetHeader } from 'mysql2';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { z } from 'zod';
@@ -32,7 +33,7 @@ export async function POST(request: Request) {
     if (!result.success) return NextResponse.json({ error: 'Invalid data' }, { status: 400 });
 
     const data = result.data;
-    const [insertResult] = await pool.execute(
+    const [insertResult] = await pool.execute<ResultSetHeader>(
       `INSERT INTO galleries (title, image_url) VALUES (?, ?)`,
       [data.title || null, data.image_url]
     );
@@ -40,7 +41,7 @@ export async function POST(request: Request) {
     revalidatePath('/');
     revalidatePath('/galeri');
     
-    return NextResponse.json({ success: true, id: (insertResult as any).insertId });
+    return NextResponse.json({ success: true, id: insertResult.insertId });
   } catch (error) {
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }

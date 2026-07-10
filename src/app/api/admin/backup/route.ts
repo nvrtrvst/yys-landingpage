@@ -10,7 +10,7 @@ export async function GET(request: Request) {
   try {
     const session = await getServerSession(authOptions);
     if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    const role = (session.user as any)?.role;
+    const role = session.user.role;
     if (role !== 'superadmin' && role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
     // Parse the DATABASE_URL to get connection details
@@ -64,8 +64,8 @@ export async function GET(request: Request) {
       },
     });
 
-  } catch (error: any) {
+  } catch(error: unknown) {
     console.error('Database backup error:', error);
-    return NextResponse.json({ error: 'Internal Server Error: ' + (error.message || String(error)) }, { status: 500 });
+    return NextResponse.json({ error: 'Internal Server Error: ' + ((error instanceof Error ? error.message : String(error)) || String(error)) }, { status: 500 });
   }
 }

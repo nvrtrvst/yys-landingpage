@@ -47,9 +47,9 @@ export default function PrintCardClient({ student, ppdbConfig }: { student: any,
       if (!res.ok) throw new Error(data.error || "Gagal mengirim email");
 
       toast.success(`Berhasil mengirim softfile ke ${student.email}`, { id: toastId });
-    } catch (err: any) {
+    } catch(err: unknown) {
       console.error(err);
-      toast.error(err.message || "Gagal membuat atau mengirim PDF", { id: toastId });
+      toast.error((err instanceof Error ? err.message : String(err)) || "Gagal membuat atau mengirim PDF", { id: toastId });
     } finally {
       setIsSending(false);
     }

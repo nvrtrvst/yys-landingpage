@@ -29,8 +29,8 @@ export default function PrintKelulusanPage() {
         setTimeout(() => {
           window.print();
         }, 1000);
-      } catch (err: any) {
-        toast.error(err.message);
+      } catch(err: unknown) {
+        toast.error((err instanceof Error ? err.message : String(err)));
       } finally {
         setLoading(false);
       }

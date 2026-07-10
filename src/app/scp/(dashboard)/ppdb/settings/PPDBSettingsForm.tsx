@@ -78,8 +78,8 @@ export function PPDBSettingsForm({ initialConfig }: { initialConfig: PPDBConfig 
       
       if (!res.ok) throw new Error(data.error || "Gagal menyimpan");
       toast.success("Pengaturan PPDB berhasil disimpan!", { id: toastId });
-    } catch (err: any) {
-      toast.error(err.message, { id: toastId });
+    } catch(err: unknown) {
+      toast.error((err instanceof Error ? err.message : String(err)), { id: toastId });
     } finally {
       setIsSaving(false);
     }

@@ -9,7 +9,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   try {
     const session = await getServerSession(authOptions);
     if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    const role = (session.user as any)?.role;
+    const role = session.user.role;
     if (role !== 'superadmin' && role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
     const { id } = await params;
@@ -58,8 +58,8 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     await transporter.sendMail(mailOptions);
 
     return NextResponse.json({ success: true });
-  } catch (error: any) {
+  } catch(error: unknown) {
     console.error('Email sending error:', error);
-    return NextResponse.json({ error: 'Internal Server Error: ' + (error.message || String(error)) }, { status: 500 });
+    return NextResponse.json({ error: 'Internal Server Error: ' + ((error instanceof Error ? error.message : String(error)) || String(error)) }, { status: 500 });
   }
 }

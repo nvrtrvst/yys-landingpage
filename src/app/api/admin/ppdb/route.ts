@@ -7,7 +7,7 @@ export async function GET(request: Request) {
   try {
     const session = await getServerSession(authOptions);
     if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    const role = (session.user as any)?.role;
+    const role = session.user.role;
     if (role !== 'superadmin' && role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
     const url = new URL(request.url);

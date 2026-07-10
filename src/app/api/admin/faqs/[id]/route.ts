@@ -17,7 +17,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   try {
     const session = await getServerSession(authOptions);
     if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    const role = (session.user as any)?.role;
+    const role = session.user.role;
     if (role !== 'superadmin' && role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
     const body = await request.json();
@@ -41,7 +41,7 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
   try {
     const session = await getServerSession(authOptions);
     if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    const role = (session.user as any)?.role;
+    const role = session.user.role;
     if (role !== 'superadmin' && role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
     await pool.execute('DELETE FROM faqs WHERE id = ?', [(await params).id]);

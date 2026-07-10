@@ -14,8 +14,8 @@ export default function PPDBDetailPage() {
       const res = await fetch(`/api/admin/ppdb/${id}`);
       if (!res.ok) throw new Error("Data tidak ditemukan");
       setData(await res.json());
-    } catch (err: any) {
-      toast.error(err.message);
+    } catch(err: unknown) {
+      toast.error((err instanceof Error ? err.message : String(err)));
     } finally {
       setLoading(false);
     }
@@ -36,8 +36,8 @@ export default function PPDBDetailPage() {
       if (!res.ok) throw new Error("Gagal memperbarui");
       toast.success("Status diperbarui", { id: toastId });
       fetchData();
-    } catch (err: any) {
-      toast.error(err.message, { id: toastId });
+    } catch(err: unknown) {
+      toast.error((err instanceof Error ? err.message : String(err)), { id: toastId });
     }
   };
 
@@ -55,8 +55,8 @@ export default function PPDBDetailPage() {
       if (!res.ok) throw new Error("Gagal sinkronisasi");
       toast.success("Berhasil sinkronisasi", { id: toastId });
       fetchData();
-    } catch (err: any) {
-      toast.error(err.message, { id: toastId });
+    } catch(err: unknown) {
+      toast.error((err instanceof Error ? err.message : String(err)), { id: toastId });
     }
   };
 

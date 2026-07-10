@@ -55,8 +55,8 @@ export function GalleryClient() {
         if (!resDb.ok) throw new Error("Gagal menyimpan ke database");
         
         successCount++;
-      } catch (err: any) {
-        toast.error(`Gagal mengunggah ${file.name}: ${err.message}`);
+      } catch(err: unknown) {
+        toast.error(`Gagal mengunggah ${file.name}: ${(err instanceof Error ? err.message : String(err))}`);
       }
     }
 
@@ -78,8 +78,8 @@ export function GalleryClient() {
       if (!res.ok) throw new Error("Gagal menghapus");
       toast.success("Foto dihapus!", { id: toastId });
       fetchData();
-    } catch (err: any) {
-      toast.error(err.message, { id: toastId });
+    } catch(err: unknown) {
+      toast.error((err instanceof Error ? err.message : String(err)), { id: toastId });
     }
   };
 
