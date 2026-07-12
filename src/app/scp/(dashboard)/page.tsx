@@ -8,12 +8,19 @@ export default async function AdminDashboard() {
   const session = await getServerSession(authOptions);
 
   // Fetch some stats
-  const [ppdbRows] = await pool.execute<RowDataPacket[]>("SELECT COUNT(*) as count FROM ppdb_submissions");
-  const [newsRows] = await pool.execute<RowDataPacket[]>("SELECT COUNT(*) as count FROM news");
-  const [eventRows] = await pool.execute<RowDataPacket[]>("SELECT COUNT(*) as count FROM events WHERE start_date >= NOW() OR end_date >= NOW()");
-  
-  const [ppdbUnitStats] = await pool.execute<RowDataPacket[]>("SELECT unit, COUNT(*) as count FROM ppdb_submissions GROUP BY unit");
-  const [recentPPDB] = await pool.execute<RowDataPacket[]>("SELECT id, registration_number, student_name, unit, status, created_at FROM ppdb_submissions ORDER BY created_at DESC LIMIT 5");
+  const [
+    [ppdbRows],
+    [newsRows],
+    [eventRows],
+    [ppdbUnitStats],
+    [recentPPDB],
+  ] = await Promise.all([
+    pool.execute<RowDataPacket[]>("SELECT COUNT(*) as count FROM ppdb_submissions"),
+    pool.execute<RowDataPacket[]>("SELECT COUNT(*) as count FROM news"),
+    pool.execute<RowDataPacket[]>("SELECT COUNT(*) as count FROM events WHERE start_date >= NOW() OR end_date >= NOW()"),
+    pool.execute<RowDataPacket[]>("SELECT unit, COUNT(*) as count FROM ppdb_submissions GROUP BY unit"),
+    pool.execute<RowDataPacket[]>("SELECT id, registration_number, student_name, unit, status, created_at FROM ppdb_submissions ORDER BY created_at DESC LIMIT 5"),
+  ]);
 
   const stats = [
     { name: 'Total Pendaftar PPDB', stat: ppdbRows[0].count },

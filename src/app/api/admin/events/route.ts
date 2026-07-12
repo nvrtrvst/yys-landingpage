@@ -19,6 +19,10 @@ export async function GET(request: Request) {
   try {
     const session = await getServerSession(authOptions);
     if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const role = session.user.role;
+    if (role !== 'superadmin' && role !== 'admin' && role !== 'editor') {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
 
     const [rows] = await pool.execute('SELECT * FROM events ORDER BY start_date ASC');
     return NextResponse.json(rows);
@@ -31,6 +35,10 @@ export async function POST(request: Request) {
   try {
     const session = await getServerSession(authOptions);
     if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const role = session.user.role;
+    if (role !== 'superadmin' && role !== 'admin' && role !== 'editor') {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
 
     const body = await request.json();
     const result = eventSchema.safeParse(body);

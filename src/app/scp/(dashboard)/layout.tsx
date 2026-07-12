@@ -14,6 +14,11 @@ export default async function AdminLayout({
     redirect("/scp/login");
   }
 
+  const allowed = ["superadmin", "admin", "admin_unit", "editor"];
+  if (!allowed.includes(session.user.role)) {
+    redirect("/");
+  }
+
   const userRole = session.user.role || "editor";
 
   return (

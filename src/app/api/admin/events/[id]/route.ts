@@ -18,6 +18,10 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   try {
     const session = await getServerSession(authOptions);
     if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const role = session.user.role;
+    if (role !== 'superadmin' && role !== 'admin' && role !== 'editor') {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
 
     const body = await request.json();
     const result = eventSchema.safeParse(body);
@@ -41,6 +45,10 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
   try {
     const session = await getServerSession(authOptions);
     if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const role = session.user.role;
+    if (role !== 'superadmin' && role !== 'admin' && role !== 'editor') {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
 
     await pool.execute('DELETE FROM events WHERE id = ?', [(await params).id]);
     revalidatePath('/');

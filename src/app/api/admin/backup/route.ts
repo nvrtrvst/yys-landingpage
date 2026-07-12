@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import { checkRateLimit, getClientIp } from '@/lib/rate-limit';
 import mysqldump from 'mysqldump';
 import fs from 'fs/promises';
 import path from 'path';
@@ -12,6 +13,9 @@ export async function GET(request: Request) {
     if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     const role = session.user.role;
     if (role !== 'superadmin' && role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+
+    const rl = checkRateLimit(`admin:backup:${getClientIp(request)}`, 5, 60 * 1000);
+    if (!rl.allowed) return NextResponse.json({ error: 'Terlalu banyak permintaan' }, { status: 429 });
 
     // Parse the DATABASE_URL to get connection details
     // Format: mysql://user:password@host:port/database

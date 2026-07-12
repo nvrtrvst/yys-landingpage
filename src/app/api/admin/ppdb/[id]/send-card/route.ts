@@ -60,6 +60,6 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     return NextResponse.json({ success: true });
   } catch(error: unknown) {
     console.error('Email sending error:', error);
-    return NextResponse.json({ error: 'Internal Server Error: ' + ((error instanceof Error ? error.message : String(error)) || String(error)) }, { status: 500 });
+    return NextResponse.json({ error: 'Kesalahan server internal' }, { status: 500 });
   }
 }

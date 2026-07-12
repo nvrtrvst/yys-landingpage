@@ -39,3 +39,13 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# runtime uploads (user data, bukan source)
+/public/uploads/
+
+# dev server logs
+dev.log
+dev.err
+dev2.log
+dev2.err
+detail.html

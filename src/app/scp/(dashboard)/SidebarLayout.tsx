@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Toaster } from "sonner";
 import Link from "next/link";
-import { Home, SettingsIcon, Users, Image as ImageIcon, MessageSquare, Calendar, FileText, LogOut, UserCog, UserCircle, Database, Menu, X } from "lucide-react";
+import { Home, SettingsIcon, Users, Image as ImageIcon, MessageSquare, Calendar, FileText, LogOut, UserCog, UserCircle, Database, Menu, X, Newspaper, FolderOpen, BarChart3, Shield } from "lucide-react";
 import { SignOutButton } from "./SignOutButton";
 
 const navItems = [
@@ -15,6 +15,13 @@ const navItems = [
   { name: "Events Calendar", href: "/scp/events", icon: Calendar, roles: ["superadmin", "admin", "editor"] },
   { name: "PPDB Data", href: "/scp/ppdb", icon: Users, roles: ["superadmin", "admin"] },
   { name: "Pengaturan PPDB", href: "/scp/ppdb/settings", icon: SettingsIcon, roles: ["superadmin", "admin"] },
+  // Mading Online
+  { name: "Mading Dashboard", href: "/scp/mading", icon: BarChart3, roles: ["superadmin", "admin", "admin_unit", "guru"] },
+  { name: "Mading Audit Log", href: "/scp/mading/audit-logs", icon: Shield, roles: ["superadmin", "admin", "admin_unit"] },
+  { name: "Mading Settings", href: "/scp/mading/settings", icon: SettingsIcon, roles: ["superadmin", "admin", "admin_unit"] },
+  { name: "Mading Posts", href: "/scp/mading/posts", icon: Newspaper, roles: ["superadmin", "admin", "admin_unit", "guru"] },
+  { name: "Mading Kategori", href: "/scp/mading/categories", icon: FolderOpen, roles: ["superadmin", "admin", "admin_unit"] },
+  { name: "Mading Users", href: "/scp/mading/users", icon: UserCircle, roles: ["superadmin", "admin", "admin_unit"] },
   { name: "Manajemen Pengguna", href: "/scp/users", icon: UserCog, roles: ["superadmin", "admin"] },
   { name: "Backup Database", href: "/scp/backup", icon: Database, roles: ["superadmin", "admin"] },
   { name: "Profil Saya", href: "/scp/profile", icon: UserCircle, roles: ["superadmin", "admin", "editor"] },

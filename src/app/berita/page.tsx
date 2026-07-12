@@ -5,18 +5,35 @@ import { RowDataPacket } from "mysql2";
 import Link from "next/link";
 import Image from "next/image";
 
-export const revalidate = 60;
+const PAGE_SIZE = 9;
 
-export default async function BeritaPage() {
+export default async function BeritaPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string }>;
+}) {
+  const { page: pageParam } = await searchParams;
+  const page = Math.max(1, Number(pageParam) || 1);
+  const offset = (page - 1) * PAGE_SIZE;
+
   let newsList: RowDataPacket[] = [];
+  let total = 0;
   try {
     const [rows] = await pool.execute<RowDataPacket[]>(
-      "SELECT * FROM news WHERE status = 'published' ORDER BY published_at DESC"
+      `SELECT * FROM news WHERE status = 'published' ORDER BY published_at DESC LIMIT ${PAGE_SIZE} OFFSET ${offset}`
     );
     newsList = rows;
+    const [count] = await pool.execute<RowDataPacket[]>(
+      "SELECT COUNT(*) AS total FROM news WHERE status = 'published'"
+    );
+    total = Number((count[0] as { total: number }).total);
   } catch (error) {
     console.error("Failed to fetch news", error);
   }
+
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const prevHref = page > 1 ? `/berita?page=${page - 1}` : "#";
+  const nextHref = page < totalPages ? `/berita?page=${page + 1}` : "#";
 
   return (
     <main className="min-h-screen flex flex-col bg-gray-50">
@@ -75,6 +92,28 @@ export default async function BeritaPage() {
               </div>
             )}
           </div>
+
+          {totalPages > 1 && (
+            <div className="flex items-center justify-center gap-4 mt-12">
+              <Link
+                href={prevHref}
+                aria-disabled={page <= 1}
+                className={`px-5 py-2 rounded-full border text-sm font-semibold transition ${page <= 1 ? "pointer-events-none opacity-40 border-gray-200 text-gray-400" : "border-primary-200 text-primary-700 hover:bg-primary-50"}`}
+              >
+                &larr; Sebelumnya
+              </Link>
+              <span className="text-sm text-gray-500">
+                Halaman {page} dari {totalPages}
+              </span>
+              <Link
+                href={nextHref}
+                aria-disabled={page >= totalPages}
+                className={`px-5 py-2 rounded-full border text-sm font-semibold transition ${page >= totalPages ? "pointer-events-none opacity-40 border-gray-200 text-gray-400" : "border-primary-200 text-primary-700 hover:bg-primary-50"}`}
+              >
+                Berikutnya &rarr;
+              </Link>
+            </div>
+          )}
         </div>
       </div>
 

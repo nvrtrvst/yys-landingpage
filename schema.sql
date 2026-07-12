@@ -56,10 +56,12 @@ CREATE TABLE IF NOT EXISTS galleries (
 -- 6. Testimonials
 CREATE TABLE IF NOT EXISTS testimonials (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
+    author_name VARCHAR(255) NOT NULL,
     role VARCHAR(100) NOT NULL,
     content TEXT NOT NULL,
     image_url VARCHAR(255),
+    is_active TINYINT(1) NOT NULL DEFAULT 1,
+    order_index INT NOT NULL DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -82,6 +84,7 @@ CREATE TABLE IF NOT EXISTS faqs (
     question TEXT NOT NULL,
     answer TEXT NOT NULL,
     order_index INT DEFAULT 0,
+    is_active TINYINT(1) NOT NULL DEFAULT 1,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -128,7 +131,9 @@ CREATE TABLE IF NOT EXISTS ppdb_submissions (
     kk_document VARCHAR(255),
     birth_cert_document VARCHAR(255),
     diploma_document VARCHAR(255),
-    
+
+    is_printed TINYINT(1) NOT NULL DEFAULT 0,
+
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

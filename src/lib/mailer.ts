@@ -177,13 +177,13 @@ export async function sendPPDBStatusEmail({
 export async function sendNewUserEmail({
   to,
   name,
-  password,
-  role
+  role,
+  token
 }: {
   to: string;
   name: string;
-  password: string;
   role: string;
+  token: string;
 }) {
   if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASS) {
     console.warn("SMTP settings are not configured. Email will not be sent.");
@@ -191,7 +191,7 @@ export async function sendNewUserEmail({
   }
 
   const transporter = getTransporter();
-  const loginUrl = `${process.env.NEXTAUTH_URL || 'http://localhost:5000'}/scp/login`;
+  const setupUrl = `${process.env.NEXTAUTH_URL || 'http://localhost:5000'}/scp/reset-password/${token}`;
 
   const mailOptions = {
     from: `"CMS Yayasan Nuurul Muttaqiin" <info@nuurulmuttaqiin.or.id>`,
@@ -204,27 +204,15 @@ export async function sendNewUserEmail({
         </div>
         <p>Halo <b>${name}</b>,</p>
         <p>Akun Anda untuk mengelola konten (CMS) Yayasan Nuurul Muttaqiin telah berhasil dibuat dengan hak akses sebagai <b>${role.toUpperCase()}</b>.</p>
-        
-        <div style="background-color: #f8fafc; padding: 15px; border-radius: 6px; margin: 20px 0;">
-          <p style="margin: 0 0 10px 0; color: #64748b;">Gunakan detail berikut untuk masuk:</p>
-          <table style="width: 100%; border-collapse: collapse;">
-            <tr>
-              <td style="padding: 4px 0; color: #64748b; width: 30%;">Email</td>
-              <td style="padding: 4px 0; font-weight: bold; color: #0f172a;">${to}</td>
-            </tr>
-            <tr>
-              <td style="padding: 4px 0; color: #64748b;">Password</td>
-              <td style="padding: 4px 0; font-weight: bold; color: #0f172a;">${password}</td>
-            </tr>
-          </table>
-        </div>
+
+        <p>Untuk keamanan, password tidak dikirimkan melalui email. Silakan buat password baru melalui tautan di bawah ini (berlaku 1 jam):</p>
 
         <p style="text-align: center; margin: 30px 0;">
-          <a href="${loginUrl}" style="background-color: #0f172a; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">Login ke Dasbor</a>
+          <a href="${setupUrl}" style="background-color: #0f172a; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">Buat Password</a>
         </p>
 
-        <p style="color: #dc2626; font-size: 13px;">Demi keamanan, kami sangat menyarankan Anda untuk <b>merahasiakan password ini</b> dan jangan membagikannya kepada siapa pun.</p>
-        
+        <p style="color: #64748b; font-size: 13px;">Jika Anda tidak mengenali akun ini, abaikan email ini.</p>
+
         <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 20px 0;" />
         <p style="color: #94a3b8; font-size: 12px; text-align: center;">
           Sistem Informasi Yayasan Nuurul Muttaqiin<br/>
@@ -239,5 +227,54 @@ export async function sendNewUserEmail({
     console.log("Welcome email sent successfully to", to);
   } catch (error) {
     console.error("Error sending welcome email:", error);
+  }
+}
+
+export async function sendPasswordResetEmail({
+  to,
+  name,
+  token,
+}: {
+  to: string;
+  name: string;
+  token: string;
+}) {
+  if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASS) {
+    console.warn("SMTP settings are not configured. Email will not be sent.");
+    return;
+  }
+
+  const transporter = getTransporter();
+  const resetUrl = `${process.env.NEXTAUTH_URL || 'http://localhost:5000'}/mading/siswa/reset-password/${token}`;
+
+  const mailOptions = {
+    from: `"Mading Online Nuurul Muttaqiin" <info@nuurulmuttaqiin.or.id>`,
+    to: to,
+    subject: `Reset Password - Mading Online`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
+        <div style="text-align: center; padding-bottom: 10px; border-bottom: 2px solid #16a34a; margin-bottom: 20px;">
+          <h2 style="color: #16a34a; margin: 0;">Reset Password</h2>
+        </div>
+        <p>Halo <b>${name}</b>,</p>
+        <p>Kami menerima permintaan reset password untuk akun Mading Online Anda.</p>
+        <p>Klik tombol di bawah untuk membuat password baru:</p>
+        <p style="text-align: center; margin: 30px 0;">
+          <a href="${resetUrl}" style="background-color: #16a34a; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">Reset Password</a>
+        </p>
+        <p style="color: #64748b; font-size: 13px;">Tautan ini berlaku selama 1 jam. Jika Anda tidak meminta reset password, abaikan email ini.</p>
+        <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 20px 0;" />
+        <p style="color: #94a3b8; font-size: 12px; text-align: center;">
+          Mading Online Yayasan Nuurul Muttaqiin
+        </p>
+      </div>
+    `
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log("Password reset email sent successfully to", to);
+  } catch (error) {
+    console.error("Error sending password reset email:", error);
   }
 }

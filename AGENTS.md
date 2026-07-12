@@ -90,3 +90,5 @@ Bahasa UI: Indonesia. Role: `superadmin`, `admin`, `editor`.
 - Kirim fungsi/komponen React dari Server ke Client Component = error serialisasi RSC.
 - `rate-limit.ts` in-memory: reset saat restart, tidak share antar instance.
 - Saat edit file di `scp/(dashboard)`, quote path di PowerShell/git.
+- **Cookie path vs API path:** Mading NextAuth cookies harus `path: "/"` karena mading API routes ada di `/api/mading/auth/*`, bukan di `/mading/*`. Cookie dgn `path: "/mading"` tidak dikirim browser ke URL `/api/mading/...` (path prefix mismatch).
+- **`getServerSessionDual()` precedence:** cek `madingAuthOptions` DULU, baru `authOptions` (SCP). Perlu mading-first karena user sering login ke SCP admin & mading di browser SAMA → kalau SCP duluan, API mading (mis. `my-posts`) ke-resolve ke user SCP (0 post mading) → card dashboard siswa/guru tampil 0. Route `/api/mading/*` murni pakai `madingAuthOptions`, bukan dual.

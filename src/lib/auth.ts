@@ -11,8 +11,35 @@ interface UserRow extends RowDataPacket {
   email: string;
   password: string;
   role: string;
+  unit_id: number | null;
   failed_attempts: number;
   locked_until: Date | null;
+}
+
+declare module "next-auth" {
+  interface Session {
+    user: {
+      id: string;
+      role: string;
+      unit_id: number | null;
+      name?: string | null;
+      email?: string | null;
+      photo?: string | null;
+    };
+  }
+  interface User {
+    role: string;
+    unit_id: number | null;
+    photo?: string | null;
+  }
+}
+
+declare module "next-auth/jwt" {
+  interface JWT {
+    role: string;
+    unit_id: number | null;
+    photo?: string | null;
+  }
 }
 
 const MAX_FAILED = 5;
@@ -58,7 +85,7 @@ export const authOptions: NextAuthOptions = {
 
         try {
           const [rows] = await pool.execute<UserRow[]>(
-            "SELECT id, name, email, password, role, failed_attempts, locked_until FROM users WHERE email = ?",
+            "SELECT id, name, email, password, role, unit_id, failed_attempts, locked_until FROM users WHERE email = ?",
             [credentials.email]
           );
 
@@ -91,7 +118,10 @@ export const authOptions: NextAuthOptions = {
             return null;
           }
 
-          // 4. Sukses — reset lockout
+          // 4. Tolak guru/siswa — mereka pakai /mading/login
+          if (["guru", "siswa"].includes(user.role)) return null;
+
+          // 5. Sukses — reset lockout
           await pool.execute(
             "UPDATE users SET failed_attempts = 0, locked_until = NULL WHERE id = ?",
             [user.id]
@@ -102,6 +132,7 @@ export const authOptions: NextAuthOptions = {
             email: user.email,
             name: user.name,
             role: user.role,
+            unit_id: user.unit_id,
           };
         } catch (error) {
           if (error instanceof Error && error.message === "LOCKED") {
@@ -118,6 +149,7 @@ export const authOptions: NextAuthOptions = {
       if (user) {
         token.role = user.role;
         token.id = user.id;
+        token.unit_id = user.unit_id;
       }
       return token;
     },
@@ -125,6 +157,7 @@ export const authOptions: NextAuthOptions = {
       if (token && session.user) {
         session.user.role = token.role as string;
         session.user.id = token.id as string;
+        session.user.unit_id = token.unit_id as number | null;
       }
       return session;
     },

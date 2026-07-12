@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { checkRateLimit, getClientIp } from '@/lib/rate-limit';
 
 // Endpoint ini dipanggil oleh frontend CMS (PPDBForm)
 // Di belakang layar, ia bertindak sebagai "Middleman" yang menembak API Keuangan
@@ -6,6 +7,9 @@ import { NextResponse } from 'next/server';
 
 export async function GET(request: Request) {
   try {
+    const rl = checkRateLimit(`ppdb-majors:${getClientIp(request)}`, 30, 60 * 1000);
+    if (!rl.allowed) return NextResponse.json({ error: 'Terlalu banyak permintaan' }, { status: 429 });
+
     const { searchParams } = new URL(request.url);
     const unit = searchParams.get('unit');
 

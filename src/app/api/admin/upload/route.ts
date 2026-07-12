@@ -24,13 +24,19 @@ function isMagicPdf(buffer: Buffer): boolean {
   return buffer.length >= 4 && buffer[0] === 0x25 && buffer[1] === 0x50 && buffer[2] === 0x44 && buffer[3] === 0x46;
 }
 
-const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
 export async function POST(request: Request) {
   try {
     const session = await getServerSession(authOptions);
     if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: 'Tidak terautentikasi' }, { status: 401 });
+    }
+
+    const isSiswa = session.user.role === "siswa";
+    const isMod = ["superadmin", "admin", "admin_unit", "guru", "editor"].includes(session.user.role);
+    if (!isSiswa && !isMod) {
+      return NextResponse.json({ error: 'Dilarang' }, { status: 403 });
     }
 
     const rl = checkRateLimit(`admin:upload:${getClientIp(request)}`, 20, 60 * 1000);
@@ -41,29 +47,28 @@ export async function POST(request: Request) {
     const formData = await request.formData();
     const file = formData.get('file') as File;
     if (!file) {
-      return NextResponse.json({ error: 'No file provided' }, { status: 400 });
+      return NextResponse.json({ error: 'File tidak ditemukan' }, { status: 400 });
     }
 
-    // Enforce file size limit
     if (file.size > MAX_FILE_SIZE) {
       return NextResponse.json({ error: 'Ukuran file melebihi batas maksimum 5MB.' }, { status: 400 });
     }
 
     const buffer = Buffer.from(await file.arrayBuffer());
 
-    // Validate by magic bytes, not filename/mimetype
     if (!checkMagicNumber(buffer)) {
-      return NextResponse.json({ error: 'Tipe file tidak valid. Hanya JPEG, PNG, WebP, dan PDF yang diizinkan.' }, { status: 400 });
+      return NextResponse.json({ error: 'Tipe file tidak valid. Hanya JPEG, PNG, dan WebP yang diizinkan.' }, { status: 400 });
     }
 
     const isPdf = isMagicPdf(buffer);
+    if (isPdf && isSiswa) {
+      return NextResponse.json({ error: 'Siswa hanya bisa upload gambar.' }, { status: 400 });
+    }
 
     let finalBuffer: any = buffer;
-    // Extension is always determined by actual content (magic bytes), never by the original filename
     let ext = isPdf ? 'pdf' : 'webp';
     let filename = `${crypto.randomUUID()}-${Date.now()}.${ext}`;
 
-    // Optimize images (not PDFs) — always convert to webp
     if (!isPdf) {
       try {
         finalBuffer = await sharp(buffer)
@@ -71,13 +76,11 @@ export async function POST(request: Request) {
           .webp({ quality: 80 })
           .toBuffer();
       } catch (err) {
-        // If sharp fails, reject the upload entirely to prevent raw arbitrary files being saved
         console.error("Sharp processing failed:", err);
-        return NextResponse.json({ error: 'Gagal memproses gambar. Pastikan file adalah gambar yang valid.' }, { status: 400 });
+        return NextResponse.json({ error: 'Gagal memproses gambar.' }, { status: 400 });
       }
     }
-    
-    // Ensure uploads dir exists
+
     const uploadDir = join(process.cwd(), 'public', 'uploads');
     await mkdir(uploadDir, { recursive: true });
 
@@ -87,6 +90,10 @@ export async function POST(request: Request) {
     return NextResponse.json({ url: `/uploads/${filename}` });
   } catch (error) {
     console.error('Upload error:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    const msg = error instanceof Error ? error.message : String(error);
+    if (/body|limit|too large|exceed|size/i.test(msg)) {
+      return NextResponse.json({ error: 'Ukuran file terlalu besar (maksimal 10MB).' }, { status: 413 });
+    }
+    return NextResponse.json({ error: 'Kesalahan server internal' }, { status: 500 });
   }
 }

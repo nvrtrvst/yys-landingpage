@@ -35,18 +35,28 @@ if (!global.mysqlPool) {
 
 pool = global.mysqlPool;
 
+let settingsCache: { value: Record<string, string>; ts: number } | null = null;
+const SETTINGS_TTL_MS = 60_000;
+
 export async function getSettings(): Promise<Record<string, string>> {
+  const now = Date.now();
+  if (settingsCache && now - settingsCache.ts < SETTINGS_TTL_MS) return settingsCache.value;
   try {
     const [rows] = await pool.execute<RowDataPacket[]>('SELECT setting_key, setting_value FROM settings');
     const settings: Record<string, string> = {};
     rows.forEach(row => {
       settings[row.setting_key] = row.setting_value;
     });
+    settingsCache = { value: settings, ts: now };
     return settings;
   } catch (error) {
     console.error('Failed to get settings', error);
-    return {};
+    return settingsCache ? settingsCache.value : {};
   }
+}
+
+export function invalidateSettingsCache(): void {
+  settingsCache = null;
 }
 
 export default pool;
