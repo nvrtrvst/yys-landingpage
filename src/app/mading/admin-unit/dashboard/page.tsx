@@ -73,6 +73,10 @@ export default async function AdminUnitDashboard() {
           <h3 className="font-semibold text-gray-900">Kelola Pengguna</h3>
           <p className="text-sm text-gray-500 mt-1">{userCounts.guru + userCounts.siswa} user aktif</p>
         </Link>
+        <Link href="/scp/mading/comments" className="bg-white border rounded-xl p-5 hover:shadow-md transition-shadow block">
+          <h3 className="font-semibold text-gray-900">Moderasi Komentar</h3>
+          <p className="text-sm text-gray-500 mt-1">Tinjau komentar yang terflag</p>
+        </Link>
         <Link href="/scp/mading/categories" className="bg-white border rounded-xl p-5 hover:shadow-md transition-shadow block">
           <h3 className="font-semibold text-gray-900">Kategori</h3>
           <p className="text-sm text-gray-500 mt-1">Atur kategori khusus unit</p>

@@ -21,7 +21,6 @@ export default function SiswaProfilePage() {
   const [uploading, setUploading] = useState(false);
   const [photo, setPhoto] = useState<string | null>(null);
   const [nameValue, setNameValue] = useState("");
-  const [savingName, setSavingName] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -33,28 +32,6 @@ export default function SiswaProfilePage() {
     if (session?.user.photo) setPhoto(session.user.photo);
     if (session?.user.name) setNameValue(session.user.name);
   }, [session?.user.photo, session?.user.name]);
-
-  const handleSaveName = async () => {
-    const trimmed = nameValue.trim();
-    if (!trimmed) { toast.error("Nama wajib diisi"); return; }
-    if (trimmed === session?.user.name) return;
-    setSavingName(true);
-    try {
-      const res = await fetch("/api/mading/profile", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: trimmed }),
-      });
-      const data = await res.json();
-      if (!res.ok) { toast.error(data.error || "Gagal menyimpan nama"); return; }
-      await update({ name: data.name });
-      toast.success("Nama diperbarui");
-    } catch {
-      toast.error("Kesalahan server");
-    } finally {
-      setSavingName(false);
-    }
-  };
 
   const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -162,28 +139,18 @@ export default function SiswaProfilePage() {
           </div>
         </div>
 
-        {/* nameValue card */}
-        <div className="mt-6 bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-4">
+        {/* nameValue card - read only (locked & verified) */}
+        <div className="mt-6 bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-2">
           <h2 className="font-semibold text-gray-900 flex items-center gap-2">
             <User className="h-4 w-4 text-green-600" /> Nama
           </h2>
-          <div className="flex items-center gap-2">
-            <input
-              type="text"
-              value={nameValue}
-              onChange={(e) => setNameValue(e.target.value)}
-              maxLength={100}
-              className="flex-1 block px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
-            />
-            <button
-              type="button"
-              onClick={handleSaveName}
-              disabled={savingName}
-              className="px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 disabled:opacity-50 transition-colors"
-            >
-              {savingName ? "Menyimpan..." : "Simpan"}
-            </button>
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-gray-900 font-medium">{displayName}</p>
+            <span className="inline-flex items-center gap-1 text-xs font-medium px-2.5 py-0.5 rounded-full bg-gray-100 text-gray-500">
+              <ShieldCheck className="h-3.5 w-3.5" /> Terkunci &amp; Terverifikasi
+            </span>
           </div>
+          <p className="text-xs text-gray-400">Nama diambil dari data resmi (NIS) dan tidak dapat diubah.</p>
         </div>
 
         {/* Password card */}

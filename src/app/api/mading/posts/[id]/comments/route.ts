@@ -4,6 +4,7 @@ import { ResultSetHeader, RowDataPacket } from "mysql2";
 import { getServerSession } from "next-auth";
 import { madingAuthOptions } from "@/lib/mading-auth";
 import { createNotification } from "@/lib/mading";
+import { containsProfanity } from "@/lib/profanity";
 import { z } from "zod";
 
 const commentSchema = z.object({
@@ -15,7 +16,8 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
   try {
     const postId = (await params).id;
     const [rows] = await pool.execute<RowDataPacket[]>(
-      `SELECT c.id, c.content, c.created_at, c.parent_id, u.name as user_name, u.role as user_role
+      `SELECT c.id, c.content, c.created_at, c.parent_id, c.is_flagged,
+              u.name as user_name, u.role as user_role, u.nis as user_nis
        FROM mading_comments c JOIN users u ON c.user_id = u.id
        WHERE c.post_id = ? ORDER BY c.created_at ASC LIMIT 200`, [postId]
     );
@@ -47,9 +49,10 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       if (parent.length === 0) return NextResponse.json({ error: "Komentar induk tidak valid" }, { status: 400 });
     }
 
+    const isFlagged = containsProfanity(valid.data.content);
     const [result] = await pool.execute<ResultSetHeader>(
-      "INSERT INTO mading_comments (post_id, user_id, content, parent_id) VALUES (?, ?, ?, ?)",
-      [postId, parseInt(session.user.id), valid.data.content, parentId]
+      "INSERT INTO mading_comments (post_id, user_id, content, parent_id, is_flagged, flag_reason) VALUES (?, ?, ?, ?, ?, ?)",
+      [postId, parseInt(session.user.id), valid.data.content, parentId, isFlagged ? 1 : 0, isFlagged ? "profanity" : null]
     );
 
     try {
@@ -75,7 +78,32 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       console.error("Error creating comment notification:", notifError);
     }
 
-    return NextResponse.json({ success: true, id: result.insertId });
+    if (isFlagged) {
+      try {
+        const [postRows2] = await pool.execute<RowDataPacket[]>(
+          "SELECT unit_id, title FROM mading_posts WHERE id = ?", [postId]
+        );
+        if (postRows2.length > 0) {
+          const { unit_id, title } = postRows2[0] as { unit_id: number | null; title: string };
+          const [admins] = await pool.execute<RowDataPacket[]>(
+            "SELECT id FROM users WHERE role IN ('superadmin', 'admin_unit') AND (unit_id = ? OR role = 'superadmin')",
+            [unit_id ?? -1]
+          );
+          for (const a of admins) {
+            await createNotification(
+              (a as { id: number }).id,
+              parseInt(postId),
+              "comment_flagged",
+              `Komentar yang perlu moderasi pada "${title}"`
+            );
+          }
+        }
+      } catch (flagErr) {
+        console.error("Error notifying flagged comment:", flagErr);
+      }
+    }
+
+    return NextResponse.json({ success: true, id: result.insertId, flagged: isFlagged });
   } catch (error) {
     console.error("Error creating comment:", error);
     return NextResponse.json({ error: "Kesalahan server internal" }, { status: 500 });

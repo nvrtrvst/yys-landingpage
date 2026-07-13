@@ -31,9 +31,11 @@ export async function POST(request: Request) {
     const emailIdx = header.indexOf("email");
     const passwordIdx = header.indexOf("password");
     const roleIdx = header.indexOf("role");
+    const nisIdx = header.indexOf("nis");
+    const classIdx = header.indexOf("class_name");
 
     if (nameIdx === -1 || emailIdx === -1 || passwordIdx === -1 || roleIdx === -1)
-      return NextResponse.json({ error: "CSV header harus: name,email,password,role" }, { status: 400 });
+      return NextResponse.json({ error: "CSV header harus: name,email,password,role (opsional: nis,class_name)" }, { status: 400 });
 
     const unitId = session.user.role === "admin_unit" ? session.user.unit_id : null;
     let created = 0;
@@ -50,6 +52,8 @@ export async function POST(request: Request) {
         const email = cols[emailIdx]?.toLowerCase();
         const password = cols[passwordIdx];
         const role = cols[roleIdx]?.toLowerCase();
+        const nis = nisIdx >= 0 ? (cols[nisIdx]?.trim() || "") : "";
+        const className = classIdx >= 0 ? (cols[classIdx]?.trim() || "") : "";
 
         if (!name || !email || !password || !role) {
           failed++; errors.push(`Baris ${i + 1}: data tidak lengkap`); continue;
@@ -60,15 +64,22 @@ export async function POST(request: Request) {
         if (password.length < 6) {
           failed++; errors.push(`Baris ${i + 1}: password minimal 6 karakter`); continue;
         }
+        if (role === "siswa" && !nis) {
+          failed++; errors.push(`Baris ${i + 1}: siswa wajib memiliki NIS`); continue;
+        }
 
         try {
           const [existing] = await conn.execute<RowDataPacket[]>("SELECT id FROM users WHERE email = ?", [email]);
           if (existing.length > 0) { failed++; errors.push(`Baris ${i + 1}: email ${email} sudah ada`); continue; }
+          if (nis) {
+            const [dupNis] = await conn.execute<RowDataPacket[]>("SELECT id FROM users WHERE nis = ?", [nis]);
+            if (dupNis.length > 0) { failed++; errors.push(`Baris ${i + 1}: NIS ${nis} sudah terdaftar`); continue; }
+          }
 
           const hashed = await bcrypt.hash(password, 10);
           const [result] = await conn.execute<ResultSetHeader>(
-            "INSERT INTO users (name, email, password, role, unit_id) VALUES (?, ?, ?, ?, ?)",
-            [name, email, hashed, role, unitId]
+            "INSERT INTO users (name, email, password, role, unit_id, nis, class_name, identity_verified) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+            [name, email, hashed, role, unitId, nis || null, className || null, nis ? 1 : 0]
           );
           created++;
 

@@ -17,6 +17,10 @@ export async function PUT(request: Request) {
     const valid = schema.safeParse(body);
     if (!valid.success) return NextResponse.json({ error: valid.error.issues[0].message }, { status: 400 });
 
+    if (session.user.role === "siswa") {
+      return NextResponse.json({ error: "Nama tidak dapat diubah" }, { status: 403 });
+    }
+
     await pool.execute("UPDATE users SET name = ? WHERE id = ?", [valid.data.name, session.user.id]);
 
     return NextResponse.json({ success: true, name: valid.data.name });

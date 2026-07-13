@@ -22,6 +22,7 @@ const navItems = [
   { name: "Mading Posts", href: "/scp/mading/posts", icon: Newspaper, roles: ["superadmin", "admin", "admin_unit", "guru"] },
   { name: "Mading Kategori", href: "/scp/mading/categories", icon: FolderOpen, roles: ["superadmin", "admin", "admin_unit"] },
   { name: "Mading Users", href: "/scp/mading/users", icon: UserCircle, roles: ["superadmin", "admin", "admin_unit"] },
+  { name: "Mading Moderasi", href: "/scp/mading/comments", icon: Shield, roles: ["superadmin", "admin", "admin_unit"] },
   { name: "Manajemen Pengguna", href: "/scp/users", icon: UserCog, roles: ["superadmin", "admin"] },
   { name: "Backup Database", href: "/scp/backup", icon: Database, roles: ["superadmin", "admin"] },
   { name: "Profil Saya", href: "/scp/profile", icon: UserCircle, roles: ["superadmin", "admin", "editor"] },

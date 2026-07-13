@@ -19,7 +19,7 @@ export async function GET() {
     const err = checkAuth(session);
     if (err) return NextResponse.json({ error: err }, { status: err === "Tidak terautentikasi" ? 401 : 403 });
 
-    let query = "SELECT id, name, email, role, unit_id, created_at FROM users WHERE role IN ('guru', 'siswa')";
+    let query = "SELECT id, name, email, role, unit_id, nis, class_name, identity_verified, created_at FROM users WHERE role IN ('guru', 'siswa')";
     const params: (string | number)[] = [];
     if (session!.user.role === "admin_unit") {
       query += " AND unit_id = ?";
@@ -40,6 +40,8 @@ const createSchema = z.object({
   email: z.string().email("Email tidak valid"),
   password: z.string().min(6, "Password minimal 6 karakter"),
   role: z.enum(["guru", "siswa"]),
+  nis: z.string().max(50).optional().nullable(),
+  class_name: z.string().max(50).optional().nullable(),
 });
 
 export async function POST(request: Request) {
@@ -54,13 +56,21 @@ export async function POST(request: Request) {
 
     const unitId = session!.user.role === "admin_unit" ? session!.user.unit_id : (body.unit_id || null);
 
+    if (valid.data.role === "siswa" && !valid.data.nis) {
+      return NextResponse.json({ error: "Siswa wajib memiliki NIS" }, { status: 400 });
+    }
+
     const [existing] = await pool.execute<RowDataPacket[]>("SELECT id FROM users WHERE email = ?", [valid.data.email]);
     if (existing.length > 0) return NextResponse.json({ error: "Email sudah digunakan" }, { status: 400 });
+    if (valid.data.nis) {
+      const [dupNis] = await pool.execute<RowDataPacket[]>("SELECT id FROM users WHERE nis = ?", [valid.data.nis]);
+      if (dupNis.length > 0) return NextResponse.json({ error: "NIS sudah terdaftar" }, { status: 400 });
+    }
 
     const hashed = await bcrypt.hash(valid.data.password, 10);
     const [result] = await pool.execute<ResultSetHeader>(
-      "INSERT INTO users (name, email, password, role, unit_id) VALUES (?, ?, ?, ?, ?)",
-      [valid.data.name, valid.data.email, hashed, valid.data.role, unitId]
+      "INSERT INTO users (name, email, password, role, unit_id, nis, class_name, identity_verified) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+      [valid.data.name, valid.data.email, hashed, valid.data.role, unitId, valid.data.nis || null, valid.data.class_name || null, valid.data.nis ? 1 : 0]
     );
 
     await createAuditLog(parseInt(session!.user.id), unitId, "user_create", "user", result.insertId, `Membuat user ${valid.data.name} (${valid.data.email}) dengan role ${valid.data.role}`, getClientIp(request));

@@ -10,6 +10,9 @@ interface UnitUser {
   email: string;
   role: "guru" | "siswa";
   unit_id: number | null;
+  nis: string | null;
+  class_name: string | null;
+  identity_verified: number;
   created_at: string;
 }
 
@@ -21,7 +24,7 @@ export default function MadingUsersPage() {
   const [roleFilter, setRoleFilter] = useState<string>("all");
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState<UnitUser | null>(null);
-  const [form, setForm] = useState({ name: "", email: "", password: "", role: "siswa" as "guru" | "siswa" });
+  const [form, setForm] = useState({ name: "", email: "", password: "", role: "siswa" as "guru" | "siswa", nis: "", class_name: "" });
   const [saving, setSaving] = useState(false);
 
   const fetchUsers = useCallback(async () => {
@@ -45,7 +48,11 @@ export default function MadingUsersPage() {
     let result = users;
     if (search) {
       const q = search.toLowerCase();
-      result = result.filter(u => u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q));
+      result = result.filter(u =>
+        u.name.toLowerCase().includes(q) ||
+        u.email.toLowerCase().includes(q) ||
+        (u.nis && u.nis.toLowerCase().includes(q))
+      );
     }
     if (roleFilter !== "all") result = result.filter(u => u.role === roleFilter);
     setFiltered(result);
@@ -53,12 +60,12 @@ export default function MadingUsersPage() {
 
   const resetForm = () => {
     setEditing(null);
-    setForm({ name: "", email: "", password: "", role: "siswa" as const });
+    setForm({ name: "", email: "", password: "", role: "siswa" as const, nis: "", class_name: "" });
   };
 
   const openEdit = (user: UnitUser) => {
     setEditing(user);
-    setForm({ name: user.name, email: user.email, password: "", role: user.role });
+    setForm({ name: user.name, email: user.email, password: "", role: user.role, nis: user.nis || "", class_name: user.class_name || "" });
     setShowModal(true);
   };
 
@@ -67,11 +74,12 @@ export default function MadingUsersPage() {
     if (!form.name.trim() || !form.email.trim()) { toast.error("Nama dan email wajib diisi"); return; }
     if (!editing && !form.password.trim()) { toast.error("Password wajib diisi untuk user baru"); return; }
     if (form.password && form.password.length < 6) { toast.error("Password minimal 6 karakter"); return; }
+    if (form.role === "siswa" && !form.nis.trim()) { toast.error("Siswa wajib memiliki NIS"); return; }
 
     setSaving(true);
     try {
       if (editing) {
-        const body: any = { name: form.name.trim() };
+        const body: any = { name: form.name.trim(), nis: form.nis.trim(), class_name: form.class_name.trim() };
         if (form.password) body.password = form.password;
         const res = await fetch(`/api/mading/unit-users/${editing.id}`, {
           method: "PUT",
@@ -212,7 +220,10 @@ export default function MadingUsersPage() {
               <tr className="border-b border-gray-100 bg-gray-50/50">
                 <th className="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">User</th>
                 <th className="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Email</th>
+                <th className="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">NIS</th>
+                <th className="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Kelas</th>
                 <th className="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Role</th>
+                <th className="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Verif</th>
                 <th className="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Bergabung</th>
                 <th className="p-4 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Aksi</th>
               </tr>
@@ -223,14 +234,17 @@ export default function MadingUsersPage() {
                   <tr key={i} className="border-b border-gray-50">
                     <td className="p-4"><div className="h-5 w-32 bg-gray-100 rounded animate-pulse" /></td>
                     <td className="p-4"><div className="h-5 w-48 bg-gray-100 rounded animate-pulse" /></td>
+                    <td className="p-4"><div className="h-5 w-24 bg-gray-100 rounded animate-pulse" /></td>
+                    <td className="p-4"><div className="h-5 w-20 bg-gray-100 rounded animate-pulse" /></td>
                     <td className="p-4"><div className="h-5 w-16 bg-gray-100 rounded animate-pulse" /></td>
+                    <td className="p-4"><div className="h-5 w-12 bg-gray-100 rounded animate-pulse" /></td>
                     <td className="p-4"><div className="h-5 w-24 bg-gray-100 rounded animate-pulse" /></td>
                     <td className="p-4"><div className="h-5 w-16 bg-gray-100 rounded animate-pulse ml-auto" /></td>
                   </tr>
                 ))
               ) : filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="p-12 text-center">
+                  <td colSpan={8} className="p-12 text-center">
                     <div className="text-gray-300 mb-2"><User className="h-10 w-10 mx-auto" /></div>
                     <p className="text-gray-500 font-medium">Belum ada user</p>
                     <p className="text-gray-400 text-sm mt-1">Tambahkan user guru atau siswa untuk mulai</p>
@@ -247,6 +261,8 @@ export default function MadingUsersPage() {
                     </div>
                   </td>
                   <td className="p-4 text-sm text-gray-600">{user.email}</td>
+                  <td className="p-4 text-sm text-gray-600 font-mono">{user.nis || "-"}</td>
+                  <td className="p-4 text-sm text-gray-600">{user.class_name || "-"}</td>
                   <td className="p-4">
                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                       user.role === "guru"
@@ -255,6 +271,17 @@ export default function MadingUsersPage() {
                     }`}>
                       {user.role === "guru" ? "Guru" : "Siswa"}
                     </span>
+                  </td>
+                  <td className="p-4">
+                    {user.identity_verified ? (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 ring-1 ring-emerald-700/10">
+                        Terverifikasi
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-500">
+                        Belum
+                      </span>
+                    )}
                   </td>
                   <td className="p-4 text-sm text-gray-500">
                     {new Date(user.created_at).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })}
@@ -294,7 +321,7 @@ export default function MadingUsersPage() {
               <X className="h-5 w-5" />
             </button>
             <h3 className="text-lg font-semibold text-gray-900 mb-1">Import User dari CSV</h3>
-            <p className="text-sm text-gray-500 mb-4">Format: <code className="bg-gray-100 px-1 rounded">name,email,password,role</code> (role: guru/siswa)</p>
+            <p className="text-sm text-gray-500 mb-4">Format: <code className="bg-gray-100 px-1 rounded">name,email,password,role,nis,class_name</code> (role: guru/siswa; nis wajib untuk siswa)</p>
 
             {importResult ? (
               <div className="space-y-4">
@@ -375,6 +402,21 @@ export default function MadingUsersPage() {
                   <option value="guru">Guru</option>
                 </select>
                 {editing && <p className="text-xs text-gray-400 mt-1">Role tidak bisa diubah setelah dibuat</p>}
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  NIS {form.role === "siswa" && <span className="text-red-500">*</span>}
+                  {form.role === "guru" && <span className="text-gray-400 font-normal">(opsional untuk guru)</span>}
+                </label>
+                <input type="text" value={form.nis} onChange={e => setForm({ ...form, nis: e.target.value })}
+                  placeholder={form.role === "siswa" ? "Nomor Induk Siswa" : "Kosongkan jika tidak ada"}
+                  className="w-full px-3 py-2.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-shadow" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Kelas</label>
+                <input type="text" value={form.class_name} onChange={e => setForm({ ...form, class_name: e.target.value })}
+                  placeholder="Mis. VII-A"
+                  className="w-full px-3 py-2.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-shadow" />
               </div>
               <div className="flex gap-3 pt-2">
                 <button type="button" onClick={() => setShowModal(false)}

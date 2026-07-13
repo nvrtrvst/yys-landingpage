@@ -13,11 +13,17 @@ UPDATE units SET logo_url = NULL, primary_color = '#7c3aed', secondary_color = '
 UPDATE units SET logo_url = NULL, primary_color = '#dc2626', secondary_color = '#fee2e2', tagline = 'Siap Kerja, Siap Kuliah, Berakhlak Mulia' WHERE slug = 'smk';
 
 -- 2. User demo (password semua: 'rahasia123')
-INSERT INTO users (name, email, password, role, unit_id) VALUES
-('Superadmin Yayasan', 'superadmin@yayasan.com', '$2b$10$og3YfG.PeVzOjEY8AYCHgO/7umoOXoyjSIT/gjbnIGASFQQ7CNiOO', 'superadmin', NULL),
-('Admin Unit SD', 'admin.sd@yayasan.com', '$2b$10$og3YfG.PeVzOjEY8AYCHgO/7umoOXoyjSIT/gjbnIGASFQQ7CNiOO', 'admin_unit', 3),
-('Guru SD', 'guru.sd@yayasan.com', '$2b$10$og3YfG.PeVzOjEY8AYCHgO/7umoOXoyjSIT/gjbnIGASFQQ7CNiOO', 'guru', 3),
-('Siswa SD', 'siswa.sd@yayasan.com', '$2b$10$og3YfG.PeVzOjEY8AYCHgO/7umoOXoyjSIT/gjbnIGASFQQ7CNiOO', 'siswa', 3);
+-- nis & class_name: wajib untuk siswa (1 NIS = 1 akun), guru/admin boleh NULL.
+INSERT INTO users (name, email, password, role, unit_id, nis, class_name, identity_verified) VALUES
+('Superadmin Yayasan', 'superadmin@yayasan.com', '$2b$10$og3YfG.PeVzOjEY8AYCHgO/7umoOXoyjSIT/gjbnIGASFQQ7CNiOO', 'superadmin', NULL, NULL, NULL, 0),
+('Admin Unit SD', 'admin.sd@yayasan.com', '$2b$10$og3YfG.PeVzOjEY8AYCHgO/7umoOXoyjSIT/gjbnIGASFQQ7CNiOO', 'admin_unit', 3, NULL, NULL, 0),
+('Guru SD', 'guru.sd@yayasan.com', '$2b$10$og3YfG.PeVzOjEY8AYCHgO/7umoOXoyjSIT/gjbnIGASFQQ7CNiOO', 'guru', 3, NULL, NULL, 0),
+('Siswa SD', 'siswa.sd@yayasan.com', '$2b$10$og3YfG.PeVzOjEY8AYCHgO/7umoOXoyjSIT/gjbnIGASFQQ7CNiOO', 'siswa', 3, '1001', 'VI-A', 1);
+
+-- Contoh beberapa siswa lain (untuk uji 1 NIS = 1 akun). Password 'rahasia123'.
+INSERT INTO users (name, email, password, role, unit_id, nis, class_name, identity_verified) VALUES
+('Siswa SD Dua', 'siswa2.sd@yayasan.com', '$2b$10$og3YfG.PeVzOjEY8AYCHgO/7umoOXoyjSIT/gjbnIGASFQQ7CNiOO', 'siswa', 3, '1002', 'VI-A', 1),
+('Siswa SD Tiga', 'siswa3.sd@yayasan.com', '$2b$10$og3YfG.PeVzOjEY8AYCHgO/7umoOXoyjSIT/gjbnIGASFQQ7CNiOO', 'siswa', 3, '1003', 'VI-B', 1);
 
 -- 3. Kategori Global
 INSERT IGNORE INTO mading_categories (name, slug, description, unit_id, is_active, order_index) VALUES

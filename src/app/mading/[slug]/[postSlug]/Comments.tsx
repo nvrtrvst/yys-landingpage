@@ -11,6 +11,8 @@ interface Comment {
   created_at: string;
   user_name: string;
   user_role: string;
+  user_nis: string | null;
+  is_flagged: number;
   parent_id: number | null;
   replies?: Comment[];
 }
@@ -47,6 +49,7 @@ export function Comments({ postId }: { postId: number }) {
 
   const tree = useMemo(() => buildTree(comments), [comments]);
   const total = comments.length;
+  const isMod = ["superadmin", "admin", "admin_unit"].includes(session?.user?.role || "");
 
   const load = () =>
     fetch(`/api/mading/posts/${postId}/comments`)
@@ -85,6 +88,12 @@ export function Comments({ postId }: { postId: number }) {
         <div className="flex items-center gap-2 mb-1 flex-wrap">
           <span className="font-medium text-gray-900">{c.user_name}</span>
           <span className="text-xs text-gray-400">{roleLabel(c.user_role)}</span>
+          {isMod && c.user_nis && <span className="text-xs text-gray-400 font-mono">NIS {c.user_nis}</span>}
+          {isMod && c.is_flagged ? (
+            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-700 ring-1 ring-amber-700/10">
+              ⚠ Perlu moderasi
+            </span>
+          ) : null}
           <span className="text-xs text-gray-400">
             {new Date(c.created_at).toLocaleDateString("id-ID", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
           </span>

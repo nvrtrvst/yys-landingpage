@@ -18,10 +18,10 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     const err = checkAuth(session);
     if (err) return NextResponse.json({ error: err }, { status: err === "Tidak terautentikasi" ? 401 : 403 });
 
-    const { name, role, password } = await request.json();
+    const { name, role, password, nis, class_name } = await request.json();
     const userId = (await params).id;
 
-    const [rows] = await pool.execute<RowDataPacket[]>("SELECT id, name, email, role, unit_id FROM users WHERE id = ?", [userId]);
+    const [rows] = await pool.execute<RowDataPacket[]>("SELECT id, name, email, role, unit_id, nis FROM users WHERE id = ?", [userId]);
     if (rows.length === 0) return NextResponse.json({ error: "Tidak ditemukan" }, { status: 404 });
     const user = rows[0] as RowDataPacket;
 
@@ -32,11 +32,22 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
       if (role && !["guru", "siswa"].includes(role)) return NextResponse.json({ error: "Role tidak valid" }, { status: 400 });
     }
 
+    const newRole = role || user.role;
+    if (newRole === "siswa" && !nis) {
+      return NextResponse.json({ error: "Siswa wajib memiliki NIS" }, { status: 400 });
+    }
+    if (nis) {
+      const [dupNis] = await pool.execute<RowDataPacket[]>("SELECT id FROM users WHERE nis = ? AND id <> ?", [nis, userId]);
+      if (dupNis.length > 0) return NextResponse.json({ error: "NIS sudah terdaftar" }, { status: 400 });
+    }
+
     const updates: string[] = [];
-    const values: (string | number)[] = [];
+    const values: (string | number | null)[] = [];
 
     if (name && name.trim().length >= 2) { updates.push("name = ?"); values.push(name.trim()); }
     if (role && session!.user.role !== "admin_unit") { updates.push("role = ?"); values.push(role); }
+    if (typeof nis === "string") { updates.push("nis = ?"); values.push(nis.trim() || null); updates.push("identity_verified = ?"); values.push(nis.trim() ? 1 : 0); }
+    if (typeof class_name === "string") { updates.push("class_name = ?"); values.push(class_name.trim() || null); }
     if (password) {
       if (password.length < 6) return NextResponse.json({ error: "Password minimal 6 karakter" }, { status: 400 });
       updates.push("password = ?");
