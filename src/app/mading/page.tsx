@@ -52,7 +52,7 @@ export default async function MadingHub() {
         (SELECT COUNT(*) FROM mading_categories WHERE is_active = 1) as categories`
     );
     if (statRows[0]) {
-      const s = statRows[0] as any;
+      const s = statRows[0] as RowDataPacket;
       stats = {
         units: s.units || 0,
         posts: s.posts || 0,

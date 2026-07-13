@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 export default withAuth(
   function middleware(req) {
     const token = req.nextauth.token;
-    const role = (token as any)?.role;
+    const role = (token as { role?: string } | undefined)?.role;
     const path = req.nextUrl.pathname;
 
     // Restricted routes for superadmin & admin only (editors cannot access)

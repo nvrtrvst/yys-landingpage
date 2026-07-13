@@ -13,8 +13,6 @@ const dbConfig = {
 
 // Global is used here to maintain a cached connection across hot reloads
 // in development. This prevents connections multiplying exponentially.
-let pool: mysql.Pool;
-
 declare global {
   var mysqlPool: mysql.Pool | undefined;
 }
@@ -33,7 +31,7 @@ if (!global.mysqlPool) {
   }
 }
 
-pool = global.mysqlPool;
+const pool = global.mysqlPool!;
 
 let settingsCache: { value: Record<string, string>; ts: number } | null = null;
 const SETTINGS_TTL_MS = 60_000;

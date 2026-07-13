@@ -4,14 +4,16 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Menu, X } from "lucide-react";
 import { motion } from "framer-motion";
+import { useMounted } from "@/lib/useMounted";
 
-export function HeaderUI({ settings, units }: { settings: Record<string, string>, units: any[] }) {
+export interface UnitItem { slug: string; name: string }
+
+export function HeaderUI({ settings, units }: { settings: Record<string, string>, units: UnitItem[] }) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isMounted, setIsMounted] = useState(false);
+  const isMounted = useMounted();
 
   useEffect(() => {
-    setIsMounted(true);
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 10);
     };
@@ -36,9 +38,10 @@ export function HeaderUI({ settings, units }: { settings: Record<string, string>
         <div className="flex items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 z-50">
-            {isMounted && settings.site_logo && !settings.site_logo.startsWith('/uploads/dummy/') ? (
+            {isMounted && settings.site_logo && !settings.site_logo.startsWith('/uploads/dummy/')               ? (
+              // eslint-disable-next-line @next/next/no-img-element
               <img 
-                src={settings.site_logo} 
+                src={settings.site_logo}  
                 alt="Logo" 
                 className="h-10 md:h-12 w-auto object-contain" 
                 loading="eager"
@@ -49,6 +52,7 @@ export function HeaderUI({ settings, units }: { settings: Record<string, string>
                 }}
               />
             ) : (
+              // eslint-disable-next-line @next/next/no-img-element
               <img src="/uploads/dummy/site_logo.png" alt="Logo" className="h-10 md:h-12 w-auto object-contain" loading="eager" decoding="async" />
             )}
             <div className={`font-serif text-xl md:text-2xl font-bold tracking-tight ${isScrolled ? 'text-primary-800' : 'text-white drop-shadow-md'}`}>

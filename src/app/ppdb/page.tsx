@@ -1,7 +1,7 @@
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { PPDBForm } from "./PPDBForm";
-import { FAQSection } from "@/components/FAQSection";
+import { FAQSection, type FaqItem } from "@/components/FAQSection";
 import pool from "@/lib/db";
 import { RowDataPacket } from "mysql2";
 import Link from "next/link";
@@ -37,7 +37,7 @@ export default async function PPDBPage() {
       </div>
 
       {/* FAQ Section */}
-      <FAQSection data={faqs} />
+      <FAQSection data={faqs as FaqItem[]} />
       
       <Footer />
     </main>

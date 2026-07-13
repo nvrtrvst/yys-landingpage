@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { toast } from "sonner";
 import { Search, Plus, X, Pencil, Trash2, UserCheck, User, Upload } from "lucide-react";
 
@@ -18,7 +18,6 @@ interface UnitUser {
 
 export default function MadingUsersPage() {
   const [users, setUsers] = useState<UnitUser[]>([]);
-  const [filtered, setFiltered] = useState<UnitUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState<string>("all");
@@ -34,7 +33,6 @@ export default function MadingUsersPage() {
       if (!res.ok) throw new Error();
       const data = await res.json();
       setUsers(data);
-      setFiltered(data);
     } catch {
       toast.error("Gagal memuat data user");
     } finally {
@@ -42,9 +40,24 @@ export default function MadingUsersPage() {
     }
   }, []);
 
-  useEffect(() => { fetchUsers(); }, [fetchUsers]);
-
   useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      try {
+        const res = await fetch("/api/mading/unit-users");
+        if (!res.ok) throw new Error();
+        if (!cancelled) setUsers(await res.json());
+      } catch {
+        toast.error("Gagal memuat data user");
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  const filtered = useMemo(() => {
     let result = users;
     if (search) {
       const q = search.toLowerCase();
@@ -55,8 +68,8 @@ export default function MadingUsersPage() {
       );
     }
     if (roleFilter !== "all") result = result.filter(u => u.role === roleFilter);
-    setFiltered(result);
-  }, [search, roleFilter, users]);
+    return result;
+  }, [users, search, roleFilter]);
 
   const resetForm = () => {
     setEditing(null);
@@ -79,7 +92,7 @@ export default function MadingUsersPage() {
     setSaving(true);
     try {
       if (editing) {
-        const body: any = { name: form.name.trim(), nis: form.nis.trim(), class_name: form.class_name.trim() };
+        const body: Record<string, unknown> = { name: form.name.trim(), nis: form.nis.trim(), class_name: form.class_name.trim() };
         if (form.password) body.password = form.password;
         const res = await fetch(`/api/mading/unit-users/${editing.id}`, {
           method: "PUT",
@@ -101,8 +114,8 @@ export default function MadingUsersPage() {
       setShowModal(false);
       resetForm();
       fetchUsers();
-    } catch (err: any) {
-      toast.error(err.message || "Kesalahan server");
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "Kesalahan server");
     } finally {
       setSaving(false);
     }
@@ -111,7 +124,12 @@ export default function MadingUsersPage() {
   const [importModal, setImportModal] = useState(false);
   const [importFile, setImportFile] = useState<File | null>(null);
   const [importing, setImporting] = useState(false);
-  const [importResult, setImportResult] = useState<any>(null);
+  interface ImportResult {
+    created: number;
+    failed: number;
+    errors?: string[];
+  }
+  const [importResult, setImportResult] = useState<ImportResult | null>(null);
 
   const handleImport = async () => {
     if (!importFile) { toast.error("Pilih file CSV"); return; }
@@ -139,8 +157,8 @@ export default function MadingUsersPage() {
       if (!res.ok) { const d = await res.json(); throw new Error(d.error || "Gagal"); }
       toast.success("User dihapus");
       fetchUsers();
-    } catch (err: any) {
-      toast.error(err.message || "Gagal menghapus");
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "Gagal menghapus");
     }
   };
 

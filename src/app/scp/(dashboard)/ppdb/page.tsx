@@ -3,8 +3,29 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
 
+interface PPDBRow {
+  id: number;
+  registration_number: string;
+  student_name: string;
+  unit: string;
+  grade: string;
+  major: string | null;
+  status: string;
+  sync_status: string;
+  created_at: string;
+  is_printed: boolean;
+  birth_place: string;
+  birth_date: string;
+  phone: string;
+  previous_school: string | null;
+  father_name: string;
+  mother_name: string;
+  nisn: string | null;
+  email: string | null;
+}
+
 export default function PPDBPage() {
-  const [data, setData] = useState<any[]>([]);
+  const [data, setData] = useState<PPDBRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterUnit, setFilterUnit] = useState("");
   const [filterStatus, setFilterStatus] = useState("");

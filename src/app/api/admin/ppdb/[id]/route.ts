@@ -4,6 +4,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
+import { RowDataPacket } from 'mysql2';
 import { sendPPDBStatusEmail } from '@/lib/mailer';
 
 const updateSchema = z.object({
@@ -50,8 +51,8 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 
       if (data.status) {
         try {
-          const [rows] = await pool.execute('SELECT email, registration_number, student_name, status, unit FROM ppdb_submissions WHERE id = ?', [(await params).id]);
-          const applicant = (rows as any[])[0];
+          const [rows] = await pool.execute<RowDataPacket[]>('SELECT email, registration_number, student_name, status, unit FROM ppdb_submissions WHERE id = ?', [(await params).id]);
+          const applicant = rows[0];
           if (applicant && applicant.email) {
             sendPPDBStatusEmail({
               to: applicant.email,
@@ -82,10 +83,10 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     const role = session.user.role;
     if (role !== 'superadmin' && role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
-    const [rows] = await pool.execute('SELECT * FROM ppdb_submissions WHERE id = ?', [(await params).id]);
-    if ((rows as any[]).length === 0) return NextResponse.json({ error: 'Not Found' }, { status: 404 });
+    const [rows] = await pool.execute<RowDataPacket[]>('SELECT * FROM ppdb_submissions WHERE id = ?', [(await params).id]);
+    if (rows.length === 0) return NextResponse.json({ error: 'Not Found' }, { status: 404 });
 
-    return NextResponse.json((rows as any[])[0]);
+    return NextResponse.json(rows[0]);
   } catch (error) {
     console.error(error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });

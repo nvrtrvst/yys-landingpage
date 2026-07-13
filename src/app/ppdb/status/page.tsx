@@ -113,7 +113,7 @@ export default async function PPDBStatusPage({
                   <div className="text-center py-12">
                     <div className="w-16 h-16 bg-red-100 text-red-500 rounded-full flex items-center justify-center text-2xl mx-auto mb-4">✕</div>
                     <h3 className="text-xl font-bold text-gray-900 mb-2">Data Tidak Ditemukan</h3>
-                    <p className="text-gray-600">Nomor pendaftaran "{regNumber}" tidak terdaftar dalam sistem kami. Pastikan nomor yang dimasukkan sudah benar.</p>
+                    <p className="text-gray-600">Nomor pendaftaran &quot;{regNumber}&quot; tidak terdaftar dalam sistem kami. Pastikan nomor yang dimasukkan sudah benar.</p>
                   </div>
                 )}
               </div>

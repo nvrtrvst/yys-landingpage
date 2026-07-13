@@ -1,32 +1,56 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { toast } from "sonner";
 
+interface AdminUser {
+  id: number;
+  name: string;
+  email: string;
+  role: string;
+  unit_id: number | null;
+  created_at?: string;
+}
+
 export default function UsersPage() {
-  const [users, setUsers] = useState<any[]>([]);
+  const [users, setUsers] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
-  const [formData, setFormData] = useState({ id: "", name: "", email: "", password: "", role: "editor" });
+  const [formData, setFormData] = useState<{ id: number | string; name: string; email: string; password: string; role: string }>({ id: "", name: "", email: "", password: "", role: "editor" });
   const [isEditing, setIsEditing] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  useEffect(() => {
-    fetchUsers();
-  }, []);
-
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
     try {
       const res = await fetch("/api/admin/users");
       if (!res.ok) throw new Error("Gagal memuat daftar pengguna");
       const data = await res.json();
       setUsers(data);
-    } catch(error: unknown) {
-      toast.error((error instanceof Error ? error.message : String(error)));
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : String(error));
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch("/api/admin/users");
+        if (!res.ok) throw new Error("Gagal memuat daftar pengguna");
+        const data = await res.json();
+        if (!cancelled) setUsers(data);
+      } catch (error: unknown) {
+        if (!cancelled) toast.error(error instanceof Error ? error.message : String(error));
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,7 +79,7 @@ export default function UsersPage() {
     }
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (id: number) => {
     if (!confirm("Yakin ingin menghapus pengguna ini? Tindakan ini tidak dapat dibatalkan.")) return;
     
     try {
@@ -76,7 +100,7 @@ export default function UsersPage() {
     setShowModal(true);
   };
 
-  const openModalForEdit = (user: any) => {
+  const openModalForEdit = (user: AdminUser) => {
     setFormData({ id: user.id, name: user.name, email: user.email, password: "", role: user.role });
     setIsEditing(true);
     setShowModal(true);

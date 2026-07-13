@@ -108,11 +108,44 @@ export default function GuruDashboard() {
       router.push("/mading");
       return;
     }
-    if (status === "authenticated") {
-      fetchCounts();
-      fetchList(activeTab);
-    }
-  }, [status, session, router, fetchCounts, fetchList, activeTab]);
+    if (status !== "authenticated") return;
+    let cancelled = false;
+    (async () => {
+      try {
+        setLoading(true);
+        const [p, a, r, j] = await Promise.all([
+          fetch("/api/mading/posts?status=pending&limit=1"),
+          fetch("/api/mading/posts?status=approved&limit=1"),
+          fetch("/api/mading/posts?status=revision&limit=1"),
+          fetch("/api/mading/posts?status=rejected&limit=1"),
+        ]);
+        const pd = await p.json();
+        const ad = await a.json();
+        const rd = await r.json();
+        const jd = await j.json();
+        if (cancelled) return;
+        setCounts({
+          pending: pd.total ?? 0,
+          approved: ad.total ?? 0,
+          revision: rd.total ?? 0,
+          rejected: jd.total ?? 0,
+        });
+      } catch {
+        /* ignore */
+      }
+      try {
+        const res = await fetch(`/api/mading/posts?status=${activeTab}&limit=50`);
+        const data = await res.json();
+        if (cancelled) return;
+        setPosts(data.data || []);
+      } catch {
+        toast.error("Gagal memuat data");
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [status, session, router, activeTab]);
 
   const afterChange = () => {
     setSelectedPost(null);

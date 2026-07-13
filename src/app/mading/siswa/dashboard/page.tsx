@@ -77,8 +77,30 @@ export default function SiswaDashboard() {
   useEffect(() => {
     if (status === "unauthenticated") { router.push("/mading/siswa/login"); return; }
     if (status === "authenticated" && session!.user.role !== "siswa") { router.push("/mading"); return; }
-    if (status === "authenticated") load();
-  }, [status, session, router, load]);
+    if (status !== "authenticated") return;
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      try {
+        const [postsRes, notifRes] = await Promise.all([
+          fetch("/api/mading/my-posts"),
+          fetch("/api/mading/notifications"),
+        ]);
+        const postsData = await postsRes.json();
+        const notifData = await notifRes.json();
+        if (cancelled) return;
+        setPosts(postsData.data || []);
+        setStats(postsData.stats || { draft: 0, pending: 0, approved: 0, revision: 0, rejected: 0 });
+        setNotifs(notifData.data || []);
+        setUnread(notifData.unreadCount || 0);
+      } catch {
+        toast.error("Gagal memuat data");
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [status, session, router]);
 
   const markAllRead = useCallback(async () => {
     try {
@@ -345,7 +367,7 @@ export default function SiswaDashboard() {
             ) : (
               <div className="space-y-2">
                 {notifs.map((n) => (
-                  <NotifItem key={n.id} id={n.id} message={n.message} createdAt={n.created_at} isRead={!!n.is_read} postId={n.post_id} />
+                  <NotifItem key={n.id} id={n.id} message={n.message} createdAt={n.created_at} isRead={!!n.is_read} />
                 ))}
               </div>
             )}

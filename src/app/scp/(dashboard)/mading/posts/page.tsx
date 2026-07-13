@@ -4,11 +4,22 @@ import { toast } from "sonner";
 import DOMPurify from "isomorphic-dompurify";
 import { StatusBadge } from "@/components/mading/StatusBadge";
 
+interface MadingPost {
+  id: number;
+  title: string;
+  author_name: string;
+  category_name: string | null;
+  content: string;
+  excerpt: string | null;
+  created_at: string;
+  status: string;
+}
+
 export default function MadingPostsPage() {
-  const [posts, setPosts] = useState<any[]>([]);
+  const [posts, setPosts] = useState<MadingPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("pending");
-  const [selectedPost, setSelectedPost] = useState<any>(null);
+  const [selectedPost, setSelectedPost] = useState<MadingPost | null>(null);
   const [note, setNote] = useState("");
 
   const fetchPosts = async () => {
@@ -21,7 +32,19 @@ export default function MadingPostsPage() {
     finally { setLoading(false); }
   };
 
-  useEffect(() => { fetchPosts(); }, [filter]);
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      try {
+        const res = await fetch(`/api/mading/posts?status=${filter}&limit=50`);
+        const data = await res.json();
+        if (!cancelled) setPosts(data.data || []);
+      } catch { toast.error("Gagal memuat"); }
+      finally { if (!cancelled) setLoading(false); }
+    })();
+    return () => { cancelled = true; };
+  }, [filter]);
 
   const handleStatus = async (postId: number, action: string) => {
     if ((action === "rejected" || action === "revision") && !note) {

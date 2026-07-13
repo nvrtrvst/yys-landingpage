@@ -35,8 +35,8 @@ export async function GET() {
     const statusMap: Record<string, number> = {};
     for (const row of postsByStatus as RowDataPacket[]) statusMap[row.status as string] = row.count;
 
-    let perUnit: any[] = [];
-    let totalUsers = { guru: 0, siswa: 0 };
+    let perUnit: RowDataPacket[] = [];
+    const totalUsers = { guru: 0, siswa: 0 };
 
     if (!isAdminUnit) {
       const [byUnit] = await pool.execute<RowDataPacket[]>(

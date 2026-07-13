@@ -22,7 +22,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     const isMod = ["superadmin", "admin", "admin_unit", "guru"].includes(session.user.role);
     const isOwner = parseInt(session.user.id) === post.author_id;
 
-    let toStatus = action === "submit" ? "pending" : action;
+    const toStatus = action === "submit" ? "pending" : action;
 
     if (action === "submit") {
       if (!isOwner) return NextResponse.json({ error: "Dilarang" }, { status: 403 });

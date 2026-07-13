@@ -65,9 +65,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Siswa hanya bisa upload gambar.' }, { status: 400 });
     }
 
-    let finalBuffer: any = buffer;
-    let ext = isPdf ? 'pdf' : 'webp';
-    let filename = `${crypto.randomUUID()}-${Date.now()}.${ext}`;
+    let finalBuffer: Buffer = buffer;
+    const ext = isPdf ? 'pdf' : 'webp';
+    const filename = `${crypto.randomUUID()}-${Date.now()}.${ext}`;
 
     if (!isPdf) {
       try {

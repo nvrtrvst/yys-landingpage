@@ -2,7 +2,15 @@
 
 import React from "react";
 
-export function TestimonialsSection({ data }: { data: any[] }) {
+export interface Testimonial {
+  id: number;
+  content: string;
+  image_url?: string;
+  author_name: string;
+  role: string;
+}
+
+export function TestimonialsSection({ data }: { data: Testimonial[] }) {
   if (!data || data.length === 0) return null;
 
   return (
@@ -32,7 +40,7 @@ export function TestimonialsSection({ data }: { data: any[] }) {
                 &rdquo;
               </div>
               <p className="text-gray-700 font-serif text-lg md:text-xl leading-relaxed flex-1 mb-8 relative z-10">
-                "{testi.content}"
+                &quot;{testi.content}&quot;
               </p>
               <div className="flex items-center gap-4 mt-auto pt-6 border-t border-gray-50">
                 {testi.image_url ? (

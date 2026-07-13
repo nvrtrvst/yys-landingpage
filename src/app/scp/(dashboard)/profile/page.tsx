@@ -67,7 +67,7 @@ export default function ProfilePage() {
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-500 mb-1">Hak Akses</label>
-            <div className="font-semibold text-gray-900 uppercase">{(session?.user as any)?.role || '-'}</div>
+            <div className="font-semibold text-gray-900 uppercase">{(session?.user as { role?: string })?.role || '-'}</div>
           </div>
         </div>
 

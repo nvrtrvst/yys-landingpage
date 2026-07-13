@@ -45,7 +45,7 @@ export async function POST(request: Request) {
       [name.trim(), slug, description || null, targetUnit]);
     return NextResponse.json({ success: true, id: inserted.insertId });
   } catch (error: unknown) {
-    if ((error as any)?.code === "ER_DUP_ENTRY")
+    if ((error as { code?: string })?.code === "ER_DUP_ENTRY")
       return NextResponse.json({ error: "Kategori sudah ada" }, { status: 400 });
     console.error("Error creating category:", error);
     return NextResponse.json({ error: "Kesalahan server internal" }, { status: 500 });

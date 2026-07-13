@@ -2,10 +2,18 @@
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 
+interface MadingCategory {
+  id: number;
+  name: string;
+  description: string | null;
+  unit_id: number | null;
+  is_active: number | boolean;
+}
+
 export default function MadingCategoriesPage() {
-  const [categories, setCategories] = useState<any[]>([]);
+  const [categories, setCategories] = useState<MadingCategory[]>([]);
   const [loading, setLoading] = useState(true);
-  const [editing, setEditing] = useState<any>(null);
+  const [editing, setEditing] = useState<MadingCategory | null>(null);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
 
@@ -18,7 +26,18 @@ export default function MadingCategoriesPage() {
     finally { setLoading(false); }
   };
 
-  useEffect(() => { fetchCats(); }, []);
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      try {
+        const res = await fetch("/api/mading/categories?all=true");
+        if (!cancelled) setCategories(await res.json());
+      } catch { toast.error("Gagal memuat"); }
+      finally { if (!cancelled) setLoading(false); }
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
   const handleSave = async () => {
     if (!name.trim()) { toast.error("Nama diperlukan"); return; }

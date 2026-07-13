@@ -48,7 +48,7 @@ export async function GET(request: Request) {
     if (category) { where += " AND p.category_id = ?"; params.push(parseInt(category)); }
 
     const [countRows] = await pool.execute<RowDataPacket[]>(`SELECT COUNT(*) as total FROM mading_posts p ${where}`, params);
-    const total = (countRows[0] as any).total;
+    const total = (countRows[0] as { total: number }).total;
 
     const [rows] = await pool.execute<RowDataPacket[]>(
        `SELECT p.id, p.slug, p.title, SUBSTRING(p.content, 1, 200) as excerpt, p.cover_image, p.category_id, p.author_id, p.unit_id, p.status, p.revision_note, p.published_at, p.created_at, p.updated_at, p.views,

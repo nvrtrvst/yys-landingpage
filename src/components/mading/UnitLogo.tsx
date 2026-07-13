@@ -1,16 +1,17 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 export function UnitLogo({ src, slug, alt }: { src: string | null; slug: string; alt: string }) {
   const fallback = slug ? `/${slug}.png` : "/logo.png";
-  const [current, setCurrent] = useState<string>(src || fallback);
-  useEffect(() => { setCurrent(src || fallback); }, [src, fallback]);
+  const [errored, setErrored] = useState(false);
+  const current = errored ? "/logo.png" : src || fallback;
   return (
     <img
       src={current}
       alt={alt}
       className="w-full h-full object-cover"
-      onError={() => setCurrent("/logo.png")}
+      onError={() => setErrored(true)}
     />
   );
 }

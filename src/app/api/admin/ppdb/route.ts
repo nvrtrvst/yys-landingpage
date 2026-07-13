@@ -24,7 +24,7 @@ export async function GET(request: Request) {
       student_name, nisn, birth_place, birth_date, gender, phone, email,
       previous_school, father_name, mother_name, created_at
       FROM ppdb_submissions WHERE 1=1`;
-    const params: any[] = [];
+    const params: string[] = [];
 
     if (unit) {
       // Validate unit against allowed values to prevent unexpected input

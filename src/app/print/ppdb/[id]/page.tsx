@@ -4,7 +4,7 @@ import Image from "next/image";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import PrintCardClient from "./PrintCardClient";
+import PrintCardClient, { type PrintStudent } from "./PrintCardClient";
 
 export default async function PrintPPDBPage({ params }: { params: Promise<{ id: string }> }) {
   // Authentication check (Security: Prevent IDOR)
@@ -30,11 +30,17 @@ export default async function PrintPPDBPage({ params }: { params: Promise<{ id: 
     'SELECT setting_value FROM settings WHERE setting_key = "ppdb_config"'
   );
   
+  interface PpdbSchedule {
+    activity: string;
+    wave1: string;
+    wave2: string;
+  }
+
   let ppdbConfig = {
     academic_year: "2026-2027",
     headmaster_name: "",
     committee_name: "",
-    schedules: [] as any[]
+    schedules: [] as PpdbSchedule[]
   };
 
   if (settingRows.length > 0 && settingRows[0].setting_value) {
@@ -47,6 +53,6 @@ export default async function PrintPPDBPage({ params }: { params: Promise<{ id: 
   }
 
   return (
-    <PrintCardClient student={student} ppdbConfig={ppdbConfig} />
+    <PrintCardClient student={student as unknown as PrintStudent} ppdbConfig={ppdbConfig} />
   );
 }

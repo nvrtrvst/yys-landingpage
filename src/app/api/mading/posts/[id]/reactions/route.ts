@@ -54,7 +54,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     const [countRows] = await pool.execute<RowDataPacket[]>(
       "SELECT COUNT(*) as count FROM mading_reactions WHERE post_id = ?", [postId]
     );
-    const count = (countRows[0] as any).count;
+    const count = (countRows[0] as { count: number }).count;
 
     let userReacted = false;
     if (session) {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import Link from "next/link";
 import { ShieldAlert, Trash2, CheckCircle2 } from "lucide-react";
@@ -23,20 +23,22 @@ export default function ModerasiKomentarPage() {
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState<number | null>(null);
 
-  const load = useCallback(async () => {
-    setLoading(true);
-    try {
-      const res = await fetch("/api/mading/comments");
-      if (!res.ok) throw new Error();
-      setItems(await res.json());
-    } catch {
-      toast.error("Gagal memuat komentar");
-    } finally {
-      setLoading(false);
-    }
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      try {
+        const res = await fetch("/api/mading/comments");
+        if (!res.ok) throw new Error();
+        if (!cancelled) setItems(await res.json());
+      } catch {
+        toast.error("Gagal memuat komentar");
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
   }, []);
-
-  useEffect(() => { load(); }, [load]);
 
   const hapus = async (id: number) => {
     if (!confirm("Hapus komentar ini secara permanen?")) return;
@@ -46,8 +48,8 @@ export default function ModerasiKomentarPage() {
       if (!res.ok) { const d = await res.json(); throw new Error(d.error || "Gagal"); }
       toast.success("Komentar dihapus");
       setItems((prev) => prev.filter((x) => x.id !== id));
-    } catch (err: any) {
-      toast.error(err.message || "Gagal menghapus");
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "Gagal menghapus");
     } finally { setBusyId(null); }
   };
 
@@ -62,8 +64,8 @@ export default function ModerasiKomentarPage() {
       if (!res.ok) { const d = await res.json(); throw new Error(d.error || "Gagal"); }
       toast.success("Komentar ditandai aman");
       setItems((prev) => prev.filter((x) => x.id !== id));
-    } catch (err: any) {
-      toast.error(err.message || "Gagal memproses");
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "Gagal memproses");
     } finally { setBusyId(null); }
   };
 

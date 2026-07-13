@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { RowDataPacket } from "mysql2";
 import pool from "@/lib/db";
 import { sendPPDBSingleEmail } from "@/lib/mailer";
 
@@ -78,7 +79,7 @@ export async function POST(req: Request) {
       //   COUNT-based: Two concurrent requests both read count=5, both try to create #6 → DUPLICATE.
       //   MAX-based + FOR UPDATE: The first request locks the row; the second waits, then reads the
       //   updated MAX, so they correctly generate #6 and #7 sequentially.
-      const [seqRows] = await connection.execute<any[]>(
+      const [seqRows] = await connection.execute<RowDataPacket[]>(
         `SELECT MAX(CAST(SUBSTRING_INDEX(registration_number, '-', -1) AS UNSIGNED)) as maxSeq
          FROM ppdb_submissions
          WHERE unit = ? AND YEAR(created_at) = ?

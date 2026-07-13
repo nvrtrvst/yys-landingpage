@@ -22,12 +22,18 @@ export default async function MassPrintPPDBPage({ searchParams }: { searchParams
   }
 
   // 1. Fetch Setting (Schedule & Config)
+  interface PpdbSchedule {
+    activity: string;
+    wave1: string;
+    wave2: string;
+  }
+
   let ppdbConfig = {
     academic_year: '2026-2027',
     headmaster_name: '',
     headmaster_nip: '',
     committee_name: '',
-    schedules: [] as any[]
+    schedules: [] as PpdbSchedule[]
   };
   
   const [settingRows] = await pool.execute<RowDataPacket[]>(
@@ -160,7 +166,6 @@ export default async function MassPrintPPDBPage({ searchParams }: { searchParams
             {/* Header */}
             <div className="flex items-center border-b border-black pb-3 mb-4">
               <div className="w-20 h-20 ml-2 flex items-center justify-center shrink-0">
-                {/* @ts-ignore */}
                 <img 
                   src={`/logo/${student.unit?.toLowerCase() || 'logo'}.png`} 
                   alt={`Logo ${student.unit}`} 

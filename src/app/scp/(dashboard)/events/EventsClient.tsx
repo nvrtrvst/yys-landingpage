@@ -37,7 +37,20 @@ export function EventsClient() {
   };
 
   useEffect(() => {
-    fetchData();
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      try {
+        const res = await fetch('/api/admin/events');
+        if (!res.ok) throw new Error();
+        if (!cancelled) setData(await res.json());
+      } catch (err) {
+        toast.error("Gagal memuat agenda");
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
   }, []);
 
   const handleSelectSlot = ({ start, end }: { start: Date, end: Date }) => {
@@ -47,7 +60,7 @@ export function EventsClient() {
     });
   };
 
-  const handleSelectEvent = (event: any) => {
+  const handleSelectEvent = (event: { id: number }) => {
     const item = data.find(d => d.id === event.id);
     if (item) {
       setEditingItem({
@@ -169,7 +182,7 @@ export function EventsClient() {
           </form>
         ) : (
           <div className="text-center py-12 text-gray-400 bg-gray-50 rounded border border-dashed">
-            Pilih tanggal di kalender atau klik tombol "+ Baru" untuk menambah agenda.
+            Pilih tanggal di kalender atau klik tombol &quot;+ Baru&quot; untuk menambah agenda.
           </div>
         )}
       </div>

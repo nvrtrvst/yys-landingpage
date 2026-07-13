@@ -28,7 +28,20 @@ export function NewsClient() {
   };
 
   useEffect(() => {
-    fetchData();
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      try {
+        const res = await fetch('/api/admin/news');
+        if (!res.ok) throw new Error("Gagal memuat");
+        if (!cancelled) setData(await res.json());
+      } catch (err) {
+        toast.error("Gagal memuat berita");
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
   }, []);
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {

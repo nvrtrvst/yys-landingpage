@@ -6,6 +6,21 @@ import Link from "next/link";
 
 const PER_PAGE = 12;
 
+interface MadingPostRow {
+  id: number;
+  slug?: string;
+  title: string;
+  excerpt?: string;
+  cover_image?: string | null;
+  author_name?: string;
+  category_name?: string;
+  category_slug?: string;
+  published_at?: string;
+  created_at: string;
+  status?: string;
+  views?: number;
+}
+
 export const revalidate = 60;
 
 export default async function UnitMadingPage({
@@ -33,7 +48,7 @@ export default async function UnitMadingPage({
   const queryParams: (string | number)[] = [unit.id];
 
   if (categorySlug) {
-    const found = categories.find((c: any) => c.slug === categorySlug);
+    const found = categories.find((c: RowDataPacket) => c.slug === categorySlug);
     if (found) {
       activeCategory = found;
       whereClauses.push("p.category_id = ?");
@@ -61,7 +76,7 @@ export default async function UnitMadingPage({
       [...queryParams]
     ),
   ]);
-  const total = (countRows[0] as any).total;
+  const total = (countRows[0] as RowDataPacket).total;
   const totalPages = Math.ceil(total / PER_PAGE);
 
   const buildUrl = (p: number, cat?: string, q?: string) => {
@@ -86,7 +101,7 @@ export default async function UnitMadingPage({
             className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
               !activeCategory ? "bg-green-600 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
             }`}>Semua</Link>
-          {categories.map((cat: any) => (
+          {categories.map((cat: RowDataPacket) => (
             <Link key={cat.id}
               href={`/mading/${slug}?category=${cat.slug}${query ? `&q=${encodeURIComponent(query)}` : ""}`}
               className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
@@ -112,7 +127,7 @@ export default async function UnitMadingPage({
       ) : (
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-            {posts.map((post: any) => <PostCard key={post.id} post={post} unitSlug={slug} />)}
+            {(posts as MadingPostRow[]).map((post) => <PostCard key={post.id} post={post} unitSlug={slug} />)}
           </div>
 
           {totalPages > 1 && (

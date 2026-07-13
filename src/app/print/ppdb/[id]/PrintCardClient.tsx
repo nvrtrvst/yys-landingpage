@@ -4,11 +4,39 @@ import { toast } from "sonner";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 
-export default function PrintCardClient({ student, ppdbConfig }: { student: any, ppdbConfig: any }) {
+export interface PrintStudent {
+  id: number;
+  email?: string;
+  unit: string;
+  registration_number: string;
+  student_name: string;
+  birth_place?: string;
+  birth_date?: string;
+  address?: string;
+  phone?: string;
+  previous_school?: string;
+  student_photo?: string;
+  room?: string;
+}
+
+interface PrintSchedule {
+  activity: string;
+  wave1: string;
+  wave2: string;
+}
+
+interface PrintPpdbConfig {
+  academic_year?: string;
+  headmaster_name?: string;
+  committee_name?: string;
+  schedules: PrintSchedule[];
+}
+
+export default function PrintCardClient({ student, ppdbConfig }: { student: PrintStudent, ppdbConfig: PrintPpdbConfig }) {
   const cardRef = useRef<HTMLDivElement>(null);
   const [isSending, setIsSending] = useState(false);
 
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString: string | undefined) => {
     if (!dateString) return "";
     return new Date(dateString).toLocaleDateString('id-ID', {
       day: 'numeric', month: 'long', year: 'numeric'
@@ -105,7 +133,7 @@ export default function PrintCardClient({ student, ppdbConfig }: { student: any,
               </tr>
             </thead>
             <tbody>
-              {ppdbConfig.schedules.map((s: any, idx: number) => (
+              {ppdbConfig.schedules.map((s: PrintSchedule, idx: number) => (
                 <tr key={idx}>
                   <td className="border border-black p-1.5 font-semibold">{s.activity}</td>
                   <td className="border border-black p-1.5">{s.wave1}</td>

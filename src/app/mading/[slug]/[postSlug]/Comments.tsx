@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 import Link from "next/link";
@@ -51,16 +51,17 @@ export function Comments({ postId }: { postId: number }) {
   const total = comments.length;
   const isMod = ["superadmin", "admin", "admin_unit"].includes(session?.user?.role || "");
 
-  const load = () =>
+  const load = useCallback(() => {
     fetch(`/api/mading/posts/${postId}/comments`)
       .then((r) => r.json())
       .then((d) => setComments(Array.isArray(d) ? d : []))
       .catch(() => {})
       .finally(() => setFetching(false));
+  }, [postId]);
 
   useEffect(() => {
     load();
-  }, [postId]);
+  }, [load]);
 
   const submitComment = async (text: string, parentId: number | null) => {
     if (!session) { toast.error("Login untuk berkomentar"); return; }

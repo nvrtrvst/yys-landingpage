@@ -3,40 +3,54 @@ import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import Head from "next/head";
 
+interface PpdbPrintRow {
+  id: number;
+  unit?: string;
+  student_name: string;
+  registration_number: string;
+  nisn?: string;
+  grade?: string;
+  major?: string;
+}
+
 export default function PrintKelulusanPage() {
-  const [data, setData] = useState<any[]>([]);
+  const [data, setData] = useState<PpdbPrintRow[]>([]);
   const [loading, setLoading] = useState(true);
-  const [statusFilter, setStatusFilter] = useState("Diterima");
+  const [statusFilter] = useState(() =>
+    typeof window !== "undefined"
+      ? new URLSearchParams(window.location.search).get("status") || "Diterima"
+      : "Diterima"
+  );
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const s = params.get("status") || "Diterima";
-    setStatusFilter(s);
-
-    const fetchData = async () => {
+    let cancelled = false;
+    (async () => {
       try {
-        const res = await fetch(`/api/admin/ppdb?status=${s}`);
+        const res = await fetch(`/api/admin/ppdb?status=${statusFilter}`);
         if (!res.ok) {
           if (res.status === 401 || res.status === 403) {
-             throw new Error("Akses ditolak. Anda harus login sebagai admin.");
+            throw new Error("Akses ditolak. Anda harus login sebagai admin.");
           }
           throw new Error("Gagal memuat data kelulusan");
         }
         const json = await res.json();
+        if (cancelled) return;
         setData(json);
-        
+
         // Auto trigger print when data is loaded
         setTimeout(() => {
-          window.print();
+          if (!cancelled) window.print();
         }, 1000);
-      } catch(err: unknown) {
-        toast.error((err instanceof Error ? err.message : String(err)));
+      } catch (err: unknown) {
+        toast.error(err instanceof Error ? err.message : String(err));
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
+    })();
+    return () => {
+      cancelled = true;
     };
-    fetchData();
-  }, []);
+  }, [statusFilter]);
 
   if (loading) {
     return <div className="p-12 text-center text-xl font-bold font-sans">Menyiapkan dokumen cetak...</div>;
@@ -46,7 +60,7 @@ export default function PrintKelulusanPage() {
     return (
       <div className="p-12 text-center font-sans">
         <h2 className="text-2xl font-bold text-red-600 mb-2">Tidak ada data</h2>
-        <p>Belum ada pendaftar dengan status "{statusFilter}" untuk dicetak.</p>
+        <p>Belum ada pendaftar dengan status &quot;{statusFilter}&quot; untuk dicetak.</p>
         <button onClick={() => window.close()} className="mt-4 bg-gray-200 px-4 py-2 rounded font-medium">Tutup Halaman</button>
       </div>
     );
@@ -69,13 +83,14 @@ export default function PrintKelulusanPage() {
       </div>
 
       <div className="print-container flex flex-col items-center gap-8">
-        {data.map((siswa, index) => (
+        {data.map((siswa) => (
           <div key={siswa.id} className="print-page w-[210mm] min-h-[297mm] box-border bg-white pt-[1.2cm] px-[2.54cm] pb-[2.54cm] shadow-xl relative mx-auto" style={{ pageBreakAfter: "always" }}>
             
             {/* KOP SURAT */}
             <div className="border-b-[3px] border-black pb-4 mb-1 flex items-center justify-between">
               {/* Tempat logo */}
               <div className="w-24 h-24 flex items-center justify-center flex-shrink-0 mr-2">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img 
                   src={`/logo/${siswa.unit?.toLowerCase() || 'logo'}.png`} 
                   alt={`Logo ${siswa.unit}`} 
@@ -136,7 +151,7 @@ export default function PrintKelulusanPage() {
             </div>
 
             <div className="mb-6 text-justify leading-relaxed text-[12pt]">
-              <p className="mb-3">Assalamu'alaikum Warahmatullahi Wabarakatuh,</p>
+              <p className="mb-3">Assalamu&rsquo;alaikum Warahmatullahi Wabarakatuh,</p>
               
               <p className="mb-4">
                 Berdasarkan hasil seleksi Penerimaan Peserta Didik Baru (PPDB) <b><i>{siswa.unit} Nuurul Muttaqiin</i></b> Tahun Ajaran {new Date().getFullYear()}/{new Date().getFullYear() + 1}, dengan ini kami memberitahukan bahwa calon peserta didik dengan data di bawah ini:
@@ -209,7 +224,7 @@ export default function PrintKelulusanPage() {
                 </p>
               )}
               
-              <p className="mt-6">Wassalamu'alaikum Warahmatullahi Wabarakatuh.</p>
+              <p className="mt-6">Wassalamu&rsquo;alaikum Warahmatullahi Wabarakatuh.</p>
             </div>
 
             {/* Tanda Tangan */}

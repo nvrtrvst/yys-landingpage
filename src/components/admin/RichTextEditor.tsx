@@ -5,7 +5,31 @@ import StarterKit from '@tiptap/starter-kit';
 import Image from '@tiptap/extension-image';
 import Link from '@tiptap/extension-link';
 import Underline from '@tiptap/extension-underline';
-import { useCallback } from 'react';
+import { useCallback, type ReactNode } from 'react';
+
+interface ToolbarButtonProps {
+  onClick: () => void;
+  isActive?: boolean;
+  disabled?: boolean;
+  title?: string;
+  children: ReactNode;
+}
+
+function ToolbarButton({ onClick, isActive, disabled, title, children }: ToolbarButtonProps) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      title={title}
+      className={`p-2 flex-shrink-0 flex items-center justify-center rounded transition-colors ${
+        isActive ? 'bg-primary-100 text-primary-700 font-bold' : 'text-gray-600 hover:bg-gray-100'
+      } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+    >
+      {children}
+    </button>
+  );
+}
 import { Bold, Italic, Underline as UnderlineIcon, Strikethrough, List, ListOrdered, Quote, ImageIcon, Link as LinkIcon, Heading1, Heading2, Heading3, Undo, Redo, RemoveFormatting } from 'lucide-react';
 
 export function RichTextEditor({ value, onChange }: { value: string; onChange: (content: string) => void }) {
@@ -90,20 +114,6 @@ export function RichTextEditor({ value, onChange }: { value: string; onChange: (
   if (!editor) {
     return <div className="h-64 w-full bg-gray-50 border rounded flex items-center justify-center text-gray-400">Loading Editor...</div>;
   }
-
-  const ToolbarButton = ({ onClick, isActive, disabled, children, title }: any) => (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={disabled}
-      title={title}
-      className={`p-2 flex-shrink-0 flex items-center justify-center rounded transition-colors ${
-        isActive ? 'bg-primary-100 text-primary-700 font-bold' : 'text-gray-600 hover:bg-gray-100'
-      } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
-    >
-      {children}
-    </button>
-  );
 
   return (
     <div className="bg-white border border-gray-300 rounded-lg overflow-hidden flex flex-col">

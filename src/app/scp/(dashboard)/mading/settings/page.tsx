@@ -3,29 +3,54 @@ import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { Save, Settings, ToggleLeft, ToggleRight } from "lucide-react";
 
+interface MadingUnitSetting {
+  id: number;
+  name: string;
+  slug: string;
+  mading_enabled: number | boolean;
+}
+
+interface MadingSettingsData {
+  role: string;
+  settings: Record<string, string>;
+  units: MadingUnitSetting[];
+}
+
 export default function MadingSettingsPage() {
-  const [data, setData] = useState<any>(null);
+  const [data, setData] = useState<MadingSettingsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [global, setGlobal] = useState<Record<string, string>>({});
   const [unitToggles, setUnitToggles] = useState<Record<number, boolean>>({});
 
   useEffect(() => {
-    fetch("/api/mading/settings").then(r => r.json()).then(d => {
-      setData(d);
-      setGlobal(d.settings || {});
-      const toggles: Record<number, boolean> = {};
-      (d.units || []).forEach((u: any) => { toggles[u.id] = !!u.mading_enabled; });
-      setUnitToggles(toggles);
-    }).catch(() => toast.error("Gagal memuat")).finally(() => setLoading(false));
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch("/api/mading/settings");
+        const d: MadingSettingsData = await res.json();
+        if (cancelled) return;
+        setData(d);
+        setGlobal(d.settings || {});
+        const toggles: Record<number, boolean> = {};
+        (d.units || []).forEach((u: MadingUnitSetting) => { toggles[u.id] = !!u.mading_enabled; });
+        setUnitToggles(toggles);
+      } catch {
+        toast.error("Gagal memuat");
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
   }, []);
 
   const canEditGlobal = data && ["superadmin", "admin"].includes(data.role);
+  const units = data?.units ?? [];
 
   const handleSave = async () => {
     setSaving(true);
     try {
-      const body: any = {};
+      const body: Record<string, unknown> = {};
       if (canEditGlobal) body.global = global;
       body.unitUpdates = unitToggles;
       const res = await fetch("/api/mading/settings", {
@@ -97,14 +122,14 @@ export default function MadingSettingsPage() {
         </div>
       )}
 
-      {data?.units?.length > 0 && (
+      {units.length > 0 && (
         <div className="bg-white rounded-xl shadow-sm border">
           <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-2">
             <ToggleRight className="h-5 w-5 text-gray-400" />
             <h3 className="font-semibold text-gray-900">Status Mading per Unit</h3>
           </div>
           <div className="divide-y divide-gray-100">
-            {data.units.map((u: any) => (
+            {units.map((u: MadingUnitSetting) => (
               <div key={u.id} className="px-6 py-4 flex items-center justify-between hover:bg-gray-50/50">
                 <div>
                   <p className="font-medium text-gray-900 text-sm">{u.name}</p>

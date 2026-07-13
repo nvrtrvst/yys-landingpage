@@ -1,6 +1,6 @@
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
-import { TestimonialsSection } from "@/components/TestimonialsSection";
+import { TestimonialsSection, type Testimonial } from "@/components/TestimonialsSection";
 import pool from "@/lib/db";
 import { RowDataPacket } from "mysql2";
 import Link from "next/link";
@@ -302,7 +302,7 @@ export default async function Home() {
       )}
 
       {/* TESTIMONI */}
-      <TestimonialsSection data={testimonials} />
+      <TestimonialsSection data={testimonials as Testimonial[]} />
 
       <Footer />
     </main>

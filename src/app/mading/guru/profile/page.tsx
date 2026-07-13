@@ -33,7 +33,9 @@ export default function GuruProfilePage() {
   }, [status, session, router]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- sync state dari session
     if (session?.user.name) setName(session.user.name);
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- sync state dari session
     if (session?.user.photo) setPhoto(session.user.photo);
   }, [session?.user.name, session?.user.photo]);
 

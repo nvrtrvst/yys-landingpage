@@ -1,15 +1,15 @@
-import { HeaderUI } from "./HeaderUI";
+import { HeaderUI, type UnitItem } from "./HeaderUI";
 import pool from "@/lib/db";
 import { getSettings } from "@/lib/db";
 import { RowDataPacket } from "mysql2";
 
 export async function Header() {
   const settings = await getSettings();
-  
-  let units: RowDataPacket[] = [];
+
+  let units: UnitItem[] = [];
   try {
     const [rows] = await pool.execute<RowDataPacket[]>("SELECT slug, name FROM units WHERE status = 'active' ORDER BY order_index ASC");
-    units = rows;
+    units = rows as UnitItem[];
   } catch (error) {
     console.error("Failed to fetch units for header", error);
   }

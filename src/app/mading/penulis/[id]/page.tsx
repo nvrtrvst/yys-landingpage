@@ -7,6 +7,21 @@ import { MadingFooter } from "@/components/mading/MadingFooter";
 import { ThemeProvider } from "@/components/mading/ThemeProvider";
 import { UserAvatar } from "@/components/mading/UserAvatar";
 
+interface MadingPostRow {
+  id: number;
+  slug?: string;
+  title: string;
+  excerpt?: string;
+  cover_image?: string | null;
+  author_name?: string;
+  category_name?: string;
+  category_slug?: string;
+  published_at?: string;
+  created_at: string;
+  status?: string;
+  views?: number;
+}
+
 const PER_PAGE = 12;
 
 export const revalidate = 60;
@@ -36,7 +51,7 @@ export default async function PenulisPage({
 
   const [[unitRows], [countRows], [posts]] = await Promise.all([
     pool.execute<RowDataPacket[]>(
-      "SELECT id, name, slug FROM units WHERE id = ?", [(author as any).unit_id]
+      "SELECT id, name, slug FROM units WHERE id = ?", [author.unit_id]
     ),
     pool.execute<RowDataPacket[]>(
       "SELECT COUNT(*) as total FROM mading_posts WHERE author_id = ? AND status = 'approved'", [id]
@@ -50,7 +65,7 @@ export default async function PenulisPage({
     ),
   ]);
   const unit = unitRows[0] as RowDataPacket | undefined;
-  const total = (countRows[0] as any).total;
+  const total = (countRows[0] as RowDataPacket).total;
   const totalPages = Math.ceil(total / PER_PAGE);
 
   return (
@@ -59,8 +74,8 @@ export default async function PenulisPage({
       <div className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 py-8 w-full">
       <Link href="/mading" className="text-sm text-gray-400 hover:text-green-600">&larr; Semua Unit</Link>
       <div className="mt-4 mb-8">
-        <UserAvatar name={(author as any).name} photo={(author as any).photo} size={64} className="rounded-full mb-3" />
-        <h1 className="text-2xl font-bold text-gray-900">{(author as any).name}</h1>
+        <UserAvatar name={author.name} photo={author.photo} size={64} className="rounded-full mb-3" />
+        <h1 className="text-2xl font-bold text-gray-900">{author.name}</h1>
         <p className="text-gray-500 text-sm mt-1">
           {unit ? `Siswa ${unit.name}` : "Siswa"} &middot; {total} tulisan
         </p>
@@ -73,7 +88,7 @@ export default async function PenulisPage({
       ) : (
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-            {posts.map((post: any) => (
+            {(posts as MadingPostRow[]).map((post) => (
               <PostCard key={post.id} post={post} unitSlug={unit?.slug} />
             ))}
           </div>

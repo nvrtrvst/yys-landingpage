@@ -23,7 +23,20 @@ export function GalleryClient() {
   };
 
   useEffect(() => {
-    fetchData();
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      try {
+        const res = await fetch('/api/admin/gallery');
+        if (!res.ok) throw new Error("Gagal memuat");
+        if (!cancelled) setData(await res.json());
+      } catch (err) {
+        toast.error("Gagal memuat galeri");
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
   }, []);
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -147,7 +160,7 @@ export function GalleryClient() {
                   onBlur={(e) => {
                     if (e.target.value !== item.title) {
                       handleUpdateTitle(item.id, e.target.value);
-                      item.title = e.target.value;
+                      setData(prev => prev.map(it => it.id === item.id ? { ...it, title: e.target.value } : it));
                     }
                   }}
                   className="w-full text-sm border-b border-transparent hover:border-gray-300 focus:border-green-500 focus:outline-none p-1 transition-colors"

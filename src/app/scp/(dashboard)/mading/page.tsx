@@ -1,13 +1,50 @@
 "use client";
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { toast } from "sonner";
 import { FileText, Clock, CheckCircle, XCircle, Users, UserCheck, BarChart3, Eye, EyeOff } from "lucide-react";
 
+interface MadingUnitStat {
+  id: number;
+  name: string;
+  total_posts: number | string;
+  pending: number | string;
+  approved: number | string;
+  draft: number | string;
+}
+
+interface MadingRecentPost {
+  id: number;
+  title: string;
+  author_name: string;
+  unit_name: string | null;
+  status: string;
+}
+
+interface MadingStats {
+  totalPosts: number;
+  pendingReview: number;
+  statusDistribution: Record<string, number>;
+  totalUsers?: { guru: number; siswa: number };
+  perUnit?: MadingUnitStat[];
+  recentPosts?: MadingRecentPost[];
+}
+
 export default function MadingDashboardPage() {
-  const [stats, setStats] = useState<any>(null);
+  const [stats, setStats] = useState<MadingStats | null>(null);
 
   useEffect(() => {
-    fetch("/api/mading/stats").then(r => r.json()).then(setStats).catch(() => toast.error("Gagal memuat statistik"));
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch("/api/mading/stats");
+        const json = await res.json();
+        if (!cancelled) setStats(json);
+      } catch {
+        toast.error("Gagal memuat statistik");
+      }
+    })();
+    return () => { cancelled = true; };
   }, []);
 
   if (!stats) return (
@@ -43,7 +80,7 @@ export default function MadingDashboardPage() {
     draft: "Draft", pending: "Pending", approved: "Approved", rejected: "Ditolak", revision: "Revisi",
   };
 
-  const totalByStatus = Object.values(dist).reduce((a: number, b: any) => a + (typeof b === "number" ? b : 0), 0) || 1;
+  const totalByStatus = Object.values(dist).reduce((a: number, b: number) => a + (typeof b === "number" ? b : 0), 0) || 1;
   const statusKeys = ["draft", "pending", "approved", "rejected", "revision"].filter(k => dist[k] > 0);
 
   return (
@@ -98,7 +135,7 @@ export default function MadingDashboardPage() {
                 </tr>
               </thead>
               <tbody>
-                {stats.perUnit.map((u: any) => {
+                {stats.perUnit.map((u: MadingUnitStat) => {
                   const total = Number(u.total_posts) || 0;
                   const pending = Number(u.pending) || 0;
                   const approved = Number(u.approved) || 0;
@@ -162,22 +199,22 @@ export default function MadingDashboardPage() {
         <div className="bg-white rounded-xl shadow-sm border p-6">
           <h3 className="font-semibold text-gray-900 mb-4">Quick Links</h3>
           <div className="grid grid-cols-2 gap-3">
-            <a href="/scp/mading/posts" className="p-4 bg-gray-50 rounded-xl hover:bg-blue-50 hover:text-blue-700 transition-colors text-sm font-medium text-gray-700 text-center">
+            <Link href="/scp/mading/posts" className="p-4 bg-gray-50 rounded-xl hover:bg-blue-50 hover:text-blue-700 transition-colors text-sm font-medium text-gray-700 text-center">
               <FileText className="h-5 w-5 mx-auto mb-1.5 text-gray-400" />
               Moderasi
-            </a>
-            <a href="/scp/mading/categories" className="p-4 bg-gray-50 rounded-xl hover:bg-blue-50 hover:text-blue-700 transition-colors text-sm font-medium text-gray-700 text-center">
+            </Link>
+            <Link href="/scp/mading/categories" className="p-4 bg-gray-50 rounded-xl hover:bg-blue-50 hover:text-blue-700 transition-colors text-sm font-medium text-gray-700 text-center">
               <BarChart3 className="h-5 w-5 mx-auto mb-1.5 text-gray-400" />
               Kategori
-            </a>
-            <a href="/scp/mading/users" className="p-4 bg-gray-50 rounded-xl hover:bg-blue-50 hover:text-blue-700 transition-colors text-sm font-medium text-gray-700 text-center">
+            </Link>
+            <Link href="/scp/mading/users" className="p-4 bg-gray-50 rounded-xl hover:bg-blue-50 hover:text-blue-700 transition-colors text-sm font-medium text-gray-700 text-center">
               <Users className="h-5 w-5 mx-auto mb-1.5 text-gray-400" />
               Users
-            </a>
-            <a href="/mading" className="p-4 bg-gray-50 rounded-xl hover:bg-blue-50 hover:text-blue-700 transition-colors text-sm font-medium text-gray-700 text-center">
+            </Link>
+            <Link href="/mading" className="p-4 bg-gray-50 rounded-xl hover:bg-blue-50 hover:text-blue-700 transition-colors text-sm font-medium text-gray-700 text-center">
               <Eye className="h-5 w-5 mx-auto mb-1.5 text-gray-400" />
               Lihat Web
-            </a>
+            </Link>
           </div>
         </div>
       </div>
@@ -188,7 +225,7 @@ export default function MadingDashboardPage() {
             <h3 className="font-semibold text-gray-900">Tulisan Terbaru</h3>
           </div>
           <div className="divide-y divide-gray-100">
-            {recent.map((p: any) => (
+            {recent.map((p: MadingRecentPost) => (
               <div key={p.id} className="px-6 py-3.5 flex items-center justify-between text-sm hover:bg-gray-50">
                 <div className="flex items-center gap-3 min-w-0">
                   <span className="truncate font-medium text-gray-900">{p.title}</span>

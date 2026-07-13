@@ -32,7 +32,25 @@ export function TestimonialsFaqManager() {
   };
 
   useEffect(() => {
-    fetchData();
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      try {
+        const [tRes, fRes] = await Promise.all([
+          fetch('/api/admin/testimonials'),
+          fetch('/api/admin/faqs')
+        ]);
+        if (!cancelled) {
+          if (tRes.ok) setTestimonials(await tRes.json());
+          if (fRes.ok) setFaqs(await fRes.json());
+        }
+      } catch (err) {
+        toast.error("Gagal memuat data");
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
   }, []);
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {

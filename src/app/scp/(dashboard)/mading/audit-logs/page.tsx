@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { Search, Shield, Filter } from "lucide-react";
 
@@ -53,20 +53,22 @@ export default function AuditLogsPage() {
   const [search, setSearch] = useState("");
   const [actionFilter, setActionFilter] = useState("all");
 
-  const fetchLogs = useCallback(async () => {
-    setLoading(true);
-    try {
-      const res = await fetch("/api/mading/audit-logs");
-      if (!res.ok) throw new Error();
-      setLogs(await res.json());
-    } catch {
-      toast.error("Gagal memuat log");
-    } finally {
-      setLoading(false);
-    }
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      try {
+        const res = await fetch("/api/mading/audit-logs");
+        if (!res.ok) throw new Error();
+        if (!cancelled) setLogs(await res.json());
+      } catch {
+        toast.error("Gagal memuat log");
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
   }, []);
-
-  useEffect(() => { fetchLogs(); }, [fetchLogs]);
 
   const filtered = logs.filter(l => {
     if (actionFilter !== "all" && l.action !== actionFilter) return false;

@@ -167,7 +167,7 @@ export function PPDBSettingsForm({ initialConfig }: { initialConfig: PPDBConfig 
           </table>
         </div>
         {formData.schedules.length === 0 && (
-          <p className="text-center text-gray-500 py-4 text-sm">Tidak ada jadwal. Klik "Tambah Baris" untuk menambahkan.</p>
+          <p className="text-center text-gray-500 py-4 text-sm">Tidak ada jadwal. Klik &quot;Tambah Baris&quot; untuk menambahkan.</p>
         )}
       </section>
 

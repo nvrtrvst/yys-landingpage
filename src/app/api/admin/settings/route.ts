@@ -5,6 +5,7 @@ import { authOptions } from '@/lib/auth';
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
 import { checkRateLimit, getClientIp } from '@/lib/rate-limit';
+import { RowDataPacket } from 'mysql2';
 
 const settingsSchema = z.record(z.string(), z.string().nullable());
 
@@ -19,9 +20,9 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Forbidden: Insufficient permissions' }, { status: 403 });
     }
 
-    const [rows] = await pool.execute('SELECT setting_key, setting_value FROM settings');
+    const [rows] = await pool.execute<RowDataPacket[]>('SELECT setting_key, setting_value FROM settings');
     const settings: Record<string, string> = {};
-    (rows as any[]).forEach(row => {
+    rows.forEach(row => {
       settings[row.setting_key] = row.setting_value;
     });
 

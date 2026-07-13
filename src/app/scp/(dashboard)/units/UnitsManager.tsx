@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { UnitsTab } from "./UnitsTab";
 import { ProgramsTab } from "./ProgramsTab";
 
@@ -12,24 +12,44 @@ export function UnitsManager() {
   const [programs, setPrograms] = useState<Program[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchData = async () => {
-    setLoading(true);
-    try {
-      const [uRes, pRes] = await Promise.all([
-        fetch('/api/admin/units'),
-        fetch('/api/admin/programs')
-      ]);
-      if (uRes.ok) setUnits(await uRes.json());
-      if (pRes.ok) setPrograms(await pRes.json());
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    fetchData();
+    let cancelled = false;
+    (async () => {
+      try {
+        const [uRes, pRes] = await Promise.all([
+          fetch('/api/admin/units'),
+          fetch('/api/admin/programs'),
+        ]);
+        if (cancelled) return;
+        if (uRes.ok) setUnits(await uRes.json());
+        if (pRes.ok) setPrograms(await pRes.json());
+      } catch (err) {
+        console.error(err);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const fetchData = useCallback(() => {
+    setLoading(true);
+    (async () => {
+      try {
+        const [uRes, pRes] = await Promise.all([
+          fetch('/api/admin/units'),
+          fetch('/api/admin/programs'),
+        ]);
+        if (uRes.ok) setUnits(await uRes.json());
+        if (pRes.ok) setPrograms(await pRes.json());
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    })();
   }, []);
 
   return (

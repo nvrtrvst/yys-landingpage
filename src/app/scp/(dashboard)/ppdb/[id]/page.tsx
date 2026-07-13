@@ -4,9 +4,36 @@ import Link from "next/link";
 import { toast } from "sonner";
 import { useParams } from "next/navigation";
 
+interface PPDBDetail {
+  id: number;
+  registration_number: string;
+  status: string;
+  student_name: string;
+  unit: string;
+  grade: string;
+  major: string | null;
+  nisn: string | null;
+  birth_place: string;
+  birth_date: string;
+  gender: string;
+  child_order: string | null;
+  siblings_count: string | null;
+  address: string;
+  previous_school: string | null;
+  father_name: string;
+  father_job: string | null;
+  mother_name: string;
+  mother_job: string | null;
+  guardian_name: string | null;
+  guardian_job: string | null;
+  phone: string;
+  email: string | null;
+  sync_status: string;
+}
+
 export default function PPDBDetailPage() {
   const { id } = useParams();
-  const [data, setData] = useState<any>(null);
+  const [data, setData] = useState<PPDBDetail | null>(null);
   const [loading, setLoading] = useState(true);
 
   const fetchData = async () => {
@@ -22,7 +49,19 @@ export default function PPDBDetailPage() {
   };
 
   useEffect(() => {
-    fetchData();
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch(`/api/admin/ppdb/${id}`);
+        if (!res.ok) throw new Error("Data tidak ditemukan");
+        if (!cancelled) setData(await res.json());
+      } catch(err: unknown) {
+        toast.error((err instanceof Error ? err.message : String(err)));
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
   }, [id]);
 
   const updateStatus = async (status: string) => {

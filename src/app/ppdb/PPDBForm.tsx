@@ -11,7 +11,7 @@ const UnitInformation = ({ unit }: { unit: string }) => {
         <div>
           <h4 className="font-bold text-emerald-900 mb-2 border-b border-emerald-200 pb-1 text-sm md:text-base">PROGRAM UNGGULAN KAMI:</h4>
           <ul className="list-disc pl-5 space-y-1">
-            <li>Program Tahsin dan Tahfidz Al-Qur'an.</li>
+            <li>Program Tahsin dan Tahfidz Al-Qur&apos;an.</li>
             <li>TRANS 7 (Tadarus Al-Qur’an setiap jam 7).</li>
             <li>Kelas Bahasa Jepang &amp; Penyaluran Kerja ke Jepang (LPK IMS ORI).</li>
             <li>Penyaluran Lulusan ke Dunia Industri melalui BKK.</li>
@@ -56,7 +56,7 @@ const UnitInformation = ({ unit }: { unit: string }) => {
         </div>
         
         <div className="pt-3 text-center italic font-semibold text-emerald-800 border-t border-emerald-200 mt-4 text-xs md:text-sm">
-          "Membangun Generasi Bermoral, Beramal, Intelektual, Profesional"
+          &quot;Membangun Generasi Bermoral, Beramal, Intelektual, Profesional&quot;
         </div>
       </div>
     );
@@ -75,6 +75,10 @@ const UnitInformation = ({ unit }: { unit: string }) => {
 };
 
 
+interface PpdbError {
+  message: string;
+}
+
 export function PPDBForm() {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -90,7 +94,9 @@ export function PPDBForm() {
   const [loadingMajors, setLoadingMajors] = useState(false);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- captcha acak tiap mount
     setCaptchaA(Math.floor(Math.random() * 10) + 1);
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- captcha acak tiap mount
     setCaptchaB(Math.floor(Math.random() * 10) + 1);
   }, []);
 
@@ -181,7 +187,7 @@ export function PPDBForm() {
         setStep(6); // Success Step
       } else {
         if (data.errors && Array.isArray(data.errors)) {
-          setErrorMsg(data.message + ": " + data.errors.map((err: any) => err.message).join(", "));
+          setErrorMsg(data.message + ": " + data.errors.map((err: PpdbError) => err.message).join(", "));
         } else {
           setErrorMsg(data.message || "Terjadi kesalahan. Silakan coba lagi.");
         }

@@ -58,7 +58,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: true, id: insertResult.insertId });
   } catch(error: unknown) {
     console.error(error);
-    if ((error as any).code === 'ER_DUP_ENTRY') {
+    if ((error as { code?: string }).code === 'ER_DUP_ENTRY') {
       return NextResponse.json({ error: 'Slug sudah digunakan. Silakan gunakan slug lain.' }, { status: 400 });
     }
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });

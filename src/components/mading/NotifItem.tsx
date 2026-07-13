@@ -2,7 +2,7 @@
 
 import { toast } from "sonner";
 
-export function NotifItem({ id, message, createdAt, isRead, postId }: { id: number; message: string; createdAt: string; isRead: boolean; postId: number | null }) {
+export function NotifItem({ id, message, createdAt, isRead }: { id: number; message: string; createdAt: string; isRead: boolean }) {
   const handleClick = async () => {
     if (isRead) return;
     try {

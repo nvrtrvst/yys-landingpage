@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
 import pool from "@/lib/db";
 import { ResultSetHeader, RowDataPacket } from "mysql2";
-import { getServerSession } from "next-auth";
+import { getServerSession, type Session } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import bcrypt from "bcrypt";
 import { createAuditLog, getClientIp } from "@/lib/mading";
 
-function checkAuth(session: any) {
+function checkAuth(session: Session | null) {
   if (!session) return "Tidak terautentikasi";
   if (!["superadmin", "admin", "admin_unit"].includes(session.user.role)) return "Dilarang";
   return null;

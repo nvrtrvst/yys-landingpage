@@ -2,7 +2,14 @@
 import React, { useState } from "react";
 import DOMPurify from "isomorphic-dompurify";
 
-export function FAQSection({ data }: { data: any[] }) {
+export interface FaqItem {
+  id: number;
+  category?: string;
+  question: string;
+  answer: string;
+}
+
+export function FAQSection({ data }: { data: FaqItem[] }) {
   const [openId, setOpenId] = useState<number | null>(null);
 
   if (!data || data.length === 0) return null;
@@ -13,7 +20,7 @@ export function FAQSection({ data }: { data: any[] }) {
     if (!acc[cat]) acc[cat] = [];
     acc[cat].push(curr);
     return acc;
-  }, {} as Record<string, any[]>);
+  }, {} as Record<string, FaqItem[]>);
 
   return (
     <section className="py-20 bg-white relative">
@@ -33,7 +40,7 @@ export function FAQSection({ data }: { data: any[] }) {
                 <span className="text-primary-600">■</span> {category}
               </h3>
               <div className="space-y-4">
-                {(faqs as any[]).map((faq) => {
+                {faqs.map((faq) => {
                   const isOpen = openId === faq.id;
                   return (
                     <div 

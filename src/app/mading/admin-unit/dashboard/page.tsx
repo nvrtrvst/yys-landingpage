@@ -10,7 +10,7 @@ async function getStats(unitId: number | null, filterUnitId: number | null) {
     `SELECT COUNT(*) as total, SUM(status = 'pending') as pending FROM mading_posts ${filterUnitId ? "WHERE unit_id = ?" : ""}`,
     filterUnitId ? [filterUnitId] : []
   );
-  return { total: Number((rows[0] as any).total) || 0, pending: Number((rows[0] as any).pending) || 0 };
+  return { total: Number((rows[0] as RowDataPacket).total) || 0, pending: Number((rows[0] as RowDataPacket).pending) || 0 };
 }
 
 async function getRecentPosts(unitId: number | null, filterUnitId: number | null) {
@@ -27,7 +27,7 @@ async function getUserCounts(unitId: number | null, filterUnitId: number | null)
     filterUnitId ? [filterUnitId] : []
   );
   const counts = { guru: 0, siswa: 0 };
-  (rows as any[]).forEach((r: any) => { if (r.role === "guru") counts.guru = r.count; if (r.role === "siswa") counts.siswa = r.count; });
+  (rows as RowDataPacket[]).forEach((r: RowDataPacket) => { if (r.role === "guru") counts.guru = r.count; if (r.role === "siswa") counts.siswa = r.count; });
   return counts;
 }
 
@@ -91,7 +91,7 @@ export default async function AdminUnitDashboard() {
         <div className="bg-white border rounded-xl p-5">
           <h3 className="font-semibold text-gray-900 mb-3">Tulisan Terbaru</h3>
           <div className="space-y-2">
-            {(recentPosts as any[]).map((p: any) => (
+            {(recentPosts as RowDataPacket[]).map((p: RowDataPacket) => (
               <div key={p.id} className="flex justify-between text-sm py-1">
                 <span className="text-gray-900 truncate">{p.title}</span>
                 <span className={`text-xs px-2 py-0.5 rounded-full ${

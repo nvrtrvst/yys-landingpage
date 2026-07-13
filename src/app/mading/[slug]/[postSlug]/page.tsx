@@ -34,7 +34,7 @@ export default async function PostDetailPage({ params }: { params: Promise<{ slu
         )
       : Promise.resolve([[] as RowDataPacket[], []] as [RowDataPacket[], never[]]),
   ]);
-  const reactionCount = (countResult[0] as any).count;
+  const reactionCount = (countResult[0] as RowDataPacket).count;
   const userReacted = session ? (userResult[0] as RowDataPacket[]).length > 0 : false;
 
   const dateStr = new Date(post.published_at || post.created_at).toLocaleDateString("id-ID", {
