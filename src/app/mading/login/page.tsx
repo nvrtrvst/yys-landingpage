@@ -60,11 +60,6 @@ const paperNotes: {
   { top: "12%", right: "14%", w: 22, h: 26, rotate: 6, bg: "bg-violet-200", pin: "bg-violet-600", dur: 8, icon: "pen" },
   { bottom: "10%", left: "18%", w: 18, h: 22, rotate: -9, bg: "bg-fuchsia-200", pin: "bg-fuchsia-600", dur: 10.5, icon: "sparkles" },
   { bottom: "12%", right: "16%", w: 20, h: 24, rotate: 11, bg: "bg-cyan-200", pin: "bg-cyan-600", dur: 7.5, icon: "star" },
-  // Extra small accents
-  { top: "38%", left: "1%", w: 14, h: 18, rotate: 4, bg: "bg-red-200", pin: "bg-red-600", dur: 8, icon: "sparkles" },
-  { top: "42%", right: "1%", w: 14, h: 18, rotate: -5, bg: "bg-indigo-200", pin: "bg-indigo-600", dur: 9, icon: "pen" },
-  { bottom: "38%", left: "1%", w: 16, h: 20, rotate: -3, bg: "bg-sky-200", pin: "bg-sky-600", dur: 10, icon: "lines" },
-  { bottom: "42%", right: "1%", w: 16, h: 20, rotate: 3, bg: "bg-amber-200", pin: "bg-amber-600", dur: 7, icon: "heart" },
 ];
 
 const polaroids = [
@@ -178,27 +173,7 @@ export default function MadingLoginPage() {
         }}
       />
 
-      {/* Decorative string (yarn) across top */}
-      <div
-        className="pointer-events-none absolute left-0 right-0 top-4 z-0 hidden h-[2px] sm:block"
-        style={{
-          background:
-            "repeating-linear-gradient(90deg, #8B7355 0px, #8B7355 4px, transparent 4px, transparent 12px)",
-        }}
-      />
 
-      {/* Bunting flags on string */}
-      {[6, 14, 22, 30, 38, 46, 54, 62, 70, 78, 86, 94].map((pct, i) => (
-        <div
-          key={i}
-          className="pointer-events-none absolute top-3 z-0 hidden h-5 w-4 rounded-b-sm sm:block"
-          style={{
-            left: `${pct}%`,
-            backgroundColor: ["#f472b6", "#a78bfa", "#34d399", "#fbbf24", "#60a5fa", "#fb923c"][i % 6],
-            clipPath: "polygon(50% 0%, 0% 100%, 100% 100%)",
-          }}
-        />
-      ))}
 
       {/* Polaroid frames */}
       {polaroids.map((p, i) => (
@@ -237,18 +212,7 @@ export default function MadingLoginPage() {
         </motion.div>
       ))}
 
-      {/* Welcome sticky note */}
-      <motion.div
-        className="absolute left-1/2 top-[4%] z-0 hidden -translate-x-1/2 -translate-y-1/2 rounded shadow-lg sm:flex sm:w-64 sm:flex-col sm:items-center sm:bg-yellow-200 sm:p-3"
-        style={{ transform: "translateX(-50%)" }}
-        initial={{ rotate: -3, scale: 0.9 }}
-        animate={{ rotate: [-3, -1, -3], scale: [0.9, 1, 0.9] }}
-        transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-      >
-        <span className="absolute -top-1.5 left-1/2 h-3 w-3 -translate-x-1/2 rounded-full bg-red-500 shadow-sm ring-1 ring-black/10" />
-        <p className="text-xs font-bold text-gray-800">Selamat Datang!</p>
-        <p className="mt-0.5 text-[9px] text-gray-600">Tulis &bull; Bagikan &bull; Menginspirasi</p>
-      </motion.div>
+
 
       {/* Sparkles */}
       <motion.div

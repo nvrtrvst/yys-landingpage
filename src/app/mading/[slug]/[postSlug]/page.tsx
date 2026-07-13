@@ -10,6 +10,7 @@ import { ReactionButton } from "./ReactionButton";
 import { Comments } from "./Comments";
 import { PostViewCounter } from "./PostViewCounter";
 import { UserAvatar } from "@/components/mading/UserAvatar";
+import { CorkboardWrapper } from "@/components/mading/CorkboardWrapper";
 
 export const revalidate = 60;
 
@@ -44,60 +45,69 @@ export default async function PostDetailPage({ params }: { params: Promise<{ slu
   const readingTime = Math.max(1, Math.round(textLen / 900));
 
   return (
-    <div className="flex-1 w-full">
+    <CorkboardWrapper>
       <div className="max-w-3xl mx-auto px-4 sm:px-6 pt-6">
-        <Link href={`/mading/${post.unit_slug}`} className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-green-600 transition-colors">
+        <Link href={`/mading/${post.unit_slug}`} className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-primary-600 transition-colors">
           <ArrowLeft className="h-4 w-4" /> Kembali ke Mading {post.unit_name}
         </Link>
       </div>
 
-      <article className="max-w-3xl mx-auto px-4 sm:px-6 py-6">
-        {post.category_name && (
-          <span className="inline-block px-3 py-1 rounded-full bg-green-100 text-green-700 font-semibold text-xs mb-4">
-            {post.category_name}
+      <article className="relative max-w-3xl mx-auto px-4 sm:px-6 py-6">
+        <div className="relative rounded-2xl bg-white/80 p-6 shadow-xl ring-1 ring-black/5 backdrop-blur sm:p-8">
+          {/* Pushpin */}
+          <span className="absolute -right-2 -top-2 z-10 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 shadow drop-shadow-md">
+            <span className="h-2 w-2 rounded-full bg-white/80" />
           </span>
-        )}
-        <h1 className="text-3xl md:text-[2.6rem] md:leading-[1.15] font-bold text-gray-900 mb-6">
-          {post.title}
-        </h1>
 
-        <div className="flex items-center gap-3 pb-6 mb-6 border-b border-gray-100">
-          <UserAvatar name={post.author_name} photo={post.author_photo} size={48} className="rounded-full" />
-          <div className="min-w-0">
-            <Link
-              href={`/mading/penulis/${post.author_id}`}
-              className="block font-semibold text-gray-900 hover:text-green-600 transition-colors truncate"
-            >
-              {post.author_name || "Anonim"}
-            </Link>
-            <p className="text-sm text-gray-500">{dateStr} &middot; {readingTime} min baca</p>
-          </div>
-          <div className="ml-auto">
-            <PostViewCounter postId={post.id} initialViews={post.views ?? 0} authorId={post.author_id} />
-          </div>
-        </div>
+          {post.category_name && (
+            <span className="inline-block px-3 py-1 rounded-full bg-primary-100 text-primary-700 font-semibold text-xs mb-4">
+              {post.category_name}
+            </span>
+          )}
+          <h1 className="text-3xl md:text-[2.6rem] md:leading-[1.15] font-bold text-gray-900 mb-6">
+            {post.title}
+          </h1>
 
-        {post.cover_image && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={post.cover_image}
-            alt={post.title}
-            className="w-full rounded-2xl mb-8 object-cover max-h-[420px]"
+          <div className="flex items-center gap-3 pb-6 mb-6 border-b border-gray-100">
+            <UserAvatar name={post.author_name} photo={post.author_photo} size={48} className="rounded-full" />
+            <div className="min-w-0">
+              <Link
+                href={`/mading/penulis/${post.author_id}`}
+                className="block font-semibold text-gray-900 hover:text-primary-600 transition-colors truncate"
+              >
+                {post.author_name || "Anonim"}
+              </Link>
+              <p className="text-sm text-gray-500">{dateStr} &middot; {readingTime} min baca</p>
+            </div>
+            <div className="ml-auto">
+              <PostViewCounter postId={post.id} initialViews={post.views ?? 0} authorId={post.author_id} />
+            </div>
+          </div>
+
+          {post.cover_image && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={post.cover_image}
+              alt={post.title}
+              className="w-full rounded-2xl mb-8 object-cover max-h-[420px]"
+            />
+          )}
+
+          <div
+            className="prose prose-lg max-w-none prose-headings:font-bold prose-a:text-primary-600 prose-img:rounded-xl"
+            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.content) }}
           />
-        )}
-
-        <div
-          className="prose prose-lg max-w-none prose-headings:font-bold prose-a:text-green-600 prose-img:rounded-xl"
-          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.content) }}
-        />
+        </div>
       </article>
 
-      <div className="max-w-3xl mx-auto px-4 sm:px-6">
-        <div className="py-6 border-t border-b flex items-center gap-4">
-          <ReactionButton postId={post.id} initialCount={reactionCount} initialReacted={userReacted} />
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 pb-8">
+        <div className="relative rounded-2xl bg-white/80 p-6 shadow-xl ring-1 ring-black/5 backdrop-blur">
+          <div className="py-6 border-t-0 flex items-center gap-4">
+            <ReactionButton postId={post.id} initialCount={reactionCount} initialReacted={userReacted} />
+          </div>
+          <Comments postId={post.id} />
         </div>
-        <Comments postId={post.id} />
       </div>
-    </div>
+    </CorkboardWrapper>
   );
 }
