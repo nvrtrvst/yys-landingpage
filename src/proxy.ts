@@ -1,7 +1,7 @@
 import { withAuth } from "next-auth/middleware";
 import { NextResponse } from "next/server";
 
-const MADING_HOST_PREFIX = "mading.";
+const MADING_HOST_PREFIX = "penamaya.";
 const MADING_ALLOWED = ["/mading", "/api/mading", "/_next/", "/uploads/", "/favicon.ico", "/logo.png"];
 
 export default withAuth(

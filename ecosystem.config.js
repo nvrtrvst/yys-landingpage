@@ -12,7 +12,7 @@ module.exports = {
       script: "node_modules/next/dist/bin/next",
       args: "start -p 5001",
       cwd: "./",
-      env: { NODE_ENV: "production", MADING_SUBDOMAIN: "true" },
+      env: { NODE_ENV: "production" },
     },
   ],
 };
