@@ -157,7 +157,7 @@ export default function SiswaDashboard() {
               <Plus className="h-4 w-4" />
               <span className="hidden sm:inline">Tulisan Baru</span>
             </Link>
-            <button onClick={() => signOut({ callbackUrl: "/mading" })}
+            <button onClick={() => signOut({ callbackUrl: `${window.location.origin}/mading` })}
               className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
               <LogOut className="h-4 w-4" />
               <span className="hidden sm:inline">Keluar</span>

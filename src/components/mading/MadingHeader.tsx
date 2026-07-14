@@ -48,7 +48,7 @@ export function MadingHeader() {
                   </span>
                 </Link>
                 <button
-                  onClick={() => signOut({ callbackUrl: "/mading" })}
+                  onClick={() => signOut({ callbackUrl: `${window.location.origin}/mading` })}
                   className="flex items-center gap-1.5 text-sm font-medium text-gray-500 hover:text-gray-900"
                 >
                   <LogOut className="h-4 w-4" />

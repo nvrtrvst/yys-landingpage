@@ -297,7 +297,7 @@ export default function GuruDashboard() {
               <User className="h-4 w-4 sm:hidden" />
             </Link>
             <button
-              onClick={() => signOut({ callbackUrl: "/mading" })}
+              onClick={() => signOut({ callbackUrl: `${window.location.origin}/mading` })}
               className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg transition-colors shrink-0"
             >
               <LogOut className="h-4 w-4" />
