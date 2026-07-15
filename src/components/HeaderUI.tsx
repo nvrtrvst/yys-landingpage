@@ -39,7 +39,7 @@ export function HeaderUI({ settings, units }: { settings: Record<string, string>
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 z-50">
             {isMounted && settings.site_logo && !settings.site_logo.startsWith('/uploads/dummy/')               ? (
-              // eslint-disable-next-line @next/next/no-img-element
+               
               <img 
                 src={settings.site_logo}  
                 alt="Logo" 
@@ -52,7 +52,7 @@ export function HeaderUI({ settings, units }: { settings: Record<string, string>
                 }}
               />
             ) : (
-              // eslint-disable-next-line @next/next/no-img-element
+               
               <img src="/uploads/dummy/site_logo.png" alt="Logo" className="h-10 md:h-12 w-auto object-contain" loading="eager" decoding="async" />
             )}
             <div className={`font-serif text-xl md:text-2xl font-bold tracking-tight ${isScrolled ? 'text-primary-800' : 'text-white drop-shadow-md'}`}>

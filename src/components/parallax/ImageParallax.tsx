@@ -31,7 +31,7 @@ export function ImageParallax({
   if (isMounted && shouldReduceMotion) {
     return (
       <div className={`overflow-hidden relative ${className}`}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
+        { }
         <img
           src={src}
           alt={alt}

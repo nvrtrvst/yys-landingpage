@@ -31,7 +31,7 @@ export default function SiswaProfilePage() {
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- sync state dari session
     if (session?.user.photo) setPhoto(session.user.photo);
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- sync state dari session
+     
     if (session?.user.name) setNameValue(session.user.name);
   }, [session?.user.photo, session?.user.name]);
 
@@ -108,7 +108,7 @@ export default function SiswaProfilePage() {
               >
                 <div className="h-24 w-24 rounded-full ring-4 ring-white bg-green-100 overflow-hidden flex items-center justify-center text-2xl font-bold text-green-700 shadow">
                   {photo ? (
-                    // eslint-disable-next-line @next/next/no-img-element
+                     
                     <img src={photo} alt={displayName} className="h-full w-full object-cover" />
                   ) : (
                     getInitials(displayName)

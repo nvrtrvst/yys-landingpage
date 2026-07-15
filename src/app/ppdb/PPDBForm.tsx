@@ -96,7 +96,7 @@ export function PPDBForm() {
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- captcha acak tiap mount
     setCaptchaA(Math.floor(Math.random() * 10) + 1);
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- captcha acak tiap mount
+     
     setCaptchaB(Math.floor(Math.random() * 10) + 1);
   }, []);
 

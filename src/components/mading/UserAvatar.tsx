@@ -34,7 +34,7 @@ export function UserAvatar({
       aria-hidden={!name}
     >
       {showImg ? (
-        // eslint-disable-next-line @next/next/no-img-element
+         
         <img
           src={photo as string}
           alt={name || "Pengguna"}

@@ -85,7 +85,7 @@ export default async function PostDetailPage({ params }: { params: Promise<{ slu
           </div>
 
           {post.cover_image && (
-            // eslint-disable-next-line @next/next/no-img-element
+             
             <img
               src={post.cover_image}
               alt={post.title}

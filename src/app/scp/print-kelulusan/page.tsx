@@ -90,7 +90,7 @@ export default function PrintKelulusanPage() {
             <div className="border-b-[3px] border-black pb-4 mb-1 flex items-center justify-between">
               {/* Tempat logo */}
               <div className="w-24 h-24 flex items-center justify-center flex-shrink-0 mr-2">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
+                { }
                 <img 
                   src={`/logo/${siswa.unit?.toLowerCase() || 'logo'}.png`} 
                   alt={`Logo ${siswa.unit}`} 
