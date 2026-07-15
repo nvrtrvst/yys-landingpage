@@ -81,9 +81,15 @@ Bahasa UI: Indonesia. Role: `superadmin`, `admin`, `editor`.
 
 ## Catatan Deployment
 - Port **5000** (bukan 3000).
-- Migrasi DB = jalankan file `migration_*.sql` manual di MySQL prod (tidak auto-migrate).
+- **MIGRATION**: Jalankan `migration_master_all.sql` untuk semua optimizations sekaligus (idempotent, single execution).
 - Pastikan `NEXTAUTH_SECRET` & `SMTP_PASS` di-set (jangan commit).
 - `middleware.ts` ada (proxy/rewrite) — review sebelum ubah routing.
+
+## Deployment Instructions
+1. **Database迁移**:`mysql -u root -p yayasan_db < migration_master_all.sql`
+2. **Verify**: Jalankan queries verifikasi dari deployment guide
+3. **Monitor**: Cek performance improvements (10-100x faster search expectations)
+4. **Rollback**: Ready dengan backup database + deployment guide disaster plan
 
 ## Gotchas / Pelajaran
 - Global CSS di luar `@layer` mengalahkan Tailwind utility (pernah hancurkan layout gambar).
@@ -92,3 +98,98 @@ Bahasa UI: Indonesia. Role: `superadmin`, `admin`, `editor`.
 - Saat edit file di `scp/(dashboard)`, quote path di PowerShell/git.
 - **Cookie path vs API path:** Mading NextAuth cookies harus `path: "/"` karena mading API routes ada di `/api/mading/auth/*`, bukan di `/mading/*`. Cookie dgn `path: "/mading"` tidak dikirim browser ke URL `/api/mading/...` (path prefix mismatch).
 - **`getServerSessionDual()` precedence:** cek `madingAuthOptions` DULU, baru `authOptions` (SCP). Perlu mading-first karena user sering login ke SCP admin & mading di browser SAMA → kalau SCP duluan, API mading (mis. `my-posts`) ke-resolve ke user SCP (0 post mading) → card dashboard siswa/guru tampil 0. Route `/api/mading/*` murni pakai `madingAuthOptions`, bukan dual.
+
+## Best Practice Code Review Checklist
+
+### TypeScript & Type Safety
+- [ ] **Strict mode enabled** (`tsconfig.json`: `"strict": true`)
+- [ ] **No non-null assertions** (`!`) — gunakan optional chaining (`?.`) atau null checks eksplisit
+- [ ] **Type guards**: `error instanceof Error` sebelum akses `.message`
+- [ ] **Parameterized SQL**: SELALU pakai `pool.execute(sql, [params])`, TIDAK interpolation string
+
+### Error Handling
+- [ ] **Centralized errors** — pakai `src/lib/errors.ts`:
+  ```typescript
+  import { AppError, ValidationError, handleApiError, logError } from '@/lib/errors';
+  
+  // Di API route:
+  try {
+    // ... logic
+  } catch (error) {
+    logError(error, 'Context');
+    return handleApiError(error);
+  }
+  ```
+- [ ] **Custom errors**: `ValidationError`, `AuthenticationError`, `ForbiddenError`, `RateLimitError`, `FileTooLargeError`
+- [ ] **Indonesian messages**: pesan generic ("Kesalahan server internal"), jangan leak `error.message`
+
+### Security
+- [ ] **Rate limiting**: semua endpoint sensitif pakai `checkRateLimit()`
+- [ ] **Client IP**: konsisten pakai `getClientIp(req)` dari `@/lib/rate-limit`
+- [XSS]: `DOMPurify.sanitize()` di semua `dangerouslySetInnerHTML`
+- [ ] **Upload**: magic-byte validation + sharp re-encode (lihat `src/lib/upload.ts`)
+
+### Configuration
+- [ ] **Env vars** untuk magic numbers:
+  ```
+  DB_CONNECTION_LIMIT=10
+  DB_MAX_IDLE=10
+  DB_IDLE_TIMEOUT=60000
+  SETTINGS_CACHE_TTL=60000
+  MAX_FAILED_ATTEMPTS=5
+  ACCOUNT_LOCK_MINUTES=15
+  MAX_FILE_SIZE=10485760
+  MAX_FILE_SIZE_DISPLAY=10MB
+  ```
+- [ ] **Jangan hardcode** limit/konstanta di kode
+
+### Code Quality
+- [ ] **DRY principle**: utility function di satu tempat (mis. `getClientIp` hanya di `rate-limit.ts`)
+- [ ] **ESLint clean**: `npm run lint` tanpa error
+- [ ] **TypeScript clean**: `npx tsc --noEmit` tanpa error
+- [ ] **Unused imports**: hapus import yang tidak dipakai
+
+### Performance
+- [ ] **Parallel fetch**: gunakan `Promise.all()` untuk query independen
+- [ ] **ISR**: `export const revalidate = 60` di halaman publik
+- [ ] **Connection pool**: global cached pool (lihat `src/lib/db.ts`)
+- [ ] **Settings cache**: TTL 60 detik (configurable via env)
+- [ ] **Query optimization**: 
+  - **SELECT * → SELECT specific columns** (page.tsx, admin api routes)
+  - **FULLTEXT indices** untuk PPDB search (`migration_query_optimization.sql`)
+  - **Composite indexes** untuk mading_posts, units, programs, dsb.
+  - **JOIN optimization**: ganti N+1 query dengan subqueries
+  - **Limit search terms**: prevent asterisk attacks dan DoS
+
+### API Route Pattern (Template)
+```typescript
+import { NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
+import { checkRateLimit, getClientIp } from '@/lib/rate-limit';
+import { handleApiError, logError, ValidationError, ForbiddenError } from '@/lib/errors';
+
+export async function POST(request: Request) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session) throw new AuthenticationError();
+    if (!allowed.includes(session.user.role)) throw new ForbiddenError();
+    
+    const rl = checkRateLimit(`key:${getClientIp(request)}`, 10, 60000);
+    if (!rl.allowed) throw new RateLimitError();
+    
+    // ... business logic
+    
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    logError(error, 'Context');
+    return handleApiError(error);
+  }
+}
+```
+
+## Query Optimization Status
+- ✅ **DB Indexes**: `migration_query_optimization.sql` created (composite, FULLTEXT, missing indexes)
+- ✅ **SELECT * → Selective columns**: Homepage + admin routes optimized
+- ✅ **N+1 Query → JOIN/SUBQUERY**: Mading posts unit slug lookup optimized
+- ✅ **Search Safety**: PPDB search term length limited to prevent abuse

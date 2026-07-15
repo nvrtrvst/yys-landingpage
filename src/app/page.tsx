@@ -31,11 +31,11 @@ export default async function Home() {
       [galleriesRows],
       [testimonialsRows],
     ] = await Promise.all([
-      pool.execute<RowDataPacket[]>("SELECT * FROM units WHERE status = 'active' ORDER BY order_index ASC"),
-      pool.execute<RowDataPacket[]>("SELECT * FROM programs WHERE status = 'active' ORDER BY order_index ASC"),
-      pool.execute<RowDataPacket[]>("SELECT * FROM news WHERE status = 'published' ORDER BY published_at DESC LIMIT 3"),
-      pool.execute<RowDataPacket[]>("SELECT * FROM galleries ORDER BY created_at DESC LIMIT 6"),
-      pool.execute<RowDataPacket[]>("SELECT * FROM testimonials WHERE is_active = 1 ORDER BY order_index ASC"),
+      pool.execute<RowDataPacket[]>("SELECT id, name, slug, image_url, description FROM units WHERE status = 'active' ORDER BY order_index ASC"),
+      pool.execute<RowDataPacket[]>("SELECT id, title, description, image_url FROM programs WHERE status = 'active' ORDER BY order_index ASC"),
+      pool.execute<RowDataPacket[]>("SELECT id, title, slug, image_url, category, published_at FROM news WHERE status = 'published' ORDER BY published_at DESC LIMIT 3"),
+      pool.execute<RowDataPacket[]>("SELECT id, title, image_url FROM galleries ORDER BY created_at DESC LIMIT 6"),
+      pool.execute<RowDataPacket[]>("SELECT id, author_name, role, content, image_url FROM testimonials WHERE is_active = 1 ORDER BY order_index ASC"),
     ]);
     units = unitsRows;
     programs = programsRows;

@@ -3,9 +3,10 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcrypt";
 import pool from "@/lib/db";
 import { RowDataPacket } from "mysql2";
-import { checkRateLimit } from "@/lib/rate-limit";
+import { checkRateLimit, getClientIpFromHeaders } from "@/lib/rate-limit";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { logError } from "@/lib/errors";
 
 interface UserRow extends RowDataPacket {
   id: number;
@@ -45,23 +46,8 @@ declare module "next-auth/jwt" {
   }
 }
 
-const MAX_FAILED = 5;
-const LOCK_MINUTES = 15;
-
-function getClientIp(req: unknown): string {
-  const headers = (req as { headers?: Record<string, string | string[]> | Headers }).headers;
-  if (!headers) return "unknown";
-  const get = (key: string): string | undefined => {
-    if (typeof (headers as Headers).get === "function") {
-      return (headers as Headers).get(key) || undefined;
-    }
-    const v = (headers as Record<string, string | string[]>)[key];
-    return Array.isArray(v) ? v[0] : v;
-  };
-  const xff = get("x-forwarded-for");
-  if (xff) return xff.split(",")[0].trim();
-  return get("x-real-ip") || "unknown";
-}
+const MAX_FAILED_ATTEMPTS = parseInt(process.env.MAX_FAILED_ATTEMPTS || '5', 10);
+const ACCOUNT_LOCK_MINUTES = parseInt(process.env.ACCOUNT_LOCK_MINUTES || '15', 10);
 
 export const madingAuthOptions: NextAuthOptions = {
   providers: [
@@ -74,7 +60,7 @@ export const madingAuthOptions: NextAuthOptions = {
       async authorize(credentials, req) {
         if (!credentials?.email || !credentials?.password) return null;
 
-        const ip = getClientIp(req);
+        const ip = getClientIpFromHeaders((req as { headers?: unknown }).headers as Headers | Record<string, string | string[]> | undefined);
 
         const ipLimit = checkRateLimit(`mading-login:ip:${ip}`, 30, 60 * 1000);
         if (!ipLimit.allowed) { console.log("MADING AUTH: ip limit hit"); return null; }
@@ -97,10 +83,10 @@ export const madingAuthOptions: NextAuthOptions = {
           const isPasswordValid = await bcrypt.compare(credentials.password, user.password);
           if (!isPasswordValid) { console.log("MADING AUTH: wrong password");
             const newAttempts = (user.failed_attempts || 0) + 1;
-            if (newAttempts >= MAX_FAILED) {
+            if (newAttempts >= MAX_FAILED_ATTEMPTS) {
               await pool.execute(
                 "UPDATE users SET failed_attempts = ?, locked_until = DATE_ADD(NOW(), INTERVAL ? MINUTE) WHERE id = ?",
-                [newAttempts, LOCK_MINUTES, user.id]
+                [newAttempts, ACCOUNT_LOCK_MINUTES, user.id]
               );
             } else {
               await pool.execute("UPDATE users SET failed_attempts = ? WHERE id = ?", [newAttempts, user.id]);
@@ -121,7 +107,7 @@ export const madingAuthOptions: NextAuthOptions = {
           };
         } catch (error) {
           if (error instanceof Error && error.message === "LOCKED") throw error;
-          console.error("Mading auth error:", error);
+          logError(error, 'Mading Auth');
           return null;
         }
       },

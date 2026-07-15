@@ -9,7 +9,8 @@ export function checkRateLimit(
   const windowStart = now - windowMs;
 
   Array.from(rateLimitMap.keys()).forEach((k) => {
-    if (rateLimitMap.get(k)!.timestamp < windowStart) rateLimitMap.delete(k);
+    const entry = rateLimitMap.get(k);
+    if (entry && entry.timestamp < windowStart) rateLimitMap.delete(k);
   });
 
   const entry = rateLimitMap.get(key);
@@ -26,8 +27,22 @@ export function checkRateLimit(
   return { allowed: true, remaining: limit - entry.count };
 }
 
-export function getClientIp(req: Request): string {
-  const xff = req.headers.get("x-forwarded-for");
+export function getClientIpFromHeaders(headers: Headers | Record<string, string | string[]> | undefined): string {
+  if (!headers) return "unknown";
+  
+  const get = (key: string): string | undefined => {
+    if (typeof (headers as Headers).get === "function") {
+      return (headers as Headers).get(key) || undefined;
+    }
+    const v = (headers as Record<string, string | string[]>)[key];
+    return Array.isArray(v) ? v[0] : v;
+  };
+  
+  const xff = get("x-forwarded-for");
   if (xff) return xff.split(",")[0].trim();
-  return req.headers.get("x-real-ip") || "unknown";
+  return get("x-real-ip") || "unknown";
+}
+
+export function getClientIp(req: Request): string {
+  return getClientIpFromHeaders(req.headers);
 }

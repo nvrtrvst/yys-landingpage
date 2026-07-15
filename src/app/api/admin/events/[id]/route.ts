@@ -4,6 +4,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
+import { handleApiError, logError } from '@/lib/errors';
 
 const eventSchema = z.object({
   title: z.string().min(1),
@@ -37,7 +38,8 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     revalidatePath('/events');
     return NextResponse.json({ success: true });
   } catch (error) {
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    logError(error, 'Event Update');
+    return handleApiError(error);
   }
 }
 
@@ -55,6 +57,7 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
     revalidatePath('/events');
     return NextResponse.json({ success: true });
   } catch (error) {
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    logError(error, 'Event Delete');
+    return handleApiError(error);
   }
 }

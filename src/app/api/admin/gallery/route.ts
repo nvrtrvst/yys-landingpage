@@ -20,7 +20,7 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const [rows] = await pool.execute('SELECT * FROM galleries ORDER BY created_at DESC');
+    const [rows] = await pool.execute('SELECT id, title, image_url, caption, created_at FROM galleries ORDER BY created_at DESC');
     return NextResponse.json(rows);
   } catch (error) {
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });

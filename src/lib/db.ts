@@ -1,11 +1,18 @@
 import mysql from 'mysql2/promise';
 import { RowDataPacket } from 'mysql2/promise';
+import { logError } from '@/lib/errors';
+
+const DB_CONNECTION_LIMIT = parseInt(process.env.DB_CONNECTION_LIMIT || '10', 10);
+const DB_MAX_IDLE = parseInt(process.env.DB_MAX_IDLE || '10', 10);
+const DB_IDLE_TIMEOUT = parseInt(process.env.DB_IDLE_TIMEOUT || '60000', 10);
+const SETTINGS_CACHE_TTL = parseInt(process.env.SETTINGS_CACHE_TTL || '60000', 10);
+
 const dbConfig = {
   uri: process.env.DATABASE_URL,
   waitForConnections: true,
-  connectionLimit: 10,
-  maxIdle: 10, // max idle connections, the default value is the same as `connectionLimit`
-  idleTimeout: 60000, // idle connections timeout, in milliseconds, the default value 60000
+  connectionLimit: DB_CONNECTION_LIMIT,
+  maxIdle: DB_MAX_IDLE,
+  idleTimeout: DB_IDLE_TIMEOUT,
   queueLimit: 0,
   enableKeepAlive: true,
   keepAliveInitialDelay: 0
@@ -34,11 +41,10 @@ if (!global.mysqlPool) {
 const pool = global.mysqlPool!;
 
 let settingsCache: { value: Record<string, string>; ts: number } | null = null;
-const SETTINGS_TTL_MS = 60_000;
 
 export async function getSettings(): Promise<Record<string, string>> {
   const now = Date.now();
-  if (settingsCache && now - settingsCache.ts < SETTINGS_TTL_MS) return settingsCache.value;
+  if (settingsCache && now - settingsCache.ts < SETTINGS_CACHE_TTL) return settingsCache.value;
   try {
     const [rows] = await pool.execute<RowDataPacket[]>('SELECT setting_key, setting_value FROM settings');
     const settings: Record<string, string> = {};
@@ -48,7 +54,7 @@ export async function getSettings(): Promise<Record<string, string>> {
     settingsCache = { value: settings, ts: now };
     return settings;
   } catch (error) {
-    console.error('Failed to get settings', error);
+    logError(error, 'Settings fetch');
     return settingsCache ? settingsCache.value : {};
   }
 }

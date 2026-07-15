@@ -21,7 +21,7 @@ export async function GET(request: Request) {
     const role = session.user.role;
     if (role !== 'superadmin' && role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
-    const [rows] = await pool.execute('SELECT * FROM faqs ORDER BY order_index ASC, id DESC');
+    const [rows] = await pool.execute('SELECT id, question, answer, order_index, is_active FROM faqs ORDER BY order_index ASC, id DESC');
     return NextResponse.json(rows);
   } catch (error) {
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });

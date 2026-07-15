@@ -3,7 +3,8 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcrypt";
 import pool from "@/lib/db";
 import { RowDataPacket } from "mysql2";
-import { checkRateLimit } from "@/lib/rate-limit";
+import { checkRateLimit, getClientIpFromHeaders } from "@/lib/rate-limit";
+import { logError } from "@/lib/errors";
 
 interface UserRow extends RowDataPacket {
   id: number;
@@ -42,23 +43,8 @@ declare module "next-auth/jwt" {
   }
 }
 
-const MAX_FAILED = 5;
-const LOCK_MINUTES = 15;
-
-function getClientIp(req: unknown): string {
-  const headers = (req as { headers?: Record<string, string | string[]> | Headers }).headers;
-  if (!headers) return "unknown";
-  const get = (key: string): string | undefined => {
-    if (typeof (headers as Headers).get === "function") {
-      return (headers as Headers).get(key) || undefined;
-    }
-    const v = (headers as Record<string, string | string[]>)[key];
-    return Array.isArray(v) ? v[0] : v;
-  };
-  const xff = get("x-forwarded-for");
-  if (xff) return xff.split(",")[0].trim();
-  return get("x-real-ip") || "unknown";
-}
+const MAX_FAILED_ATTEMPTS = parseInt(process.env.MAX_FAILED_ATTEMPTS || '5', 10);
+const ACCOUNT_LOCK_MINUTES = parseInt(process.env.ACCOUNT_LOCK_MINUTES || '15', 10);
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -68,12 +54,12 @@ export const authOptions: NextAuthOptions = {
         email: { label: "Email", type: "email", placeholder: "admin@yayasan.com" },
         password: { label: "Password", type: "password" },
       },
-      async authorize(credentials, req) {
+      async   authorize(credentials, req) {
         if (!credentials?.email || !credentials?.password) {
           return null;
         }
 
-        const ip = getClientIp(req);
+        const ip = getClientIpFromHeaders((req as { headers?: unknown }).headers as Headers | Record<string, string | string[]> | undefined);
 
         // 1. Rate limit per IP (throttle global)
         const ipLimit = checkRateLimit(`login:ip:${ip}`, 10, 60 * 1000);
@@ -104,10 +90,10 @@ export const authOptions: NextAuthOptions = {
 
           if (!isPasswordValid) {
             const newAttempts = (user.failed_attempts || 0) + 1;
-            if (newAttempts >= MAX_FAILED) {
+            if (newAttempts >= MAX_FAILED_ATTEMPTS) {
               await pool.execute(
                 "UPDATE users SET failed_attempts = ?, locked_until = DATE_ADD(NOW(), INTERVAL ? MINUTE) WHERE id = ?",
-                [newAttempts, LOCK_MINUTES, user.id]
+                [newAttempts, ACCOUNT_LOCK_MINUTES, user.id]
               );
             } else {
               await pool.execute(
@@ -138,7 +124,7 @@ export const authOptions: NextAuthOptions = {
           if (error instanceof Error && error.message === "LOCKED") {
             throw error;
           }
-          console.error("Auth error:", error);
+          logError(error, 'SCP Auth');
           return null;
         }
       },

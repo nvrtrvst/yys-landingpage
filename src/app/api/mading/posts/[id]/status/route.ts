@@ -3,7 +3,8 @@ import pool from "@/lib/db";
 import { ResultSetHeader, RowDataPacket } from "mysql2";
 import { getServerSession } from "next-auth";
 import { getServerSessionDual, madingAuthOptions } from "@/lib/mading-auth";
-import { canAccessUnit, createAuditLog, createNotification, getClientIp } from "@/lib/mading";
+import { canAccessUnit, createAuditLog, createNotification } from "@/lib/mading";
+import { getClientIp } from "@/lib/rate-limit";
 import { revalidatePath } from "next/cache";
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {

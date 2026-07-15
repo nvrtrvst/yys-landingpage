@@ -5,7 +5,8 @@ import { getServerSession, type Session } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import bcrypt from "bcrypt";
 import { z } from "zod";
-import { createAuditLog, getClientIp } from "@/lib/mading";
+import { createAuditLog } from "@/lib/mading";
+import { getClientIp } from "@/lib/rate-limit";
 
 function checkAuth(session: Session | null) {
   if (!session) return "Tidak terautentikasi";

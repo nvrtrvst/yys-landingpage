@@ -24,7 +24,7 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const [rows] = await pool.execute('SELECT * FROM events ORDER BY start_date ASC');
+    const [rows] = await pool.execute('SELECT id, title, description, start_date, end_date, location, image_url FROM events ORDER BY start_date ASC');
     return NextResponse.json(rows);
   } catch (error) {
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });

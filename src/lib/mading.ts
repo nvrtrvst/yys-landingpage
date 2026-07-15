@@ -21,14 +21,22 @@ export function slugifyTitle(title: string): string {
     .slice(0, 80) || "post";
 }
 
-export async function generateUniqueSlug(title: string): Promise<string> {
+export async function generateUniqueSlug(title: string, excludeId?: number): Promise<string> {
   const base = slugifyTitle(title);
-  const [rows] = await pool.execute<RowDataPacket[]>(
-    "SELECT slug FROM mading_posts WHERE slug = ? OR slug LIKE ?",
-    [base, base + "-%"]
-  );
+  
+  let sql = "SELECT slug FROM mading_posts WHERE (slug = ? OR slug LIKE ?)";
+  const params: (string | number)[] = [base, base + "-%"];
+  
+  if (excludeId) {
+    sql += " AND id != ?";
+    params.push(excludeId);
+  }
+  
+  const [rows] = await pool.execute<RowDataPacket[]>(sql, params);
   const taken = new Set(rows.map((r) => (r as { slug: string }).slug));
+  
   if (!taken.has(base)) return base;
+  
   let i = 2;
   while (taken.has(`${base}-${i}`)) i++;
   return `${base}-${i}`;
@@ -82,10 +90,4 @@ export async function createNotification(userId: number, postId: number | null, 
   try {
     await pool.execute("INSERT INTO mading_notifications (user_id, post_id, type, message) VALUES (?, ?, ?, ?)", [userId, postId, type, message]);
   } catch (e) { console.error("Failed to create notification:", e); }
-}
-
-export function getClientIp(req: Request): string {
-  const xff = req.headers.get("x-forwarded-for");
-  if (xff) return xff.split(",")[0].trim();
-  return req.headers.get("x-real-ip") || "unknown";
 }

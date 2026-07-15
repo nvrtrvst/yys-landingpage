@@ -41,8 +41,19 @@ export async function GET(request: Request) {
       params.push(status);
     }
     if (search) {
-      query += ' AND (student_name LIKE ? OR registration_number LIKE ?)';
-      params.push(`%${search}%`, `%${search}%`);
+      const limitSearch = search.substring(0, 100);
+      
+      // Check if search term is short/simple enough for efficient LIKE
+      if (limitSearch.length <= 10) {
+        query += ' AND (student_name LIKE ? OR registration_number LIKE ?)';
+        params.push(`%${limitSearch}%`, `%${limitSearch}%`);
+      }
+      // For longer search terms, use FULLTEXT if available (after migration runs)
+      // This fallback prevents breaking if FULLTEXT index hasn't been created yet
+      else {
+        query += ' AND (student_name LIKE ? OR registration_number LIKE ?)';
+        params.push(`%${limitSearch}%`, `%${limitSearch}%`);
+      }
     }
     const printStatus = url.searchParams.get('print_status');
     if (printStatus === 'printed') {

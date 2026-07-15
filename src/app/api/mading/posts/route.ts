@@ -32,15 +32,13 @@ export async function GET(request: Request) {
     const params: (string | number)[] = [];
 
     if (slug && !isMod) {
-      const [units] = await pool.execute<RowDataPacket[]>("SELECT id FROM units WHERE slug = ? AND status = 'active'", [slug]);
-      if (units.length > 0) { where += " AND p.unit_id = ?"; params.push((units[0] as RowDataPacket).id); }
+      where += " AND p.unit_id = (SELECT id FROM units WHERE slug = ? AND status = 'active')";
+      params.push(slug);
     } else if (slug && isMod) {
-      const [units] = await pool.execute<RowDataPacket[]>("SELECT id FROM units WHERE slug = ?", [slug]);
-      if (units.length > 0) {
-        if (!canAccessUnit(session!.user.role, session!.user.unit_id, (units[0] as RowDataPacket).id)) {
-          return NextResponse.json({ error: "Dilarang" }, { status: 403 });
-        }
-        where += " AND p.unit_id = ?"; params.push((units[0] as RowDataPacket).id);
+      where += " AND p.unit_id = (SELECT id FROM units WHERE slug = ?)";
+      params.push(slug);
+      if (!canAccessUnit(session!.user.role, session!.user.unit_id, parseInt(slug))) {
+        return NextResponse.json({ error: "Dilarang" }, { status: 403 });
       }
     }
 

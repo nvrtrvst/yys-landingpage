@@ -26,7 +26,7 @@ export async function GET(request: Request) {
     const role = session.user.role;
     if (role !== 'superadmin' && role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
-    const [rows] = await pool.execute('SELECT * FROM units ORDER BY order_index ASC, id DESC');
+    const [rows] = await pool.execute('SELECT id, name, slug, description, order_index, status FROM units ORDER BY order_index ASC, id DESC');
     return NextResponse.json(rows);
   } catch (error) {
     console.error(error);

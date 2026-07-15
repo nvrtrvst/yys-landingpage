@@ -3,6 +3,7 @@ import pool from "@/lib/db";
 import { RowDataPacket } from "mysql2";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { logError, handleApiError } from "@/lib/errors";
 
 export async function GET() {
   try {
@@ -12,24 +13,26 @@ export async function GET() {
       return NextResponse.json({ error: "Dilarang" }, { status: 403 });
 
     const isAdminUnit = session.user.role === "admin_unit" && session.user.unit_id;
+    const unitCondition = isAdminUnit ? "WHERE p.unit_id = ?" : "";
+    const unitParams = isAdminUnit ? [session.user.unit_id] : [];
 
     const [totalPosts] = await pool.execute<RowDataPacket[]>(
-      `SELECT COUNT(*) as total FROM mading_posts${isAdminUnit ? " WHERE unit_id = ?" : ""}`,
-      isAdminUnit ? [session.user.unit_id] : []
+      `SELECT COUNT(*) as total FROM mading_posts p ${unitCondition}`,
+      unitParams
     );
 
     const [postsByStatus] = await pool.execute<RowDataPacket[]>(
-      `SELECT status, COUNT(*) as count FROM mading_posts${isAdminUnit ? " WHERE unit_id = ?" : ""} GROUP BY status`,
-      isAdminUnit ? [session.user.unit_id] : []
+      `SELECT status, COUNT(*) as count FROM mading_posts p ${unitCondition} GROUP BY status`,
+      unitParams
     );
 
     const [recentPosts] = await pool.execute<RowDataPacket[]>(
       `SELECT p.id, p.title, p.status, p.created_at, u.name as author_name, un.name as unit_name
        FROM mading_posts p JOIN users u ON p.author_id = u.id
        LEFT JOIN units un ON p.unit_id = un.id
-       ${isAdminUnit ? "WHERE p.unit_id = ?" : ""}
+       ${unitCondition}
        ORDER BY p.created_at DESC LIMIT 5`,
-      isAdminUnit ? [session.user.unit_id] : []
+      unitParams
     );
 
     const statusMap: Record<string, number> = {};
@@ -53,7 +56,7 @@ export async function GET() {
       perUnit = byUnit;
 
       const [userC] = await pool.execute<RowDataPacket[]>(
-        `SELECT role, COUNT(*) as count FROM users WHERE role IN ('guru','siswa') GROUP BY role`
+        "SELECT role, COUNT(*) as count FROM users WHERE role IN ('guru','siswa') GROUP BY role"
       );
       for (const r of userC as RowDataPacket[]) {
         if (r.role === "guru") totalUsers.guru = r.count;
@@ -70,7 +73,7 @@ export async function GET() {
       totalUsers: isAdminUnit ? null : totalUsers,
     });
   } catch (error) {
-    console.error("Error fetching stats:", error);
-    return NextResponse.json({ error: "Kesalahan server internal" }, { status: 500 });
+    logError(error, 'Mading Stats');
+    return handleApiError(error);
   }
 }
