@@ -9,6 +9,7 @@ import { HeroParallax } from "@/components/parallax/HeroParallax";
 import { ImageParallax } from "@/components/parallax/ImageParallax";
 import { TiltCard } from "@/components/parallax/TiltCard";
 import DOMPurify from "isomorphic-dompurify";
+import { LogoFill } from "@/components/LogoFill";
 
 // Revalidate page every 60 seconds (ISR)
 export const revalidate = 60;
@@ -46,43 +47,27 @@ export default async function Home() {
     console.error("Failed to fetch data for homepage", error);
   }
 
+  const heroBg = settings.hero_background && !settings.hero_background.startsWith('/uploads/dummy/')
+    ? settings.hero_background : '/uploads/dummy/hero_bg.png';
+
   return (
-    <main className="min-h-screen flex flex-col bg-gray-50 overflow-x-hidden">
+    <>
+      <div style={{position:'fixed',inset:0,zIndex:0}}>
+        <div style={{position:'absolute',inset:0,backgroundImage:`url(${heroBg})`,backgroundSize:'cover',backgroundPosition:'center',backgroundRepeat:'no-repeat'}} />
+        <div style={{position:'absolute',inset:0,backgroundColor:'rgba(6,78,59,0.6)'}} />
+      </div>
+
+      <main className="relative z-10 min-h-screen flex flex-col">
       <Header />
       
-      {/* HERO SECTION */}
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-primary-900">
-        {settings.hero_background && !settings.hero_background.startsWith('/uploads/dummy/') ? (
-          <div className="absolute inset-0">
-            <ImageParallax src={settings.hero_background} alt="Hero Background" className="w-full h-full" />
-            <div className="absolute inset-0 bg-primary-900/60 z-10"></div>
-          </div>
-        ) : (
-          <div className="absolute inset-0">
-            <ImageParallax src="/uploads/dummy/hero_bg.png" alt="Hero Background" className="w-full h-full" />
-            <div className="absolute inset-0 bg-primary-900/60 z-10"></div>
-          </div>
-        )}
+      {/* HERO SECTION — taller spacer to keep content from entering viewport during fill */}
+      <section style={{ minHeight: 'calc(100vh + 400px)' }} className="relative flex items-center justify-center overflow-hidden">
         <HeroParallax />
-        
-        <div className="relative z-20 container mx-auto px-4 md:px-6 text-center pt-20">
-          <span className="inline-block py-1 px-3 rounded-full bg-primary-800 text-primary-200 text-sm font-semibold mb-6 tracking-wider uppercase fade-in">
-            {settings.site_tagline || "Pendidikan Islam Terpadu"}
-          </span>
-          <h1 className="font-serif text-5xl md:text-7xl font-bold text-white mb-6 leading-tight fade-in" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(settings.hero_title || "Membentuk Generasi <br /><span class=\"text-accent-default italic\">Qurani & Berprestasi</span>") }}>
-          </h1>
-          <p className="text-lg md:text-xl text-primary-100 max-w-2xl mx-auto mb-10 fade-in">
-            {settings.hero_subtitle || "Yayasan Nuurul Muttaqiin menghadirkan pendidikan berkualitas dari jenjang LPQ hingga SMK dengan mengedepankan adab, ilmu, dan teknologi."}
-          </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 fade-in">
-            <Link href="/ppdb" className="w-full sm:w-auto px-8 py-4 bg-accent-default text-primary-900 rounded-full font-bold text-lg hover:bg-accent-light transition shadow-xl hover:-translate-y-1">
-              Daftar Sekarang
-            </Link>
-            <Link href="#tentang" className="w-full sm:w-auto px-8 py-4 bg-white/10 backdrop-blur-md text-white rounded-full font-bold text-lg hover:bg-white/20 transition border border-white/20">
-              Pelajari Lebih Lanjut
-            </Link>
-          </div>
-        </div>
+
+        <LogoFill logoSrc={
+          settings.site_logo && !settings.site_logo.startsWith('/uploads/dummy/')
+            ? settings.site_logo : '/logo.png'
+        } />
 
         {/* Decorative elements */}
         <div className="absolute bottom-0 left-0 w-full overflow-hidden leading-[0]">
@@ -306,5 +291,6 @@ export default async function Home() {
 
       <Footer />
     </main>
+    </>
   );
 }
