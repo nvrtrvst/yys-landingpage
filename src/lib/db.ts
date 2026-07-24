@@ -13,29 +13,20 @@ const dbConfig = {
   connectionLimit: DB_CONNECTION_LIMIT,
   maxIdle: DB_MAX_IDLE,
   idleTimeout: DB_IDLE_TIMEOUT,
-  queueLimit: 0,
+  queueLimit: parseInt(process.env.DB_QUEUE_LIMIT || '50', 10),
   enableKeepAlive: true,
   keepAliveInitialDelay: 0
 };
 
-// Global is used here to maintain a cached connection across hot reloads
-// in development. This prevents connections multiplying exponentially.
 declare global {
   var mysqlPool: mysql.Pool | undefined;
 }
 
 if (!global.mysqlPool) {
-  // Extract user, password, host, port, database from URI or use direct uri
-  if (process.env.DATABASE_URL) {
-      global.mysqlPool = mysql.createPool(dbConfig);
-  } else {
-      global.mysqlPool = mysql.createPool({
-          host: 'localhost',
-          user: 'root',
-          database: 'yayasan_db',
-          ...dbConfig
-      });
+  if (!process.env.DATABASE_URL) {
+    throw new Error('DATABASE_URL environment variable is required. Set it in .env.local');
   }
+  global.mysqlPool = mysql.createPool(dbConfig);
 }
 
 const pool = global.mysqlPool!;

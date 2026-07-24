@@ -5,6 +5,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
+import DOMPurify from "isomorphic-dompurify";
 
 const faqSchema = z.object({
   question: z.string().min(1),
@@ -40,9 +41,10 @@ export async function POST(request: Request) {
     if (!result.success) return NextResponse.json({ error: 'Invalid data' }, { status: 400 });
 
     const data = result.data;
+    const sanitizedAnswer = DOMPurify.sanitize(data.answer);
     const [insertResult] = await pool.execute<ResultSetHeader>(
       `INSERT INTO faqs (question, answer, category, order_index, is_active) VALUES (?, ?, ?, ?, ?)`,
-      [data.question, data.answer, data.category || null, data.order_index, data.is_active ? 1 : 0]
+      [data.question, sanitizedAnswer, data.category || null, data.order_index, data.is_active ? 1 : 0]
     );
 
     revalidatePath('/');

@@ -6,6 +6,7 @@ import { madingAuthOptions } from "@/lib/mading-auth";
 import { createNotification } from "@/lib/mading";
 import { containsProfanity } from "@/lib/profanity";
 import { z } from "zod";
+import DOMPurify from "isomorphic-dompurify";
 
 const commentSchema = z.object({
   content: z.string().min(1, "Komentar tidak boleh kosong").max(1000, "Komentar maksimal 1000 karakter"),
@@ -50,9 +51,10 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     }
 
     const isFlagged = containsProfanity(valid.data.content);
+    const cleanContent = DOMPurify.sanitize(valid.data.content, { ALLOWED_TAGS: [] });
     const [result] = await pool.execute<ResultSetHeader>(
       "INSERT INTO mading_comments (post_id, user_id, content, parent_id, is_flagged, flag_reason) VALUES (?, ?, ?, ?, ?, ?)",
-      [postId, parseInt(session.user.id), valid.data.content, parentId, isFlagged ? 1 : 0, isFlagged ? "profanity" : null]
+      [postId, parseInt(session.user.id), cleanContent, parentId, isFlagged ? 1 : 0, isFlagged ? "profanity" : null]
     );
 
     try {

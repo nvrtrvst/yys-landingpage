@@ -1,5 +1,16 @@
 const rateLimitMap = new Map<string, { count: number; timestamp: number }>();
 
+// Periodic cleanup every 60s — avoids O(n) scan on every request
+const CLEANUP_INTERVAL = 60_000;
+if (typeof setInterval !== 'undefined') {
+  setInterval(() => {
+    const deadline = Date.now() - CLEANUP_INTERVAL;
+    for (const [key, entry] of rateLimitMap) {
+      if (entry.timestamp < deadline) rateLimitMap.delete(key);
+    }
+  }, CLEANUP_INTERVAL).unref();
+}
+
 export function checkRateLimit(
   key: string,
   limit: number = 10,
@@ -7,11 +18,6 @@ export function checkRateLimit(
 ): { allowed: boolean; remaining: number } {
   const now = Date.now();
   const windowStart = now - windowMs;
-
-  Array.from(rateLimitMap.keys()).forEach((k) => {
-    const entry = rateLimitMap.get(k);
-    if (entry && entry.timestamp < windowStart) rateLimitMap.delete(k);
-  });
 
   const entry = rateLimitMap.get(key);
   if (!entry || entry.timestamp < windowStart) {

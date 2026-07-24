@@ -18,7 +18,10 @@ export async function POST(request: Request) {
       [email]
     );
 
-    if (users.length === 0) return NextResponse.json({ error: "Email tidak ditemukan" }, { status: 404 });
+    if (users.length === 0) {
+      // Uniform response — prevent user enumeration
+      return NextResponse.json({ success: true, message: "Jika email terdaftar, tautan reset password akan dikirim." });
+    }
 
     const user = users[0] as RowDataPacket;
     const token = crypto.randomBytes(32).toString("hex");

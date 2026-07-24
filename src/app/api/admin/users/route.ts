@@ -7,6 +7,14 @@ import crypto from 'crypto';
 import { sendNewUserEmail } from '@/lib/mailer';
 import { RowDataPacket, ResultSetHeader } from 'mysql2';
 import { checkRateLimit, getClientIp } from '@/lib/rate-limit';
+import { z } from 'zod';
+
+const createUserSchema = z.object({
+  name: z.string().min(2).max(100),
+  email: z.string().email().max(255),
+  password: z.string().min(8).max(128),
+  role: z.enum(['superadmin', 'admin', 'editor', 'admin_unit', 'guru', 'siswa']),
+});
 
 export async function GET(request: Request) {
   try {
@@ -41,11 +49,12 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Terlalu banyak permintaan. Coba lagi nanti.' }, { status: 429 });
     }
 
-    const { name, email, password, role } = await request.json();
-
-    if (!name || !email || !password || !role) {
-      return NextResponse.json({ error: 'Semua field wajib diisi' }, { status: 400 });
+    const body = await request.json();
+    const valid = createUserSchema.safeParse(body);
+    if (!valid.success) {
+      return NextResponse.json({ error: 'Data tidak valid', details: valid.error.issues }, { status: 400 });
     }
+    const { name, email, password, role } = valid.data;
 
     // Check if email already exists
     const [existing] = await pool.execute<RowDataPacket[]>(

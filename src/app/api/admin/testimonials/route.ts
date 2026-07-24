@@ -5,6 +5,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
+import DOMPurify from "isomorphic-dompurify";
 
 const testimonialSchema = z.object({
   author_name: z.string().min(1),
@@ -41,9 +42,10 @@ export async function POST(request: Request) {
     if (!result.success) return NextResponse.json({ error: 'Invalid data' }, { status: 400 });
 
     const data = result.data;
+    const sanitizedContent = DOMPurify.sanitize(data.content);
     const [insertResult] = await pool.execute<ResultSetHeader>(
       `INSERT INTO testimonials (author_name, role, content, image_url, order_index, is_active) VALUES (?, ?, ?, ?, ?, ?)`,
-      [data.author_name, data.role || null, data.content, data.image_url || null, data.order_index, data.is_active ? 1 : 0]
+      [data.author_name, data.role || null, sanitizedContent, data.image_url || null, data.order_index, data.is_active ? 1 : 0]
     );
 
     revalidatePath('/');

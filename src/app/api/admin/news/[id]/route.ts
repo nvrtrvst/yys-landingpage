@@ -5,6 +5,7 @@ import { authOptions } from '@/lib/auth';
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
 import { RowDataPacket } from 'mysql2';
+import DOMPurify from "isomorphic-dompurify";
 
 const newsSchema = z.object({
   title: z.string().min(1),
@@ -58,9 +59,10 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
       publishedAt = new Date().toISOString().slice(0, 19).replace('T', ' '); 
     }
 
+    const sanitizedContent = data.content ? DOMPurify.sanitize(data.content) : null;
     await pool.execute(
       `UPDATE news SET title=?, slug=?, content=?, image_url=?, category=?, status=?, published_at=? WHERE id=?`,
-      [data.title, data.slug, data.content || null, data.image_url || null, data.category || null, data.status, publishedAt, (await params).id]
+      [data.title, data.slug, sanitizedContent, data.image_url || null, data.category || null, data.status, publishedAt, (await params).id]
     );
 
     revalidatePath('/');

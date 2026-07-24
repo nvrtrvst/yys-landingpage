@@ -56,9 +56,9 @@ export async function GET(request: Request) {
        LEFT JOIN mading_categories c ON p.category_id = c.id
        LEFT JOIN units un ON p.unit_id = un.id
        ${where}
-       ${isMod ? "ORDER BY p.updated_at DESC" : "ORDER BY p.published_at DESC"}
-       LIMIT ${limit} OFFSET ${offset}`,
-      params
+        ${isMod ? "ORDER BY p.updated_at DESC" : "ORDER BY p.published_at DESC"}
+        LIMIT ? OFFSET ?`,
+      [...params, limit, offset]
     );
 
     return NextResponse.json({ data: rows, total, page, limit, totalPages: Math.ceil(total / limit) });

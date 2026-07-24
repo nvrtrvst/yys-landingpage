@@ -19,24 +19,8 @@ const nextConfig: NextConfig = {
           ...(process.env.NODE_ENV === "production"
             ? [{ key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains; preload" }]
             : []),
-          {
-            key: "Content-Security-Policy",
-            value: [
-              "default-src 'self'",
-              // React dev mode needs eval(); only allow it outside production.
-              "script-src 'self' 'unsafe-inline'" + (process.env.NODE_ENV === "production" ? "" : " 'unsafe-eval'"),
-              "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-              "font-src 'self' https://fonts.gstatic.com data:",
-              "img-src 'self' data: blob: https:",
-              "frame-src 'self' https://www.google.com https://maps.google.com",
-              "connect-src 'self'",
-              "object-src 'none'",
-              "base-uri 'self'",
-              "form-action 'self'",
-              // Prevent any page from embedding this app in an iframe
-              "frame-ancestors 'none'",
-            ].join("; "),
-          },
+          // CSP is now set dynamically in middleware.ts with a per-request nonce.
+          // Script-src uses 'nonce-{nonce}' instead of 'unsafe-inline'.
         ],
       },
       // Prevent search engines from indexing admin and API routes

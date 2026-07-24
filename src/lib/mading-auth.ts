@@ -172,15 +172,15 @@ export const madingAuthOptions: NextAuthOptions = {
     },
     pkceCodeVerifier: {
       name: "mading.pkce.code_verifier",
-      options: { path: "/" },
+      options: { path: "/", httpOnly: true, sameSite: "strict", secure: process.env.NODE_ENV === "production" },
     },
     state: {
       name: "mading.state",
-      options: { path: "/", sameSite: "strict" },
+      options: { path: "/", httpOnly: true, sameSite: "strict", secure: process.env.NODE_ENV === "production" },
     },
     nonce: {
       name: "mading.nonce",
-      options: { path: "/" },
+      options: { path: "/", httpOnly: true, sameSite: "strict", secure: process.env.NODE_ENV === "production" },
     },
   },
   secret: process.env.NEXTAUTH_SECRET,

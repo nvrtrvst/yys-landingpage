@@ -3,60 +3,41 @@ import { z } from "zod";
 import { RowDataPacket } from "mysql2";
 import pool from "@/lib/db";
 import { sendPPDBSingleEmail } from "@/lib/mailer";
-
-// Simple in-memory rate limiting (per instance)
-const rateLimitMap = new Map<string, { count: number, timestamp: number }>();
-const RATE_LIMIT_WINDOW = 60 * 1000; // 1 minute
-const MAX_REQUESTS_PER_WINDOW = 3;
+import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 
 // Validation Schema
 const ppdbSchema = z.object({
   unit: z.enum(["LPQ", "TK", "SD", "SMP", "SMK"]),
-  grade: z.string().min(1, "Kelas harus diisi"),
-  major: z.string().optional(),
-  student_name: z.string().min(3, "Nama minimal 3 karakter"),
-  nisn: z.string().optional(),
-  birth_place: z.string().min(3, "Tempat lahir wajib diisi"),
-  birth_date: z.string().min(1, "Tanggal lahir wajib diisi"),
-  nik: z.string().optional(),
-  religion: z.string().optional(),
+  grade: z.string().min(1, "Kelas harus diisi").max(50),
+  major: z.string().max(100).optional(),
+  student_name: z.string().min(3, "Nama minimal 3 karakter").max(150),
+  nisn: z.string().max(20).optional(),
+  birth_place: z.string().min(3, "Tempat lahir wajib diisi").max(100),
+  birth_date: z.string().min(1, "Tanggal lahir wajib diisi").max(20),
+  nik: z.string().max(20).optional(),
+  religion: z.string().max(50).optional(),
   gender: z.enum(["Laki-laki", "Perempuan"]),
-  address: z.string().min(10, "Alamat terlalu pendek"),
-  child_order: z.number().int().min(1).optional(),
-  siblings_count: z.number().int().min(0).optional(),
-  previous_school: z.string().optional(),
+  address: z.string().min(10, "Alamat terlalu pendek").max(500),
+  child_order: z.number().int().min(1).max(20).optional(),
+  siblings_count: z.number().int().min(0).max(50).optional(),
+  previous_school: z.string().max(200).optional(),
   is_pip: z.enum(["YA", "TIDAK"]).optional(),
-  father_name: z.string().min(3, "Nama ayah wajib diisi"),
-  father_job: z.string().optional(),
-  mother_name: z.string().min(3, "Nama ibu wajib diisi"),
-  mother_job: z.string().optional(),
-  guardian_name: z.string().optional(),
-  guardian_job: z.string().optional(),
-  phone: z.string().min(10, "Nomor HP tidak valid"),
-  email: z.string().min(1, "Email wajib diisi").email("Format email tidak valid"),
+  father_name: z.string().min(3, "Nama ayah wajib diisi").max(150),
+  father_job: z.string().max(100).optional(),
+  mother_name: z.string().min(3, "Nama ibu wajib diisi").max(150),
+  mother_job: z.string().max(100).optional(),
+  guardian_name: z.string().max(150).optional(),
+  guardian_job: z.string().max(100).optional(),
+  phone: z.string().min(10, "Nomor HP tidak valid").max(20),
+  email: z.string().min(1, "Email wajib diisi").email("Format email tidak valid").max(255),
 });
 
 export async function POST(req: Request) {
   try {
     // Basic Rate Limiting
-    const ip = req.headers.get('x-forwarded-for') || req.headers.get('remote-addr') || 'unknown';
-    const now = Date.now();
-    const windowStart = now - RATE_LIMIT_WINDOW;
-    
-    // Clean up old entries
-    Array.from(rateLimitMap.keys()).forEach(key => {
-      if (rateLimitMap.get(key)!.timestamp < windowStart) rateLimitMap.delete(key);
-    });
-    
-    const userRate = rateLimitMap.get(ip);
-    if (userRate) {
-      if (userRate.count >= MAX_REQUESTS_PER_WINDOW) {
-        return NextResponse.json({ success: false, message: "Terlalu banyak permintaan. Silakan coba lagi nanti." }, { status: 429 });
-      }
-      userRate.count++;
-      userRate.timestamp = now;
-    } else {
-      rateLimitMap.set(ip, { count: 1, timestamp: now });
+    const rl = checkRateLimit(`ppdb:${getClientIp(req)}`, 3, 60 * 1000);
+    if (!rl.allowed) {
+      return NextResponse.json({ success: false, message: "Terlalu banyak permintaan. Silakan coba lagi nanti." }, { status: 429 });
     }
 
     const body = await req.json();

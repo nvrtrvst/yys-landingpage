@@ -5,6 +5,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
+import DOMPurify from "isomorphic-dompurify";
 
 const programSchema = z.object({
   title: z.string().min(1),
@@ -41,9 +42,10 @@ export async function POST(request: Request) {
     if (!result.success) return NextResponse.json({ error: 'Invalid data' }, { status: 400 });
 
     const data = result.data;
+    const sanitizedDesc = data.description ? DOMPurify.sanitize(data.description) : null;
     const [insertResult] = await pool.execute<ResultSetHeader>(
       `INSERT INTO programs (title, description, image_url, unit_id, order_index, status) VALUES (?, ?, ?, ?, ?, ?)`,
-      [data.title, data.description || null, data.image_url || null, data.unit_id || null, data.order_index, data.status]
+      [data.title, sanitizedDesc, data.image_url || null, data.unit_id || null, data.order_index, data.status]
     );
 
     revalidatePath('/');
