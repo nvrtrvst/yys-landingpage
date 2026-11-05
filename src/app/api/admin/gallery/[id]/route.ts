@@ -7,26 +7,29 @@ import fs from 'fs/promises';
 import path from 'path';
 import { revalidatePath } from 'next/cache';
 import { RowDataPacket } from 'mysql2';
+import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
+
+const ALLOWED_ROLES = ['superadmin', 'admin', 'admin_unit', 'editor'];
 
 export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await getServerSession(authOptions);
     if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     const role = session.user.role;
-    if (role !== 'superadmin' && role !== 'admin' && role !== 'editor') {
+    if (!ALLOWED_ROLES.includes(role)) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    // Ambil data dulu
+    const rl = checkRateLimit(`gallery-write:${getClientIp(request)}`, 20, 60_000);
+    if (!rl.allowed) return NextResponse.json({ error: 'Terlalu banyak permintaan' }, { status: 429 });
+
     const [rows] = await pool.execute<RowDataPacket[]>('SELECT image_url FROM galleries WHERE id = ?', [(await params).id]);
     if (rows.length === 0) return NextResponse.json({ error: 'Not Found' }, { status: 404 });
     
     const imageUrl = rows[0].image_url;
     
-    // Hapus dari database
     await pool.execute('DELETE FROM galleries WHERE id = ?', [(await params).id]);
 
-    // Hapus file fisik jika ada
     if (imageUrl.startsWith('/uploads/')) {
       try {
         const filePath = path.join(process.cwd(), 'public', imageUrl);
@@ -49,9 +52,12 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     const session = await getServerSession(authOptions);
     if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     const role = session.user.role;
-    if (role !== 'superadmin' && role !== 'admin' && role !== 'editor') {
+    if (!ALLOWED_ROLES.includes(role)) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
+
+    const rl = checkRateLimit(`gallery-write:${getClientIp(request)}`, 20, 60_000);
+    if (!rl.allowed) return NextResponse.json({ error: 'Terlalu banyak permintaan' }, { status: 429 });
 
     const body = await request.json();
     // Validate title — prevent arbitrary data injection
