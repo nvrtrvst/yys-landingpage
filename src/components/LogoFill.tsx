@@ -4,18 +4,22 @@ import { useEffect, useState } from "react";
 
 export function LogoFill({ logoSrc }: { logoSrc: string }) {
   const [fill, setFill] = useState(0);
-  const [opacity, setOpacity] = useState(1);
+  const [fadeOut, setFadeOut] = useState(1);
 
   useEffect(() => {
     function onScroll() {
       const d = Math.max(250, window.innerHeight * 0.4);
       const fp = Math.min(1, Math.max(0, window.scrollY / d));
       setFill(fp < 1 ? 1 - Math.pow(1 - fp, 1.8) : 1);
-      setOpacity(
-        window.scrollY <= d
-          ? 1
-          : Math.max(0, 1 - (window.scrollY - d) / Math.max(1, window.innerHeight))
-      );
+
+      const wave = document.querySelector("[data-hero-wave]");
+      if (wave) {
+        const waveTop = wave.getBoundingClientRect().top;
+        const textCenter = window.innerHeight / 2;
+        const dist = waveTop - textCenter;
+        const fadeRange = 300;
+        setFadeOut(dist > fadeRange ? 1 : Math.max(0, dist / fadeRange));
+      }
     }
     window.addEventListener("scroll", onScroll, { passive: true });
     onScroll();
@@ -28,7 +32,7 @@ export function LogoFill({ logoSrc }: { logoSrc: string }) {
   return (
     <div
       className="fixed inset-0 flex items-center justify-center pointer-events-none"
-      style={{ zIndex: 30, opacity }}
+      style={{ zIndex: 30, opacity: fadeOut }}
     >
       <div className="flex flex-col items-center">
         {/* Logo badge ~65% original size */}

@@ -17,7 +17,6 @@ export const revalidate = 60;
 export default async function Home() {
   const settings = await getSettings();
   
-  // Fetch data
   let units: RowDataPacket[] = [];
   let programs: RowDataPacket[] = [];
   let news: RowDataPacket[] = [];
@@ -47,6 +46,28 @@ export default async function Home() {
     console.error("Failed to fetch data for homepage", error);
   }
 
+  // Total siswa aktif dari API Keuangan
+  let totalStudents: number | null = null;
+  try {
+    const keuUrl = process.env.KEUANGAN_API_URL || "http://localhost:3000";
+    const keuKey = process.env.KEUANGAN_INTEGRATION_KEY;
+    if (keuKey) {
+      const res = await fetch(`${keuUrl}/api/integration/student-count`, {
+        headers: { Authorization: `Bearer ${keuKey}` },
+        signal: AbortSignal.timeout(3000),
+        next: { revalidate: 3600 },
+      });
+      if (res.ok) {
+        const json = await res.json();
+        if (json?.success && typeof json?.data?.total === "number") {
+          totalStudents = json.data.total;
+        }
+      }
+    }
+  } catch (error) {
+    console.error("Failed to fetch student count from Keuangan API", error);
+  }
+
   const heroBg = settings.hero_background && !settings.hero_background.startsWith('/uploads/dummy/')
     ? settings.hero_background : '/uploads/dummy/hero_bg.png';
 
@@ -70,51 +91,91 @@ export default async function Home() {
         } />
 
         {/* Decorative elements */}
-        <div className="absolute bottom-0 left-0 w-full overflow-hidden leading-[0]">
+        <div data-hero-wave className="absolute bottom-0 left-0 w-full overflow-hidden leading-[0]">
           <svg className="relative block w-[calc(100%+1.3px)] h-[70px] md:h-[120px]" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none">
             <path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V120H0V95.8C59.71,118,130.93,121.9,198.8,111.45,241.65,104.81,283.47,82.46,321.39,56.44Z" className="fill-gray-50"></path>
           </svg>
         </div>
       </section>
 
-      {/* TENTANG SECTION */}
-      <section id="tentang" className="py-16 md:py-24 bg-gray-50 relative">
-        <div className="container mx-auto px-4 md:px-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center">
-            <div>
-              <h2 className="font-serif text-4xl md:text-5xl font-bold text-gray-900 mb-6">Sejarah & Visi Kami</h2>
-              <div className="w-20 h-1.5 bg-primary-500 mb-8 rounded-full"></div>
-              
+      {/* TENTANG SECTION — Heritage */}
+      <section id="tentang" className="py-16 md:py-24 bg-gray-50 relative overflow-hidden">
+        {/* 8-point star motif */}
+        <svg className="absolute -top-10 -right-10 w-[28rem] h-[28rem] text-primary-500 opacity-[0.05] pointer-events-none" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
+          <rect x="15" y="15" width="70" height="70" />
+          <rect x="15" y="15" width="70" height="70" transform="rotate(45 50 50)" />
+          <circle cx="50" cy="50" r="33" />
+        </svg>
+        <svg className="absolute -bottom-16 -left-12 w-80 h-80 text-accent-default opacity-[0.06] pointer-events-none" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
+          <rect x="15" y="15" width="70" height="70" />
+          <rect x="15" y="15" width="70" height="70" transform="rotate(45 50 50)" />
+        </svg>
+
+        <div className="container mx-auto px-4 md:px-6 relative">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-start">
+            {/* Left: narrative */}
+            <div className="lg:col-span-7">
+              <div className="flex items-center gap-3 mb-3">
+                <span className="h-px w-10 bg-primary-500"></span>
+                <span className="text-primary-600 font-semibold tracking-[0.22em] text-xs uppercase">Profil Yayasan</span>
+              </div>
+              <h2 className="font-serif text-4xl md:text-5xl font-bold text-gray-900 mb-6">Sejarah &amp; Visi Kami</h2>
+
               {settings.profile_history ? (
-                <div className="text-gray-600 text-lg leading-relaxed mb-8 prose prose-lg" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(settings.profile_history) }} />
+                <div className="text-gray-600 text-lg leading-relaxed mb-2 prose prose-lg" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(settings.profile_history) }} />
               ) : (
-                <>
-                  <p className="text-gray-600 text-lg leading-relaxed mb-6">
+                <div className="space-y-4 text-gray-600 text-lg leading-relaxed">
+                  <p>
                     Berdiri sejak tahun 2005, Yayasan Nuurul Muttaqiin telah berkomitmen untuk memberikan pendidikan Islam yang komprehensif. Kami percaya bahwa pendidikan tidak hanya tentang akademis, melainkan pembentukan karakter yang kuat.
                   </p>
-                  <p className="text-gray-600 text-lg leading-relaxed mb-8">
+                  <p>
                     Dengan fasilitas modern dan tenaga pengajar profesional, kami mendidik ribuan siswa setiap tahunnya untuk siap menghadapi masa depan tanpa meninggalkan nilai-nilai Islam.
                   </p>
-                </>
+                </div>
               )}
-              
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                <div>
-                  <div className="text-4xl font-bold text-primary-600 mb-2">{units.length || 5}</div>
-                  <div className="text-sm text-gray-500 font-medium">Unit Sekolah</div>
+
+              {settings.profile_vision && (
+                <figure className="relative my-9 pl-6 border-l-[3px] border-accent-default">
+                  <span aria-hidden className="absolute -top-4 left-2 font-serif text-6xl leading-none text-accent-default/25">“</span>
+                  <p className="font-serif italic text-xl md:text-2xl text-gray-700 leading-relaxed">{settings.profile_vision}</p>
+                  <figcaption className="mt-2 text-xs font-semibold uppercase tracking-wider text-accent-default">Visi</figcaption>
+                </figure>
+              )}
+
+              {settings.profile_mission && (
+                <div className="mb-2">
+                  <h3 className="font-serif text-2xl font-bold text-gray-900 mb-5">Misi</h3>
+                  <ul className="relative ml-3 border-l-2 border-primary-200 space-y-6">
+                    {settings.profile_mission.split("\n").map((line, i) => {
+                      const text = line.trim().replace(/^Misi\s*\d+[\.:]?\s*/i, "").trim();
+                      if (!text) return null;
+                      return (
+                        <li key={i} className="relative pl-8">
+                          <span className="absolute -left-[15px] top-0 flex h-7 w-7 items-center justify-center rounded-full bg-primary-500 text-xs font-bold text-white ring-4 ring-gray-50">{i + 1}</span>
+                          <p className="text-gray-600 leading-relaxed">{text}</p>
+                        </li>
+                      );
+                    })}
+                  </ul>
                 </div>
-                <div>
-                  <div className="text-4xl font-bold text-primary-600 mb-2">{settings.stat_students || "1.2K+"}</div>
-                  <div className="text-sm text-gray-500 font-medium">Siswa Aktif</div>
-                </div>
-                <div>
-                  <div className="text-4xl font-bold text-primary-600 mb-2">{settings.stat_founded || "2005"}</div>
-                  <div className="text-sm text-gray-500 font-medium">Tahun Berdiri</div>
-                </div>
+              )}
+
+              <div className="mt-10 pt-8 border-t border-gray-200 grid grid-cols-3 gap-4">
+                {[
+                  { v: units.length || 0, l: "Unit Sekolah", c: "text-primary-600" },
+                  { v: totalStudents != null ? totalStudents.toLocaleString("id-ID") : (settings.stat_students || "—"), l: "Siswa Aktif", c: "text-accent-default" },
+                  { v: "1995", l: "Tahun Berdiri", c: "text-primary-600" },
+                ].map((s, i) => (
+                  <div key={i}>
+                    <div className={`text-3xl md:text-4xl font-bold leading-none ${s.c}`}>{s.v}</div>
+                    <div className="mt-2 text-[11px] uppercase tracking-wider text-gray-400">{s.l}</div>
+                  </div>
+                ))}
               </div>
             </div>
-            <div className="relative">
-              {/* Image Placeholder or Uploaded Image */}
+
+            {/* Right: portrait */}
+            <div className="relative mt-10 lg:mt-0 lg:col-span-5 lg:pl-4">
               <div className="aspect-[4/5] rounded-2xl bg-gray-200 overflow-hidden relative shadow-2xl">
                 {settings.profile_image && !settings.profile_image.startsWith('/uploads/dummy/') ? (
                   <img src={settings.profile_image} alt="Gedung Yayasan" className="w-full h-full object-cover" loading="lazy" decoding="async" />
@@ -122,7 +183,6 @@ export default async function Home() {
                   <img src="/uploads/dummy/about_img.png" alt="Gedung Yayasan" className="w-full h-full object-cover" loading="lazy" decoding="async" />
                 )}
               </div>
-              {/* Decorative Card */}
               <div className="absolute -bottom-10 -left-10 bg-white p-6 rounded-xl shadow-xl max-w-xs hidden md:block">
                 <div className="flex gap-4 items-center">
                   <div className="w-12 h-12 bg-accent-default rounded-full flex items-center justify-center text-xl">🏆</div>
@@ -140,32 +200,34 @@ export default async function Home() {
       {/* UNIT SEKOLAH SECTION */}
       <section id="unit" className="py-16 md:py-24 bg-white">
         <div className="container mx-auto px-4 md:px-6">
-          <div className="text-center max-w-3xl mx-auto mb-16">
-            <h2 className="font-serif text-4xl font-bold text-gray-900 mb-4">Layanan Pendidikan</h2>
+          <div className="text-center max-w-3xl mx-auto mb-14">
+            <div className="flex items-center justify-center gap-3 mb-3">
+              <span className="h-px w-8 bg-primary-500"></span>
+              <span className="text-primary-600 font-semibold tracking-[0.22em] text-xs uppercase">Jenjang Pendidikan</span>
+              <span className="h-px w-8 bg-primary-500"></span>
+            </div>
+            <h2 className="font-serif text-4xl md:text-5xl font-bold text-gray-900 mb-4">Layanan Pendidikan</h2>
             <p className="text-gray-600 text-lg">Jenjang pendidikan terpadu dan berkelanjutan dari usia dini hingga kejuruan.</p>
           </div>
 
           {units.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-7">
               {units.map((unit) => (
                 <Link key={unit.id} href={`/unit/${unit.slug}`} className="group block h-full">
-                  <TiltCard className="bg-gray-50 rounded-2xl overflow-hidden transition-all duration-300 hover:shadow-xl border border-gray-100 h-full flex flex-col">
-                    <div className="aspect-video bg-gray-200 relative overflow-hidden">
+                  <TiltCard className="relative bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl border border-gray-100 h-full flex flex-col transition-all duration-300">
+                    <div className="relative aspect-[4/3] overflow-hidden bg-gray-100">
                       {unit.image_url ? (
-                         <img src={unit.image_url} alt={unit.name} className="w-full h-full object-cover" loading="lazy" decoding="async" />
+                        <img src={unit.image_url} alt={unit.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" decoding="async" />
                       ) : (
-                        <div className="absolute inset-0 flex items-center justify-center text-gray-400 text-sm">
-                          [Foto {unit.name}]
-                        </div>
+                        <div className="absolute inset-0 flex items-center justify-center text-gray-400 text-sm">[Foto {unit.name}]</div>
                       )}
-                      <div className="absolute inset-0 bg-primary-900/0 group-hover:bg-primary-900/20 transition-colors duration-300"></div>
+                      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-primary-950/80 via-primary-950/30 to-transparent p-4 pt-10">
+                        <h3 className="font-bold text-lg text-white leading-snug">{unit.name}</h3>
+                      </div>
                     </div>
-                    <div className="p-6 flex-1 flex flex-col">
-                      <h3 className="font-bold text-xl text-gray-900 mb-2">{unit.name}</h3>
-                      <p className="text-gray-600 text-sm line-clamp-3 mb-4 flex-1">
-                        {unit.description}
-                      </p>
-                      <span className="text-primary-600 font-semibold text-sm group-hover:text-primary-700 flex items-center gap-1">
+                    <div className="p-5 flex-1 flex flex-col">
+                      <p className="text-gray-600 text-sm line-clamp-3 mb-4 flex-1">{unit.description}</p>
+                      <span className="text-primary-600 font-semibold text-sm flex items-center gap-1.5 group-hover:gap-2.5 transition-all">
                         Detail Unit <span className="text-lg leading-none">&rarr;</span>
                       </span>
                     </div>
@@ -174,7 +236,7 @@ export default async function Home() {
               ))}
             </div>
           ) : (
-            <div className="col-span-full text-center text-gray-500 py-12">Belum ada data unit sekolah.</div>
+            <div className="text-center text-gray-500 py-12">Belum ada data unit sekolah.</div>
           )}
         </div>
       </section>

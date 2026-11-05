@@ -134,6 +134,19 @@ export function SettingsForm({ initialData }: { initialData: Record<string, stri
               </div>
             )}
           </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Sejarah Yayasan</label>
+            <textarea name="profile_history" value={formData.profile_history} onChange={handleChange} rows={6} className="w-full border rounded p-3 focus:ring-2 focus:ring-primary-500" placeholder="Ceritakan sejarah berdirinya yayasan..." />
+            <p className="text-xs text-gray-500 mt-1">Mendukung format HTML dasar (akan disanitasi otomatis).</p>
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Visi</label>
+            <textarea name="profile_vision" value={formData.profile_vision} onChange={handleChange} rows={3} className="w-full border rounded p-3 focus:ring-2 focus:ring-primary-500" placeholder="Visi yayasan..." />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Misi</label>
+            <textarea name="profile_mission" value={formData.profile_mission} onChange={handleChange} rows={4} className="w-full border rounded p-3 focus:ring-2 focus:ring-primary-500" placeholder="Misi yayasan..." />
+          </div>
         </div>
       </section>
 
