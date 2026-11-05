@@ -27,7 +27,6 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
       return NextResponse.json({ error: 'Nama, Email, dan Role wajib diisi' }, { status: 400 });
     }
 
-    // Check email uniqueness
     const [existing] = await pool.execute<RowDataPacket[]>(
       'SELECT id FROM users WHERE email = ? AND id != ?',
       [email, id]
@@ -38,7 +37,6 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     }
 
     if (password) {
-      // Update with new password
       const saltRounds = 10;
       const hashedPassword = await bcrypt.hash(password, saltRounds);
       await pool.execute(
@@ -46,7 +44,6 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
         [name, email, hashedPassword, role, id]
       );
     } else {
-      // Update without changing password
       await pool.execute(
         'UPDATE users SET name = ?, email = ?, role = ? WHERE id = ?',
         [name, email, role, id]

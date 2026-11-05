@@ -52,7 +52,6 @@ export default function PPDBPage() {
   };
 
   useEffect(() => {
-    // Debounce search slightly
     const timer = setTimeout(() => {
       fetchData();
     }, 300);
@@ -77,14 +76,12 @@ export default function PPDBPage() {
 
   const handlePrintCard = async (id: number) => {
     try {
-      // Mark as printed
       await fetch(`/api/admin/ppdb/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ is_printed: true })
       });
       fetchData(); // Refresh list to show printed status
-      // Open print page
       window.open(`/print/ppdb/${id}`, "_blank");
     } catch (err) {
       toast.error("Gagal mencetak kartu");
@@ -97,11 +94,9 @@ export default function PPDBPage() {
       return toast.info("Tidak ada data pendaftar pada tabel saat ini.");
     }
     
-    // Open the mass print page
     const url = `/print/ppdb/massal?ids=${idsToPrint.join(',')}`;
     window.open(url, "_blank");
 
-    // Mark them as printed immediately
     const toastId = toast.loading("Menandai sebagai dicetak...");
     try {
       await fetch('/api/admin/ppdb/mass-print', {

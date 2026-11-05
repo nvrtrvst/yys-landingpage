@@ -28,7 +28,6 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       return NextResponse.json({ error: 'Siswa tidak memiliki alamat email yang valid' }, { status: 400 });
     }
 
-    // Process base64
     const base64Data = pdfBase64.replace(/^data:application\/pdf;base64,/, "");
     const buffer = Buffer.from(base64Data, 'base64');
 

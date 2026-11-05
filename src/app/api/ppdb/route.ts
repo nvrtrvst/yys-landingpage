@@ -34,7 +34,6 @@ const ppdbSchema = z.object({
 
 export async function POST(req: Request) {
   try {
-    // Basic Rate Limiting
     const rl = checkRateLimit(`ppdb:${getClientIp(req)}`, 3, 60 * 1000);
     if (!rl.allowed) {
       return NextResponse.json({ success: false, message: "Terlalu banyak permintaan. Silakan coba lagi nanti." }, { status: 429 });
@@ -42,20 +41,16 @@ export async function POST(req: Request) {
 
     const body = await req.json();
     
-    // Validate input
     const parsed = ppdbSchema.parse(body);
 
-    // Generate unique registration number (e.g. PPDB-2024-SD-0001)
     const year = new Date().getFullYear();
     const prefix = `PPDB-${year}-${parsed.unit}-`;
     
-    // Create connection to handle transaction
     const connection = await pool.getConnection();
     
     try {
       await connection.beginTransaction();
       
-      // --- Race-condition-safe sequence generation ---
       // Using MAX() instead of COUNT() avoids the TOCTOU (Time-of-Check to Time-of-Use) race:
       //   COUNT-based: Two concurrent requests both read count=5, both try to create #6 → DUPLICATE.
       //   MAX-based + FOR UPDATE: The first request locks the row; the second waits, then reads the
@@ -72,7 +67,6 @@ export async function POST(req: Request) {
       const seq = (maxSeq + 1).toString().padStart(4, '0');
       const registration_number = `${prefix}${seq}`;
 
-      // Insert into local database
       await connection.execute(
         `INSERT INTO ppdb_submissions (
           registration_number, unit, grade, major, student_name, nisn, nik, 
@@ -109,7 +103,6 @@ export async function POST(req: Request) {
         }
       }
 
-      // Send email asynchronously if email is provided
       if (parsed.email) {
         sendPPDBSingleEmail({
           to: parsed.email,

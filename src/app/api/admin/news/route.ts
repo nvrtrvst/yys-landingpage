@@ -45,7 +45,6 @@ export async function POST(request: Request) {
 
     const data = result.data;
     
-    // Set published_at if status is published
     let publishedAt = data.published_at || null;
     if (publishedAt) {
       // If it's a valid date string, format it for MySQL

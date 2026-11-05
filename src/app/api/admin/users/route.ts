@@ -56,7 +56,6 @@ export async function POST(request: Request) {
     }
     const { name, email, password, role } = valid.data;
 
-    // Check if email already exists
     const [existing] = await pool.execute<RowDataPacket[]>(
       'SELECT id FROM users WHERE email = ?',
       [email]
@@ -66,11 +65,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Email sudah terdaftar' }, { status: 400 });
     }
 
-    // Hash the password
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-    // Insert user
     await pool.execute(
       'INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)',
       [name, email, hashedPassword, role]

@@ -62,15 +62,6 @@ const UnitInformation = ({ unit }: { unit: string }) => {
     );
   }
   
-  // Contoh jika ingin menambahkan untuk SMP:
-  // if (unit === 'SMP') {
-  //   return (
-  //     <div className="mt-4 p-5 bg-green-50 border border-green-200 rounded-xl text-sm text-gray-800">
-  //        <h4 className="font-bold text-green-900">Info SMP...</h4>
-  //     </div>
-  //   );
-  // }
-
   return null;
 };
 
@@ -184,7 +175,7 @@ export function PPDBForm() {
         setSuccessMsg("Pendaftaran berhasil!");
         setRegNumber(data.registration_number);
         setErrorMsg("");
-        setStep(6); // Success Step
+        setStep(6);
       } else {
         if (data.errors && Array.isArray(data.errors)) {
           setErrorMsg(data.message + ": " + data.errors.map((err: PpdbError) => err.message).join(", "));

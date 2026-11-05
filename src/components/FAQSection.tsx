@@ -14,7 +14,6 @@ export function FAQSection({ data }: { data: FaqItem[] }) {
 
   if (!data || data.length === 0) return null;
 
-  // Group by category
   const categories = data.reduce((acc, curr) => {
     const cat = curr.category || 'Umum';
     if (!acc[cat]) acc[cat] = [];

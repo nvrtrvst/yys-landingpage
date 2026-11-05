@@ -42,7 +42,6 @@ export async function GET(request: Request) {
     const filename = `backup_${database}_${dateStr}.bak`;
     const tmpFilePath = path.join(tmpDir, filename);
 
-    // Run mysqldump and output to the temp file
     await mysqldump({
       connection: {
         host,
@@ -54,10 +53,8 @@ export async function GET(request: Request) {
       dumpToFile: tmpFilePath,
     });
 
-    // Read file contents as a buffer
     const fileBuffer = await fs.readFile(tmpFilePath);
     
-    // Cleanup temporary file
     await fs.unlink(tmpFilePath).catch(console.error);
 
     return new NextResponse(fileBuffer, {

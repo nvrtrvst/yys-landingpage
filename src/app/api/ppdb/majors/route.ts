@@ -17,7 +17,6 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Parameter unit diperlukan' }, { status: 400 });
     }
 
-    // 1. Dapatkan URL Keuangan dan Secret Key dari Environment
     const KEUANGAN_URL = process.env.KEUANGAN_API_URL || "http://localhost:3000";
     const API_KEY = process.env.KEUANGAN_INTEGRATION_KEY;
 
@@ -26,14 +25,13 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "Server Configuration Error" }, { status: 500 });
     }
 
-    // 2. Fetch data jurusan dari Server Keuangan via HTTP API
     const response = await fetch(`${KEUANGAN_URL}/api/integration/majors?unit=${unit}`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${API_KEY}`,
         'Content-Type': 'application/json'
       },
-      // CACHING: Disetel ke 1 jam (3600 detik) agar performa frontend sangat cepat
+      // Cache 1 jam agar frontend cepat.
       next: { revalidate: 3600 }
     });
 
@@ -43,10 +41,8 @@ export async function GET(request: Request) {
       throw new Error("Gagal mengambil data dari server Keuangan");
     }
 
-    // 3. Parsing response dari Keuangan
     const result = await response.json();
 
-    // 4. Kirim ke Frontend (Browser)
     return NextResponse.json({ success: true, data: result.data || [] });
     
   } catch(error: unknown) {

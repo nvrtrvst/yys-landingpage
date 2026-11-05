@@ -8,7 +8,6 @@ export async function WhatsAppWidget() {
 
   if (!waNumber) return null;
 
-  // Format phone number
   let phone = waNumber.replace(/\D/g, '');
   if (phone.startsWith('0')) {
     phone = '62' + phone.substring(1);

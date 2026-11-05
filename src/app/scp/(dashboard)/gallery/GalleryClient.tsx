@@ -54,12 +54,10 @@ export function GalleryClient() {
       
       try {
         toast.loading(`Mengunggah ${i+1}/${files.length} foto...`, { id: toastId });
-        // 1. Upload to storage
         const resUpload = await fetch("/api/admin/upload", { method: "POST", body: uploadData });
         const resUploadData = await resUpload.json();
         if (!resUpload.ok) throw new Error(resUploadData.error);
         
-        // 2. Save to db
         const resDb = await fetch("/api/admin/gallery", {
           method: "POST",
           headers: { "Content-Type": "application/json" },

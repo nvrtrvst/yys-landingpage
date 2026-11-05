@@ -21,7 +21,6 @@ export default async function MassPrintPPDBPage({ searchParams }: { searchParams
     return <div className="p-12 text-center text-red-500 font-bold">Daftar ID tidak valid</div>;
   }
 
-  // 1. Fetch Setting (Schedule & Config)
   interface PpdbSchedule {
     activity: string;
     wave1: string;
@@ -49,7 +48,6 @@ export default async function MassPrintPPDBPage({ searchParams }: { searchParams
     }
   }
 
-  // 2. Fetch Students Data
   const placeholders = idArray.map(() => '?').join(',');
   const [studentRows] = await pool.execute<RowDataPacket[]>(
     `SELECT * FROM ppdb_submissions WHERE id IN (${placeholders})`,

@@ -15,7 +15,6 @@ export default async function PrintPPDBPage({ params }: { params: Promise<{ id: 
 
   const { id } = await params;
 
-  // 1. Fetch Student Data
   const [studentRows] = await pool.execute<RowDataPacket[]>(
     'SELECT * FROM ppdb_submissions WHERE id = ?',
     [id]
@@ -25,7 +24,6 @@ export default async function PrintPPDBPage({ params }: { params: Promise<{ id: 
   }
   const student = studentRows[0];
 
-  // 2. Fetch Global Settings (PPDB Config)
   const [settingRows] = await pool.execute<RowDataPacket[]>(
     'SELECT setting_value FROM settings WHERE setting_key = "ppdb_config"'
   );

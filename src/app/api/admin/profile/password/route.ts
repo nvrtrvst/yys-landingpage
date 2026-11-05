@@ -29,7 +29,6 @@ export async function PUT(request: Request) {
       return NextResponse.json({ error: 'Password baru minimal 6 karakter' }, { status: 400 });
     }
 
-    // Get current user password
     const [rows] = await pool.execute<RowDataPacket[]>(
       'SELECT password FROM users WHERE id = ?',
       [userId]
@@ -46,11 +45,9 @@ export async function PUT(request: Request) {
       return NextResponse.json({ error: 'Password lama tidak sesuai' }, { status: 400 });
     }
 
-    // Hash new password
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
 
-    // Update password
     await pool.execute(
       'UPDATE users SET password = ? WHERE id = ?',
       [hashedPassword, userId]

@@ -77,7 +77,6 @@ export function RichTextEditor({ value, onChange }: { value: string; onChange: (
   const addImage = useCallback(async () => {
     if (!editor) return;
     
-    // Create a file input element dynamically
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = 'image/*';
@@ -90,7 +89,6 @@ export function RichTextEditor({ value, onChange }: { value: string; onChange: (
         const formData = new FormData();
         formData.append('file', file);
         
-        // Use our existing upload endpoint
         const res = await fetch('/api/admin/upload', {
           method: 'POST',
           body: formData,

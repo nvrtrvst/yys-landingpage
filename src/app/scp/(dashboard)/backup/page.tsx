@@ -21,7 +21,6 @@ export default function BackupPage() {
         throw new Error(errorData.error || "Gagal mengunduh backup");
       }
 
-      // Handle file download
       const blob = await res.blob();
       const url = window.URL.createObjectURL(blob);
       

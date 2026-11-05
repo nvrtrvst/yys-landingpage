@@ -7,7 +7,6 @@ import Link from "next/link";
 export default async function AdminDashboard() {
   const session = await getServerSession(authOptions);
 
-  // Fetch some stats
   const [
     [ppdbRows],
     [newsRows],
