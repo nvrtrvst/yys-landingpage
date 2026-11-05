@@ -19,11 +19,11 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const slug = searchParams.get("slug");
-    const page = parseInt(searchParams.get("page") || "1");
-    const limit = parseInt(searchParams.get("limit") || "12");
+    const pageRaw = parseInt(searchParams.get("page") || "1");
+    const limitRaw = parseInt(searchParams.get("limit") || "12");
     const status = searchParams.get("status");
     const category = searchParams.get("category");
-    const { offset } = getPagination(page, limit);
+    const { page, limit, offset } = getPagination(pageRaw, limitRaw);
 
     const session = await getServerSessionDual();
     const isMod = session && isModerator(session.user.role);
@@ -43,7 +43,10 @@ export async function GET(request: Request) {
     }
 
     if (status && isMod) { where += " AND p.status = ?"; params.push(status); }
-    if (category) { where += " AND p.category_id = ?"; params.push(parseInt(category)); }
+    if (category) {
+      const catId = parseInt(category);
+      if (Number.isFinite(catId)) { where += " AND p.category_id = ?"; params.push(catId); }
+    }
 
     const [countRows] = await pool.execute<RowDataPacket[]>(`SELECT COUNT(*) as total FROM mading_posts p ${where}`, params);
     const total = (countRows[0] as { total: number }).total;
@@ -55,10 +58,10 @@ export async function GET(request: Request) {
        LEFT JOIN users u ON p.author_id = u.id
        LEFT JOIN mading_categories c ON p.category_id = c.id
        LEFT JOIN units un ON p.unit_id = un.id
-       ${where}
-        ${isMod ? "ORDER BY p.updated_at DESC" : "ORDER BY p.published_at DESC"}
-        LIMIT ? OFFSET ?`,
-      [...params, limit, offset]
+        ${where}
+         ${isMod ? "ORDER BY p.updated_at DESC" : "ORDER BY p.published_at DESC"}
+         LIMIT ${limit} OFFSET ${offset}`,
+      params
     );
 
     return NextResponse.json({ data: rows, total, page, limit, totalPages: Math.ceil(total / limit) });

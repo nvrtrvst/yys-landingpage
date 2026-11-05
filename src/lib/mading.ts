@@ -50,8 +50,8 @@ export function sanitizeHtml(dirty: string): string {
 }
 
 export function getPagination(page: number = 1, limit: number = 12) {
-  const p = Math.max(1, page);
-  const l = Math.min(50, Math.max(1, limit));
+  const p = Math.max(1, Number.isFinite(page) ? page : 1);
+  const l = Math.min(50, Math.max(1, Number.isFinite(limit) ? limit : 12));
   return { page: p, limit: l, offset: (p - 1) * l };
 }
 
