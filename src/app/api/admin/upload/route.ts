@@ -1,13 +1,12 @@
 import { NextResponse } from 'next/server';
 import { getErrorMessage } from '@/lib/get-error-message';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { requireRole } from '@/lib/api-auth';
 import { writeFile, mkdir } from 'fs/promises';
 import { join } from 'path';
 import crypto from 'crypto';
 import sharp from 'sharp';
 import { checkRateLimit, getClientIp } from '@/lib/rate-limit';
-import { AuthenticationError, ForbiddenError, ValidationError, FileTooLargeError, handleApiError, logError } from '@/lib/errors';
+import { ValidationError, FileTooLargeError, handleApiError, logError } from '@/lib/errors';
 
 function checkMagicNumber(buffer: Buffer): boolean {
   // JPEG: FF D8 FF
@@ -31,12 +30,8 @@ const MAX_FILE_SIZE_DISPLAY = process.env.MAX_FILE_SIZE_DISPLAY || '10MB';
 
 export async function POST(request: Request) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) throw new AuthenticationError();
-
+    const session = await requireRole(['siswa', 'superadmin', 'admin', 'admin_unit', 'guru', 'editor']);
     const isSiswa = session.user.role === "siswa";
-    const isMod = ["superadmin", "admin", "admin_unit", "guru", "editor"].includes(session.user.role);
-    if (!isSiswa && !isMod) throw new ForbiddenError();
 
     const rl = checkRateLimit(`admin:upload:${getClientIp(request)}`, 20, 60 * 1000);
     if (!rl.allowed) {
