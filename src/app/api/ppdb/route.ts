@@ -86,23 +86,6 @@ export async function POST(req: Request) {
 
       await connection.commit();
 
-      // SIMULATION: Send to external SIM API if enabled
-      if (process.env.ENABLE_EXTERNAL_SIM_SYNC === "true" && process.env.NEXT_PUBLIC_EXTERNAL_SIM_API_URL) {
-        try {
-          const extRes = await fetch(process.env.NEXT_PUBLIC_EXTERNAL_SIM_API_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ registration_number, ...parsed })
-          });
-          if (!extRes.ok) {
-            console.warn("External SIM API sync failed:", await extRes.text());
-            // We DO NOT rollback the local transaction if external fails, as per prompt requirement.
-          }
-        } catch (simError) {
-          console.warn("External SIM API unreachable:", simError);
-        }
-      }
-
       if (parsed.email) {
         sendPPDBSingleEmail({
           to: parsed.email,

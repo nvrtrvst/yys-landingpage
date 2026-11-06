@@ -4,6 +4,7 @@ import { getErrorMessage } from "@/lib/get-error-message";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
+import { Clock, CheckCircle2, XCircle, RefreshCw } from "lucide-react";
 
 interface PPDBRow {
   id: number;
@@ -29,6 +30,7 @@ interface PPDBRow {
 export default function PPDBPage() {
   const [data, setData] = useState<PPDBRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [syncing, setSyncing] = useState(false);
   const [filterUnit, setFilterUnit] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
   const [filterPrint, setFilterPrint] = useState("");
@@ -114,6 +116,31 @@ export default function PPDBPage() {
     }
   };
 
+  const handleSyncAll = async () => {
+    if (syncing) return;
+    setSyncing(true);
+    const toastId = toast.loading("Menyinkronkan pendaftar Diterima...");
+    try {
+      const res = await fetch("/api/admin/ppdb/sync", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ statuses: ["pending", "failed"] }),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(json?.error || "Gagal sinkronisasi");
+      const s = json.summary || {};
+      toast.success(
+        `Sync selesai: ${s.success ?? 0} baru, ${s.alreadyExists ?? 0} sudah ada, ${s.failed ?? 0} gagal`,
+        { id: toastId }
+      );
+      fetchData();
+    } catch (err: unknown) {
+      toast.error(getErrorMessage(err), { id: toastId });
+    } finally {
+      setSyncing(false);
+    }
+  };
+
   const exportCSV = () => {
     if (data.length === 0) return toast.error("Tidak ada data untuk diexport");
     
@@ -171,6 +198,9 @@ export default function PPDBPage() {
           <Link href="/scp/print-kelulusan?status=Proses" target="_blank" className="bg-yellow-600 hover:bg-yellow-700 text-white px-3 py-2 rounded-lg font-medium shadow flex items-center gap-1 text-sm">
             Cetak Pending
           </Link>
+          <button onClick={handleSyncAll} disabled={syncing} className="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-2 rounded-lg font-medium shadow flex items-center gap-1 text-sm disabled:opacity-50">
+            <RefreshCw className={`h-4 w-4 ${syncing ? "animate-spin" : ""}`} /> Sinkronkan
+          </button>
           <button onClick={exportCSV} className="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-lg font-medium shadow flex items-center gap-1 text-sm">
             CSV
           </button>
@@ -228,14 +258,15 @@ export default function PPDBPage() {
                 <th className="p-4 font-semibold">Unit & Kelas</th>
                 <th className="p-4 font-semibold">Tanggal Daftar</th>
                 <th className="p-4 font-semibold">Status</th>
+                <th className="p-4 font-semibold">Sync</th>
                 <th className="p-4 font-semibold text-right">Aksi</th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
-                <tr><td colSpan={6} className="p-8 text-center text-gray-500">Memuat data...</td></tr>
+                <tr><td colSpan={7} className="p-8 text-center text-gray-500">Memuat data...</td></tr>
               ) : data.length === 0 ? (
-                <tr><td colSpan={6} className="p-8 text-center text-gray-500">Tidak ada data pendaftar.</td></tr>
+                <tr><td colSpan={7} className="p-8 text-center text-gray-500">Tidak ada data pendaftar.</td></tr>
               ) : (
                 data.map((row) => (
                   <tr key={row.id} className="border-b hover:bg-gray-50">
@@ -262,6 +293,19 @@ export default function PPDBPage() {
                         <option value="Diterima">Diterima</option>
                         <option value="Ditolak">Ditolak</option>
                       </select>
+                    </td>
+                    <td className="p-4">
+                      <span className={`inline-flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded ${
+                        row.sync_status === 'success' ? 'bg-green-100 text-green-700' :
+                        row.sync_status === 'failed' ? 'bg-red-100 text-red-700' :
+                        'bg-yellow-100 text-yellow-700'
+                      }`}>
+                        {row.sync_status === 'success' ? <CheckCircle2 className="h-3.5 w-3.5" /> :
+                         row.sync_status === 'failed' ? <XCircle className="h-3.5 w-3.5" /> :
+                         <Clock className="h-3.5 w-3.5" />}
+                        {row.sync_status === 'success' ? 'Sinkron' :
+                         row.sync_status === 'failed' ? 'Gagal' : 'Menunggu'}
+                      </span>
                     </td>
                     <td className="p-4 text-right">
                       <div className="flex items-center justify-end gap-3">

@@ -1,11 +1,12 @@
 import { NextResponse } from 'next/server';
-import { handleApiError } from '@/lib/errors';
+import { handleApiError, logError } from '@/lib/errors';
 import pool from '@/lib/db';
 import { requireRole } from '@/lib/api-auth';
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
 import { RowDataPacket } from 'mysql2';
 import { sendPPDBStatusEmail } from '@/lib/mailer';
+import { syncPpdbSubmission } from '@/lib/sim-sync';
 
 const updateSchema = z.object({
   status: z.enum(['Proses', 'Diterima', 'Ditolak', 'pending', 'diterima', 'ditolak']).nullable().optional(),
@@ -65,6 +66,14 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
       }
     }
 
+    if (data.status === 'Diterima') {
+      try {
+        await syncPpdbSubmission(Number((await params).id));
+      } catch (error) {
+        logError(error, 'Auto sync PPDB');
+      }
+    }
+
     revalidatePath('/scp/ppdb');
     return NextResponse.json({ success: true });
   } catch (error) {
@@ -76,7 +85,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
   try {
     await requireRole(['superadmin', 'admin']);
 
-    const [rows] = await pool.execute<RowDataPacket[]>('SELECT id, registration_number, status, sync_status, unit, grade, major, student_name, nisn, nik, birth_place, birth_date, gender, religion, address, child_order, siblings_count, previous_school, is_pip, father_name, father_job, mother_name, mother_job, guardian_name, guardian_job, phone, email, student_photo, kk_document, birth_cert_document, diploma_document, created_at, is_printed FROM ppdb_submissions WHERE id = ?', [(await params).id]);
+    const [rows] = await pool.execute<RowDataPacket[]>('SELECT id, registration_number, status, sync_status, unit, grade, major, student_name, nisn, nik, birth_place, birth_date, gender, religion, address, child_order, siblings_count, previous_school, is_pip, father_name, father_job, mother_name, mother_job, guardian_name, guardian_job, phone, email, student_photo, kk_document, birth_cert_document, diploma_document, created_at, is_printed, sync_warning, sync_error, synced_at, sync_attempts, sync_external_id FROM ppdb_submissions WHERE id = ?', [(await params).id]);
     if (rows.length === 0) return NextResponse.json({ error: 'Not Found' }, { status: 404 });
 
     return NextResponse.json(rows[0]);

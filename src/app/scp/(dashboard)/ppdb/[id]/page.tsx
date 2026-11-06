@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
 import { useParams } from "next/navigation";
+import { Clock, CheckCircle2, XCircle } from "lucide-react";
 
 interface PPDBDetail {
   id: number;
@@ -31,6 +32,10 @@ interface PPDBDetail {
   phone: string;
   email: string | null;
   sync_status: string;
+  sync_warning: string | null;
+  sync_error: string | null;
+  synced_at: string | null;
+  sync_attempts: number;
 }
 
 export default function PPDBDetailPage() {
@@ -83,18 +88,17 @@ export default function PPDBDetailPage() {
   };
 
   const retrySync = async () => {
-    // This is a placeholder since SIM Keuangan logic isn't fully implemented yet,
-    // but the instruction states to add a "Retry Sync" button that updates sync_status
-    // or calls the SIM API. Here we just set it to success to simulate.
     const toastId = toast.loading("Menyinkronkan dengan SIM Keuangan...");
     try {
-      const res = await fetch(`/api/admin/ppdb/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sync_status: 'success' })
-      });
-      if (!res.ok) throw new Error("Gagal sinkronisasi");
-      toast.success("Berhasil sinkronisasi", { id: toastId });
+      const res = await fetch(`/api/admin/ppdb/${id}/sync`, { method: "POST" });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(json?.error || "Gagal sinkronisasi");
+      if (json?.ok) {
+        const warnings = Array.isArray(json.warnings) && json.warnings.length > 0 ? ` ${json.warnings.join(" ")}` : "";
+        toast.success(`Berhasil sinkronisasi.${warnings}`, { id: toastId });
+      } else {
+        toast.error(json?.error || "Gagal sinkronisasi", { id: toastId });
+      }
       fetchData();
     } catch(err: unknown) {
       toast.error((getErrorMessage(err)), { id: toastId });
@@ -223,21 +227,35 @@ export default function PPDBDetailPage() {
           </div>
           
           <h3 className="col-span-full text-lg font-bold border-b pb-2 mt-4 text-gray-800">Sinkronisasi Sistem</h3>
-          <div className="col-span-full flex items-center justify-between bg-gray-50 p-4 rounded-lg border">
-            <div>
-              <p className="text-sm font-semibold">Status Sync SIM Keuangan</p>
-              <p className={`text-sm ${
-                data.sync_status === 'success' ? 'text-green-600' :
-                data.sync_status === 'failed' ? 'text-red-600' : 'text-yellow-600'
-              }`}>
-                {data.sync_status === 'success' ? '✔ Berhasil Tersinkronisasi' :
-                 data.sync_status === 'failed' ? '✖ Gagal Sinkronisasi' : '⏳ Menunggu Sinkronisasi'}
-              </p>
+          <div className="col-span-full bg-gray-50 p-4 rounded-lg border space-y-3">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="text-sm font-semibold">Status Sync SIM Keuangan</p>
+                <p className={`flex items-center gap-1.5 text-sm ${
+                  data.sync_status === 'success' ? 'text-green-600' :
+                  data.sync_status === 'failed' ? 'text-red-600' : 'text-yellow-600'
+                }`}>
+                  {data.sync_status === 'success' ? <><CheckCircle2 className="h-4 w-4" /> Berhasil Tersinkronisasi</> :
+                   data.sync_status === 'failed' ? <><XCircle className="h-4 w-4" /> Gagal Sinkronisasi</> :
+                   <><Clock className="h-4 w-4" /> Menunggu Sinkronisasi</>}
+                </p>
+                {data.sync_attempts > 0 && (
+                  <p className="text-xs text-gray-500 mt-1">
+                    {data.sync_attempts} percobaan{data.synced_at ? ` · terakhir ${new Date(data.synced_at).toLocaleString('id-ID')}` : ''}
+                  </p>
+                )}
+              </div>
+              {data.sync_status !== 'success' && (
+                <button onClick={retrySync} className="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded text-sm font-medium shadow">
+                  {data.sync_status === 'failed' ? 'Coba Lagi' : 'Sinkronkan'}
+                </button>
+              )}
             </div>
-            {data.sync_status === 'failed' && (
-              <button onClick={retrySync} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm font-medium shadow">
-                Retry Sync
-              </button>
+            {data.sync_warning && (
+              <p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded p-3">{data.sync_warning}</p>
+            )}
+            {data.sync_error && (
+              <p className="text-sm text-red-700 bg-red-50 border border-red-200 rounded p-3">{data.sync_error}</p>
             )}
           </div>
         </div>
