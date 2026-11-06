@@ -38,7 +38,7 @@ async function logSync(ppdbId: number, action: string, status: string, message: 
 
 async function markFailed(id: number, message: string): Promise<SyncResult> {
   await pool.execute(
-    "UPDATE ppdb_submissions SET sync_status = 'failed', sync_error = ?, sync_attempts = sync_attempts + 1 WHERE id = ?",
+    "UPDATE ppdb_submissions SET sync_status = 'failed', sync_error = ?, sync_warning = NULL, sync_attempts = sync_attempts + 1 WHERE id = ?",
     [message.slice(0, 500), id]
   );
   await logSync(id, "sync", "failed", message.slice(0, 500));
@@ -144,7 +144,7 @@ export async function deactivatePpdbStudent(id: number): Promise<void> {
   if (!submission) return;
 
   try {
-    await fetch(`${KEU_URL}/api/integration/students/deactivate`, {
+    const res = await fetch(`${KEU_URL}/api/integration/students/deactivate`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -153,6 +153,10 @@ export async function deactivatePpdbStudent(id: number): Promise<void> {
       body: JSON.stringify({ registrationNumber: submission.registration_number }),
       signal: AbortSignal.timeout(KEU_TIMEOUT_MS),
     });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      throw new Error(typeof data?.error === "string" ? data.error : `SIM Keuangan menolak deactivate (HTTP ${res.status})`);
+    }
     await pool.execute(
       "UPDATE ppdb_submissions SET sync_status = 'pending', sync_warning = ?, sync_error = NULL WHERE id = ?",
       ["Sinkronisasi dibatalkan karena status bukan Diterima. Siswa dinonaktifkan di SIM Keuangan.", id]
