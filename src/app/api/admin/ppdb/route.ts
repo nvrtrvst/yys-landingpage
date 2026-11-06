@@ -16,7 +16,7 @@ export async function GET(request: Request) {
     const search = url.searchParams.get('search');
 
     let query = `SELECT 
-      id, registration_number, status, sync_status, unit, grade, major, is_printed,
+      id, registration_number, status, sync_status, sync_warning, unit, grade, major, is_printed,
       student_name, nisn, birth_place, birth_date, gender, phone, email,
       previous_school, father_name, mother_name, created_at
       FROM ppdb_submissions WHERE 1=1`;
@@ -56,6 +56,13 @@ export async function GET(request: Request) {
       query += ' AND is_printed = 1';
     } else if (printStatus === 'unprinted') {
       query += ' AND (is_printed = 0 OR is_printed IS NULL)';
+    }
+    const sync = url.searchParams.get('sync');
+    if (sync) {
+      const allowedSync = ['pending', 'success', 'failed'];
+      if (!allowedSync.includes(sync)) return NextResponse.json({ error: 'Invalid sync filter' }, { status: 400 });
+      query += ' AND sync_status = ?';
+      params.push(sync);
     }
 
     query += ' ORDER BY created_at DESC LIMIT 500'; // cap result size

@@ -4,7 +4,7 @@ import { getErrorMessage } from "@/lib/get-error-message";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
-import { Clock, CheckCircle2, XCircle, RefreshCw } from "lucide-react";
+import { Clock, CheckCircle2, XCircle, RefreshCw, AlertTriangle } from "lucide-react";
 
 interface PPDBRow {
   id: number;
@@ -15,6 +15,7 @@ interface PPDBRow {
   major: string | null;
   status: string;
   sync_status: string;
+  sync_warning: string | null;
   created_at: string;
   is_printed: boolean;
   birth_place: string;
@@ -34,6 +35,7 @@ export default function PPDBPage() {
   const [filterUnit, setFilterUnit] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
   const [filterPrint, setFilterPrint] = useState("");
+  const [filterSync, setFilterSync] = useState("");
   const [search, setSearch] = useState("");
 
   const fetchData = async () => {
@@ -43,6 +45,7 @@ export default function PPDBPage() {
       if (filterUnit) query.append("unit", filterUnit);
       if (filterStatus) query.append("status", filterStatus);
       if (filterPrint) query.append("print_status", filterPrint);
+      if (filterSync) query.append("sync", filterSync);
       if (search) query.append("search", search);
 
       const res = await fetch(`/api/admin/ppdb?${query.toString()}`);
@@ -246,6 +249,15 @@ export default function PPDBPage() {
             <option value="printed">Sudah Dicetak</option>
           </select>
         </div>
+        <div className="w-48">
+          <label className="block text-sm font-medium text-gray-700 mb-1">Filter Sync</label>
+          <select value={filterSync} onChange={(e) => setFilterSync(e.target.value)} className="w-full border rounded p-2 focus:ring-2 focus:ring-green-500">
+            <option value="">Semua Sync</option>
+            <option value="pending">Menunggu</option>
+            <option value="success">Berhasil</option>
+            <option value="failed">Gagal</option>
+          </select>
+        </div>
       </div>
 
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
@@ -295,17 +307,24 @@ export default function PPDBPage() {
                       </select>
                     </td>
                     <td className="p-4">
-                      <span className={`inline-flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded ${
-                        row.sync_status === 'success' ? 'bg-green-100 text-green-700' :
-                        row.sync_status === 'failed' ? 'bg-red-100 text-red-700' :
-                        'bg-yellow-100 text-yellow-700'
-                      }`}>
-                        {row.sync_status === 'success' ? <CheckCircle2 className="h-3.5 w-3.5" /> :
-                         row.sync_status === 'failed' ? <XCircle className="h-3.5 w-3.5" /> :
-                         <Clock className="h-3.5 w-3.5" />}
-                        {row.sync_status === 'success' ? 'Sinkron' :
-                         row.sync_status === 'failed' ? 'Gagal' : 'Menunggu'}
-                      </span>
+                      <div className="flex items-center gap-1">
+                        <span className={`inline-flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded ${
+                          row.sync_status === 'success' ? 'bg-green-100 text-green-700' :
+                          row.sync_status === 'failed' ? 'bg-red-100 text-red-700' :
+                          'bg-yellow-100 text-yellow-700'
+                        }`}>
+                          {row.sync_status === 'success' ? <CheckCircle2 className="h-3.5 w-3.5" /> :
+                           row.sync_status === 'failed' ? <XCircle className="h-3.5 w-3.5" /> :
+                           <Clock className="h-3.5 w-3.5" />}
+                          {row.sync_status === 'success' ? 'Sinkron' :
+                           row.sync_status === 'failed' ? 'Gagal' : 'Menunggu'}
+                        </span>
+                        {row.sync_warning && (
+                          <span title={row.sync_warning} className="inline-flex items-center text-amber-600">
+                            <AlertTriangle className="h-3.5 w-3.5" />
+                          </span>
+                        )}
+                      </div>
                     </td>
                     <td className="p-4 text-right">
                       <div className="flex items-center justify-end gap-3">

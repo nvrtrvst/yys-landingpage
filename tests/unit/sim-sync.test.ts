@@ -71,7 +71,7 @@ describe('syncPpdbSubmission', () => {
       birthDate: '2010-01-01',
       parentName: 'Bapak',
     });
-    expect(pool.execute).toHaveBeenLastCalledWith(
+    expect(pool.execute).toHaveBeenCalledWith(
       expect.stringContaining("sync_status = 'success'"),
       expect.any(Array)
     );
@@ -104,7 +104,7 @@ describe('syncPpdbSubmission', () => {
 
     expect(result.ok).toBe(false);
     expect(result.error).toContain('tidak ditemukan');
-    expect(pool.execute).toHaveBeenLastCalledWith(
+    expect(pool.execute).toHaveBeenCalledWith(
       expect.stringContaining("sync_status = 'failed'"),
       expect.any(Array)
     );

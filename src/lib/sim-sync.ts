@@ -4,11 +4,13 @@ import { logError } from "@/lib/errors";
 
 const KEU_URL = process.env.KEUANGAN_API_URL || "http://localhost:3000";
 const KEU_KEY = process.env.KEUANGAN_INTEGRATION_KEY;
+const KEU_TIMEOUT_MS = Number(process.env.KEU_SYNC_TIMEOUT_MS || 8000);
 
 type SyncResult = {
   ok: boolean;
   skipped?: boolean;
   alreadyExists?: boolean;
+  updated?: boolean;
   warnings?: string[];
   externalId?: string | null;
   error?: string;
@@ -23,11 +25,23 @@ function toDateOnly(value: unknown): string {
   return String(value ?? "").slice(0, 10);
 }
 
+async function logSync(ppdbId: number, action: string, status: string, message: string | null): Promise<void> {
+  try {
+    await pool.execute(
+      "INSERT INTO ppdb_sync_logs (ppdb_id, action, status, message) VALUES (?, ?, ?, ?)",
+      [ppdbId, action, status, message]
+    );
+  } catch (error) {
+    logError(error, "SIM sync log");
+  }
+}
+
 async function markFailed(id: number, message: string): Promise<SyncResult> {
   await pool.execute(
     "UPDATE ppdb_submissions SET sync_status = 'failed', sync_error = ?, sync_attempts = sync_attempts + 1 WHERE id = ?",
     [message.slice(0, 500), id]
   );
+  await logSync(id, "sync", "failed", message.slice(0, 500));
   return { ok: false, error: message };
 }
 
@@ -74,7 +88,7 @@ export async function syncPpdbSubmission(
         Authorization: `Bearer ${KEU_KEY}`,
       },
       body: JSON.stringify(payload),
-      signal: AbortSignal.timeout(10_000),
+      signal: AbortSignal.timeout(KEU_TIMEOUT_MS),
     });
     const data = await res.json().catch(() => ({}));
 
@@ -95,8 +109,20 @@ export async function syncPpdbSubmission(
        WHERE id = ?`,
       [warnings.length > 0 ? warnings.join(" ") : null, externalId, id]
     );
+    await logSync(
+      id,
+      "sync",
+      data?.alreadyExists ? "alreadyExists" : "success",
+      warnings.length > 0 ? warnings.join(" ") : null
+    );
 
-    return { ok: true, alreadyExists: !!data?.alreadyExists, warnings, externalId };
+    return {
+      ok: true,
+      alreadyExists: !!data?.alreadyExists,
+      updated: !!data?.updated,
+      warnings,
+      externalId,
+    };
   } catch (error) {
     logError(error, "SIM sync");
     const message =
@@ -104,5 +130,37 @@ export async function syncPpdbSubmission(
         ? "SIM Keuangan tidak merespons (timeout)"
         : "Gagal menghubungi SIM Keuangan";
     return markFailed(id, message);
+  }
+}
+
+export async function deactivatePpdbStudent(id: number): Promise<void> {
+  if (!KEU_KEY) return;
+
+  const [rows] = await pool.execute<RowDataPacket[]>(
+    "SELECT registration_number FROM ppdb_submissions WHERE id = ?",
+    [id]
+  );
+  const submission = rows[0];
+  if (!submission) return;
+
+  try {
+    await fetch(`${KEU_URL}/api/integration/students/deactivate`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${KEU_KEY}`,
+      },
+      body: JSON.stringify({ registrationNumber: submission.registration_number }),
+      signal: AbortSignal.timeout(KEU_TIMEOUT_MS),
+    });
+    await pool.execute(
+      "UPDATE ppdb_submissions SET sync_status = 'pending', sync_warning = ?, sync_error = NULL WHERE id = ?",
+      ["Sinkronisasi dibatalkan karena status bukan Diterima. Siswa dinonaktifkan di SIM Keuangan.", id]
+    );
+    await logSync(id, "deactivate", "success", null);
+  } catch (error) {
+    logError(error, "SIM deactivate");
+    const message = error instanceof Error ? error.message : "Gagal menonaktifkan siswa di SIM Keuangan";
+    await logSync(id, "deactivate", "failed", message.slice(0, 500));
   }
 }

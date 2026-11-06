@@ -133,8 +133,26 @@ CREATE TABLE IF NOT EXISTS ppdb_submissions (
     diploma_document VARCHAR(255),
 
     is_printed TINYINT(1) NOT NULL DEFAULT 0,
+    sync_status ENUM('pending', 'success', 'failed') DEFAULT 'pending',
+    sync_warning TEXT,
+    sync_error TEXT,
+    synced_at DATETIME,
+    sync_attempts INT NOT NULL DEFAULT 0,
+    sync_external_id VARCHAR(64),
 
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_sync_status (sync_status),
+    INDEX idx_status_sync (status, sync_status)
+);
+
+CREATE TABLE IF NOT EXISTS ppdb_sync_logs (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    ppdb_id INT NOT NULL,
+    action VARCHAR(20) NOT NULL,
+    status VARCHAR(20) NOT NULL,
+    message TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_sync_log_ppdb (ppdb_id)
 );
 
 -- 11. Contact Messages

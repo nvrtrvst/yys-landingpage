@@ -6,7 +6,7 @@ import { rateLimitOrThrow, getClientIp } from '@/lib/rate-limit';
 import { handleApiError } from '@/lib/errors';
 import { syncPpdbSubmission } from '@/lib/sim-sync';
 
-const MAX_BATCH = 50;
+const MAX_BATCH = 20;
 
 export async function POST(request: Request) {
   try {

@@ -6,7 +6,7 @@ import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
 import { RowDataPacket } from 'mysql2';
 import { sendPPDBStatusEmail } from '@/lib/mailer';
-import { syncPpdbSubmission } from '@/lib/sim-sync';
+import { syncPpdbSubmission, deactivatePpdbStudent } from '@/lib/sim-sync';
 
 const updateSchema = z.object({
   status: z.enum(['Proses', 'Diterima', 'Ditolak', 'pending', 'diterima', 'ditolak']).nullable().optional(),
@@ -24,12 +24,20 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     const data = result.data;
     const updates = [];
     const values = [];
+    let newStatus: string | null = null;
+
+    const [currentRows] = await pool.execute<RowDataPacket[]>(
+      'SELECT status, sync_status FROM ppdb_submissions WHERE id = ?',
+      [(await params).id]
+    );
+    const previous = currentRows[0];
 
     if (data.status) {
       let dbStatus = data.status;
       if (dbStatus === 'pending' || dbStatus === 'Proses') dbStatus = 'Proses';
       if (dbStatus === 'diterima' || dbStatus === 'Diterima') dbStatus = 'Diterima';
       if (dbStatus === 'ditolak' || dbStatus === 'Ditolak') dbStatus = 'Ditolak';
+      newStatus = dbStatus;
       updates.push('status = ?');
       values.push(dbStatus);
     }
@@ -61,12 +69,11 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
       }
     }
 
-    if (data.status === 'Diterima') {
-      try {
-        await syncPpdbSubmission(Number((await params).id));
-      } catch (error) {
-        logError(error, 'Auto sync PPDB');
-      }
+    const idNum = Number((await params).id);
+    if (newStatus === 'Diterima' && (previous?.status !== 'Diterima' || previous?.sync_status !== 'success')) {
+      void syncPpdbSubmission(idNum, { force: true }).catch((error) => logError(error, 'Auto sync PPDB'));
+    } else if (previous?.status === 'Diterima' && newStatus !== null && newStatus !== 'Diterima') {
+      void deactivatePpdbStudent(idNum).catch((error) => logError(error, 'Deactivate PPDB'));
     }
 
     revalidatePath('/scp/ppdb');
