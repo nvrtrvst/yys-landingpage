@@ -1,4 +1,6 @@
 "use client";
+
+import { getErrorMessage } from "@/lib/get-error-message";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
@@ -42,7 +44,7 @@ export default function PPDBDetailPage() {
       if (!res.ok) throw new Error("Data tidak ditemukan");
       setData(await res.json());
     } catch(err: unknown) {
-      toast.error((err instanceof Error ? err.message : String(err)));
+      toast.error((getErrorMessage(err)));
     } finally {
       setLoading(false);
     }
@@ -56,7 +58,7 @@ export default function PPDBDetailPage() {
         if (!res.ok) throw new Error("Data tidak ditemukan");
         if (!cancelled) setData(await res.json());
       } catch(err: unknown) {
-        toast.error((err instanceof Error ? err.message : String(err)));
+        toast.error((getErrorMessage(err)));
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -76,7 +78,7 @@ export default function PPDBDetailPage() {
       toast.success("Status diperbarui", { id: toastId });
       fetchData();
     } catch(err: unknown) {
-      toast.error((err instanceof Error ? err.message : String(err)), { id: toastId });
+      toast.error((getErrorMessage(err)), { id: toastId });
     }
   };
 
@@ -95,7 +97,7 @@ export default function PPDBDetailPage() {
       toast.success("Berhasil sinkronisasi", { id: toastId });
       fetchData();
     } catch(err: unknown) {
-      toast.error((err instanceof Error ? err.message : String(err)), { id: toastId });
+      toast.error((getErrorMessage(err)), { id: toastId });
     }
   };
 

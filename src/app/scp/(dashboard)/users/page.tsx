@@ -1,5 +1,7 @@
 "use client";
 
+import { getErrorMessage } from "@/lib/get-error-message";
+
 import { useState, useEffect, useCallback } from "react";
 import { toast } from "sonner";
 
@@ -27,7 +29,7 @@ export default function UsersPage() {
       const data = await res.json();
       setUsers(data);
     } catch (error: unknown) {
-      toast.error(error instanceof Error ? error.message : String(error));
+      toast.error(getErrorMessage(error));
     } finally {
       setLoading(false);
     }
@@ -42,7 +44,7 @@ export default function UsersPage() {
         const data = await res.json();
         if (!cancelled) setUsers(data);
       } catch (error: unknown) {
-        if (!cancelled) toast.error(error instanceof Error ? error.message : String(error));
+        if (!cancelled) toast.error(getErrorMessage(error));
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -73,7 +75,7 @@ export default function UsersPage() {
       setShowModal(false);
       fetchUsers();
     } catch(error: unknown) {
-      toast.error((error instanceof Error ? error.message : String(error)));
+      toast.error((getErrorMessage(error)));
     } finally {
       setIsSubmitting(false);
     }
@@ -90,7 +92,7 @@ export default function UsersPage() {
       toast.success("Pengguna berhasil dihapus");
       fetchUsers();
     } catch(error: unknown) {
-      toast.error((error instanceof Error ? error.message : String(error)));
+      toast.error((getErrorMessage(error)));
     }
   };
 

@@ -1,4 +1,6 @@
 "use client";
+
+import { getErrorMessage } from "@/lib/get-error-message";
 import { useState, useRef } from "react";
 import { toast } from "sonner";
 import html2canvas from "html2canvas";
@@ -77,7 +79,7 @@ export default function PrintCardClient({ student, ppdbConfig }: { student: Prin
       toast.success(`Berhasil mengirim softfile ke ${student.email}`, { id: toastId });
     } catch(err: unknown) {
       console.error(err);
-      toast.error((err instanceof Error ? err.message : String(err)) || "Gagal membuat atau mengirim PDF", { id: toastId });
+      toast.error(getErrorMessage(err, "Gagal membuat atau mengirim PDF"), { id: toastId });
     } finally {
       setIsSending(false);
     }

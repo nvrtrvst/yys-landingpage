@@ -1,5 +1,7 @@
 "use client";
 
+import { getErrorMessage } from "@/lib/get-error-message";
+
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { toast } from "sonner";
 import { Search, Plus, X, Pencil, Trash2, UserCheck, User, Upload } from "lucide-react";
@@ -115,7 +117,7 @@ export default function MadingUsersPage() {
       resetForm();
       fetchUsers();
     } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : "Kesalahan server");
+      toast.error(getErrorMessage(err, "Kesalahan server"));
     } finally {
       setSaving(false);
     }
@@ -158,7 +160,7 @@ export default function MadingUsersPage() {
       toast.success("User dihapus");
       fetchUsers();
     } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : "Gagal menghapus");
+      toast.error(getErrorMessage(err, "Gagal menghapus"));
     }
   };
 

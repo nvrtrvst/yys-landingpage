@@ -1,5 +1,7 @@
 "use client";
 
+import { getErrorMessage } from "@/lib/get-error-message";
+
 import { useState } from "react";
 import { toast } from "sonner";
 import { Database, Download, CheckCircle, AlertTriangle } from "lucide-react";
@@ -46,7 +48,7 @@ export default function BackupPage() {
       toast.success("Backup berhasil diunduh!", { id: toastId });
     } catch(error: unknown) {
       console.error(error);
-      toast.error((error instanceof Error ? error.message : String(error)) || "Terjadi kesalahan saat membackup database");
+      toast.error(getErrorMessage(error, "Terjadi kesalahan saat membackup database"));
     } finally {
       setIsDownloading(false);
     }

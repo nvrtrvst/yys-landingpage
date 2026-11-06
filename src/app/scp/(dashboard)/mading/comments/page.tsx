@@ -1,5 +1,7 @@
 "use client";
 
+import { getErrorMessage } from "@/lib/get-error-message";
+
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import Link from "next/link";
@@ -49,7 +51,7 @@ export default function ModerasiKomentarPage() {
       toast.success("Komentar dihapus");
       setItems((prev) => prev.filter((x) => x.id !== id));
     } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : "Gagal menghapus");
+      toast.error(getErrorMessage(err, "Gagal menghapus"));
     } finally { setBusyId(null); }
   };
 
@@ -65,7 +67,7 @@ export default function ModerasiKomentarPage() {
       toast.success("Komentar ditandai aman");
       setItems((prev) => prev.filter((x) => x.id !== id));
     } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : "Gagal memproses");
+      toast.error(getErrorMessage(err, "Gagal memproses"));
     } finally { setBusyId(null); }
   };
 

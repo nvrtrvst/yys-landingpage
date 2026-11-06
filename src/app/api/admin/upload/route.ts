@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { getErrorMessage } from '@/lib/get-error-message';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { writeFile, mkdir } from 'fs/promises';
@@ -81,7 +82,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ url: `/uploads/${filename}` });
   } catch (error) {
-    const msg = error instanceof Error ? error.message : '';
+    const msg = getErrorMessage(error, '');
     if (/body|limit|too large|exceed|size/i.test(msg)) {
       throw new FileTooLargeError(MAX_FILE_SIZE_DISPLAY);
     }

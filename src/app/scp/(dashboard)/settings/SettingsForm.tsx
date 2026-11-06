@@ -1,4 +1,6 @@
 "use client";
+
+import { getErrorMessage } from "@/lib/get-error-message";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -55,7 +57,7 @@ export function SettingsForm({ initialData }: { initialData: Record<string, stri
       setFormData(prev => ({ ...prev, [fieldName]: data.url }));
       toast.success("File berhasil diunggah", { id: toastId });
     } catch(err: unknown) {
-      toast.error((err instanceof Error ? err.message : String(err)), { id: toastId });
+      toast.error((getErrorMessage(err)), { id: toastId });
     }
   };
 
@@ -79,7 +81,7 @@ export function SettingsForm({ initialData }: { initialData: Record<string, stri
       if (!res.ok) throw new Error(data.error || "Gagal menyimpan");
       toast.success("Pengaturan berhasil disimpan & landing page di-refresh!", { id: toastId });
     } catch(err: unknown) {
-      toast.error((err instanceof Error ? err.message : String(err)), { id: toastId });
+      toast.error((getErrorMessage(err)), { id: toastId });
     } finally {
       setIsSaving(false);
     }

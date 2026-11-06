@@ -1,4 +1,6 @@
 "use client";
+
+import { getErrorMessage } from "@/lib/get-error-message";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import Head from "next/head";
@@ -42,7 +44,7 @@ export default function PrintKelulusanPage() {
           if (!cancelled) window.print();
         }, 1000);
       } catch (err: unknown) {
-        toast.error(err instanceof Error ? err.message : String(err));
+        toast.error(getErrorMessage(err));
       } finally {
         if (!cancelled) setLoading(false);
       }

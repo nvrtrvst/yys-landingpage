@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { getErrorMessage } from '@/lib/get-error-message';
 import { checkRateLimit, getClientIp } from '@/lib/rate-limit';
 
 // Endpoint ini dipanggil oleh frontend CMS (PPDBForm)
@@ -46,7 +47,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ success: true, data: result.data || [] });
     
   } catch(error: unknown) {
-    console.error('Error in CMS integration proxy:', (error instanceof Error ? error.message : String(error)));
+    console.error('Error in CMS integration proxy:', getErrorMessage(error));
     return NextResponse.json({ error: 'Gagal menghubungi server pusat' }, { status: 500 });
   }
 }

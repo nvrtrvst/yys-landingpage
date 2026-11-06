@@ -1,4 +1,6 @@
 "use client";
+
+import { getErrorMessage } from "@/lib/get-error-message";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 
@@ -67,7 +69,7 @@ export function TestimonialsFaqManager() {
       setEditingTesti(prev => ({ ...prev, image_url: data.url }));
       toast.success("Berhasil", { id: toastId });
     } catch(err: unknown) {
-      toast.error((err instanceof Error ? err.message : String(err)), { id: toastId });
+      toast.error((getErrorMessage(err)), { id: toastId });
     }
   };
 

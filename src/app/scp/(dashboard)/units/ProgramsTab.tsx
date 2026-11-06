@@ -1,4 +1,6 @@
 "use client";
+
+import { getErrorMessage } from "@/lib/get-error-message";
 import { useState } from "react";
 import { Program, Unit } from "./UnitsManager";
 import { toast } from "sonner";
@@ -23,7 +25,7 @@ export function ProgramsTab({ programs, units, refresh }: { programs: Program[],
       setEditingProgram(prev => ({ ...prev, [fieldName]: data.url }));
       toast.success("Berhasil diunggah", { id: toastId });
     } catch(err: unknown) {
-      toast.error((err instanceof Error ? err.message : String(err)), { id: toastId });
+      toast.error((getErrorMessage(err)), { id: toastId });
     }
   };
 
@@ -51,7 +53,7 @@ export function ProgramsTab({ programs, units, refresh }: { programs: Program[],
       setEditingProgram(null);
       refresh();
     } catch(err: unknown) {
-      toast.error((err instanceof Error ? err.message : String(err)), { id: toastId });
+      toast.error((getErrorMessage(err)), { id: toastId });
     } finally {
       setIsSaving(false);
     }
@@ -67,7 +69,7 @@ export function ProgramsTab({ programs, units, refresh }: { programs: Program[],
       toast.success("Dihapus!", { id: toastId });
       refresh();
     } catch(err: unknown) {
-      toast.error((err instanceof Error ? err.message : String(err)), { id: toastId });
+      toast.error((getErrorMessage(err)), { id: toastId });
     }
   };
 

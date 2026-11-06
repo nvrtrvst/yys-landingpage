@@ -1,4 +1,6 @@
 "use client";
+
+import { getErrorMessage } from "@/lib/get-error-message";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Plus, Trash2 } from "lucide-react";
@@ -79,7 +81,7 @@ export function PPDBSettingsForm({ initialConfig }: { initialConfig: PPDBConfig 
       if (!res.ok) throw new Error(data.error || "Gagal menyimpan");
       toast.success("Pengaturan PPDB berhasil disimpan!", { id: toastId });
     } catch(err: unknown) {
-      toast.error((err instanceof Error ? err.message : String(err)), { id: toastId });
+      toast.error((getErrorMessage(err)), { id: toastId });
     } finally {
       setIsSaving(false);
     }

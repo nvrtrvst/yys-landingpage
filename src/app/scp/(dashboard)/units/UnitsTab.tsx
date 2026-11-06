@@ -1,4 +1,6 @@
 "use client";
+
+import { getErrorMessage } from "@/lib/get-error-message";
 import { useState } from "react";
 import { Unit } from "./UnitsManager";
 import { toast } from "sonner";
@@ -23,7 +25,7 @@ export function UnitsTab({ units, refresh }: { units: Unit[], refresh: () => voi
       setEditingUnit(prev => ({ ...prev, [fieldName]: data.url }));
       toast.success("Berhasil diunggah", { id: toastId });
     } catch(err: unknown) {
-      toast.error((err instanceof Error ? err.message : String(err)), { id: toastId });
+      toast.error((getErrorMessage(err)), { id: toastId });
     }
   };
 
@@ -46,7 +48,7 @@ export function UnitsTab({ units, refresh }: { units: Unit[], refresh: () => voi
       setEditingUnit(null);
       refresh();
     } catch(err: unknown) {
-      toast.error((err instanceof Error ? err.message : String(err)), { id: toastId });
+      toast.error((getErrorMessage(err)), { id: toastId });
     } finally {
       setIsSaving(false);
     }
@@ -62,7 +64,7 @@ export function UnitsTab({ units, refresh }: { units: Unit[], refresh: () => voi
       toast.success("Dihapus!", { id: toastId });
       refresh();
     } catch(err: unknown) {
-      toast.error((err instanceof Error ? err.message : String(err)), { id: toastId });
+      toast.error((getErrorMessage(err)), { id: toastId });
     }
   };
 

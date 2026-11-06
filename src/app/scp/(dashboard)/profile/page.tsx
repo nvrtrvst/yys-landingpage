@@ -1,5 +1,7 @@
 "use client";
 
+import { getErrorMessage } from "@/lib/get-error-message";
+
 import { useState } from "react";
 import { toast } from "sonner";
 import { useSession } from "next-auth/react";
@@ -44,7 +46,7 @@ export default function ProfilePage() {
       toast.success(data.message || "Password berhasil diubah");
       setFormData({ oldPassword: "", newPassword: "", confirmPassword: "" });
     } catch(error: unknown) {
-      toast.error((error instanceof Error ? error.message : String(error)));
+      toast.error((getErrorMessage(error)));
     } finally {
       setLoading(false);
     }

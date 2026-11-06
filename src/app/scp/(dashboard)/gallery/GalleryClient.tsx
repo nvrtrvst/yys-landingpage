@@ -1,4 +1,6 @@
 "use client";
+
+import { getErrorMessage } from "@/lib/get-error-message";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 
@@ -67,7 +69,7 @@ export function GalleryClient() {
         
         successCount++;
       } catch(err: unknown) {
-        toast.error(`Gagal mengunggah ${file.name}: ${(err instanceof Error ? err.message : String(err))}`);
+        toast.error(`Gagal mengunggah ${file.name}: ${(getErrorMessage(err))}`);
       }
     }
 
@@ -90,7 +92,7 @@ export function GalleryClient() {
       toast.success("Foto dihapus!", { id: toastId });
       fetchData();
     } catch(err: unknown) {
-      toast.error((err instanceof Error ? err.message : String(err)), { id: toastId });
+      toast.error((getErrorMessage(err)), { id: toastId });
     }
   };
 

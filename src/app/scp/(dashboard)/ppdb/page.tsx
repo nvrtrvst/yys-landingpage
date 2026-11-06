@@ -1,4 +1,6 @@
 "use client";
+
+import { getErrorMessage } from "@/lib/get-error-message";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
@@ -45,7 +47,7 @@ export default function PPDBPage() {
       if (!res.ok) throw new Error("Gagal memuat data");
       setData(await res.json());
     } catch(err: unknown) {
-      toast.error((err instanceof Error ? err.message : String(err)));
+      toast.error((getErrorMessage(err)));
     } finally {
       setLoading(false);
     }
@@ -71,7 +73,7 @@ export default function PPDBPage() {
       toast.success("Status diperbarui", { id: toastId });
       fetchData();
     } catch(err: unknown) {
-      toast.error((err instanceof Error ? err.message : String(err)), { id: toastId });
+      toast.error((getErrorMessage(err)), { id: toastId });
     }
   };
 

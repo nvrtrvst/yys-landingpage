@@ -1,4 +1,6 @@
 "use client";
+
+import { getErrorMessage } from "@/lib/get-error-message";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { RichTextEditor } from "@/components/admin/RichTextEditor";
@@ -57,7 +59,7 @@ export function NewsClient() {
       setEditingItem(prev => ({ ...prev, image_url: resData.url }));
       toast.success("Berhasil diunggah", { id: toastId });
     } catch(err: unknown) {
-      toast.error((err instanceof Error ? err.message : String(err)), { id: toastId });
+      toast.error((getErrorMessage(err)), { id: toastId });
     }
   };
 
@@ -80,7 +82,7 @@ export function NewsClient() {
       setEditingItem(null);
       fetchData();
     } catch(err: unknown) {
-      toast.error((err instanceof Error ? err.message : String(err)), { id: toastId });
+      toast.error((getErrorMessage(err)), { id: toastId });
     } finally {
       setIsSaving(false);
     }
@@ -95,7 +97,7 @@ export function NewsClient() {
       toast.success("Dihapus!", { id: toastId });
       fetchData();
     } catch(err: unknown) {
-      toast.error((err instanceof Error ? err.message : String(err)), { id: toastId });
+      toast.error((getErrorMessage(err)), { id: toastId });
     }
   };
 
