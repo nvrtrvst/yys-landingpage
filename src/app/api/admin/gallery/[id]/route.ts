@@ -1,8 +1,7 @@
 import { NextResponse } from 'next/server';
 import { handleApiError } from '@/lib/errors';
 import pool from '@/lib/db';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { requireRole } from '@/lib/api-auth';
 import { z } from 'zod';
 import fs from 'fs/promises';
 import path from 'path';
@@ -10,16 +9,9 @@ import { revalidatePath } from 'next/cache';
 import { RowDataPacket } from 'mysql2';
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 
-const ALLOWED_ROLES = ['superadmin', 'admin', 'admin_unit', 'editor'];
-
 export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    const role = session.user.role;
-    if (!ALLOWED_ROLES.includes(role)) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-    }
+    await requireRole(['superadmin', 'admin', 'admin_unit', 'editor']);
 
     const rl = checkRateLimit(`gallery-write:${getClientIp(request)}`, 20, 60_000);
     if (!rl.allowed) return NextResponse.json({ error: 'Terlalu banyak permintaan' }, { status: 429 });
@@ -50,12 +42,7 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
 
 export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    const role = session.user.role;
-    if (!ALLOWED_ROLES.includes(role)) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-    }
+    await requireRole(['superadmin', 'admin', 'admin_unit', 'editor']);
 
     const rl = checkRateLimit(`gallery-write:${getClientIp(request)}`, 20, 60_000);
     if (!rl.allowed) return NextResponse.json({ error: 'Terlalu banyak permintaan' }, { status: 429 });

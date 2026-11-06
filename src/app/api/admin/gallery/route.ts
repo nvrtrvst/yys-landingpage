@@ -2,8 +2,7 @@ import { NextResponse } from 'next/server';
 import { handleApiError } from '@/lib/errors';
 import pool from '@/lib/db';
 import { ResultSetHeader } from 'mysql2';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { requireRole } from '@/lib/api-auth';
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
@@ -13,16 +12,9 @@ const gallerySchema = z.object({
   image_url: z.string().min(1)
 });
 
-const ALLOWED_ROLES = ['superadmin', 'admin', 'admin_unit', 'editor'];
-
 export async function GET(request: Request) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    const role = session.user.role;
-    if (!ALLOWED_ROLES.includes(role)) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-    }
+    await requireRole(['superadmin', 'admin', 'admin_unit', 'editor']);
 
     const rl = checkRateLimit(`gallery-get:${getClientIp(request)}`, 60, 60_000);
     if (!rl.allowed) return NextResponse.json({ error: 'Terlalu banyak permintaan' }, { status: 429 });
@@ -36,12 +28,7 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    const role = session.user.role;
-    if (!ALLOWED_ROLES.includes(role)) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-    }
+    await requireRole(['superadmin', 'admin', 'admin_unit', 'editor']);
 
     const rl = checkRateLimit(`gallery-write:${getClientIp(request)}`, 20, 60_000);
     if (!rl.allowed) return NextResponse.json({ error: 'Terlalu banyak permintaan' }, { status: 429 });

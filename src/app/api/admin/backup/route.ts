@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { handleApiError } from '@/lib/errors';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { requireRole } from '@/lib/api-auth';
 import { checkRateLimit, getClientIp } from '@/lib/rate-limit';
 import mysqldump from 'mysqldump';
 import fs from 'fs/promises';
@@ -10,9 +9,7 @@ import os from 'os';
 
 export async function GET(request: Request) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    if (session.user.role !== 'superadmin') return NextResponse.json({ error: 'Forbidden — only superadmin' }, { status: 403 });
+    await requireRole(['superadmin']);
 
     const rl = checkRateLimit(`admin:backup:${getClientIp(request)}`, 5, 60 * 1000);
     if (!rl.allowed) return NextResponse.json({ error: 'Terlalu banyak permintaan' }, { status: 429 });

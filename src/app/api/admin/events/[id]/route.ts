@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import pool from '@/lib/db';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { requireRole } from '@/lib/api-auth';
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
 import { handleApiError, logError } from '@/lib/errors';
@@ -17,12 +16,7 @@ const eventSchema = z.object({
 
 export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    const role = session.user.role;
-    if (role !== 'superadmin' && role !== 'admin' && role !== 'editor') {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-    }
+    await requireRole(['superadmin', 'admin', 'editor']);
 
     const body = await request.json();
     const result = eventSchema.safeParse(body);
@@ -45,12 +39,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 
 export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    const role = session.user.role;
-    if (role !== 'superadmin' && role !== 'admin' && role !== 'editor') {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-    }
+    await requireRole(['superadmin', 'admin', 'editor']);
 
     await pool.execute('DELETE FROM events WHERE id = ?', [(await params).id]);
     revalidatePath('/');

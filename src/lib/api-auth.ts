@@ -8,3 +8,9 @@ export async function requireRole(allowed: readonly string[]) {
   if (!allowed.includes(session.user.role)) throw new ForbiddenError();
   return session;
 }
+
+export async function requireAuth() {
+  const session = await getServerSession(authOptions);
+  if (!session) throw new AuthenticationError();
+  return session;
+}

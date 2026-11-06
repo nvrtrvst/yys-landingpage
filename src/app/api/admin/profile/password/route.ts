@@ -1,16 +1,14 @@
 import { NextResponse } from 'next/server';
 import { handleApiError } from '@/lib/errors';
 import pool from '@/lib/db';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { requireAuth } from '@/lib/api-auth';
 import bcrypt from 'bcrypt';
 import { RowDataPacket } from 'mysql2';
 import { checkRateLimit, getClientIp } from '@/lib/rate-limit';
 
 export async function PUT(request: Request) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const session = await requireAuth();
     
     const userId = session.user.id;
     if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

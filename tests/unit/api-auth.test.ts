@@ -5,7 +5,7 @@ vi.mock('next-auth', () => ({ getServerSession: vi.fn() }));
 vi.mock('@/lib/auth', () => ({ authOptions: {} }));
 
 import { getServerSession } from 'next-auth';
-import { requireRole } from '@/lib/api-auth';
+import { requireRole, requireAuth } from '@/lib/api-auth';
 import { AuthenticationError, ForbiddenError } from '@/lib/errors';
 
 function sessionWithRole(role: string): Session {
@@ -31,5 +31,18 @@ describe('requireRole', () => {
     vi.mocked(getServerSession).mockResolvedValue(sessionWithRole('admin'));
     const session = await requireRole(['superadmin', 'admin']);
     expect(session.user.role).toBe('admin');
+  });
+});
+
+describe('requireAuth', () => {
+  it('throws AuthenticationError without a session', async () => {
+    vi.mocked(getServerSession).mockResolvedValue(null);
+    await expect(requireAuth()).rejects.toBeInstanceOf(AuthenticationError);
+  });
+
+  it('returns the session when authenticated', async () => {
+    vi.mocked(getServerSession).mockResolvedValue(sessionWithRole('guru'));
+    const session = await requireAuth();
+    expect(session.user.role).toBe('guru');
   });
 });

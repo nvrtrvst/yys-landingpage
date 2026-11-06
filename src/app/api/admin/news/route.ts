@@ -3,8 +3,6 @@ import { handleApiError } from '@/lib/errors';
 import { requireRole } from '@/lib/api-auth';
 import pool from '@/lib/db';
 import { ResultSetHeader } from 'mysql2';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
 import DOMPurify from "isomorphic-dompurify";
@@ -21,11 +19,7 @@ const newsSchema = z.object({
 
 export async function GET(request: Request) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    if (!['superadmin', 'admin', 'editor'].includes(session.user.role)) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-    }
+    await requireRole(['superadmin', 'admin', 'editor']);
 
     const [rows] = await pool.execute('SELECT id, title, slug, image_url, category, status, published_at, created_at FROM news ORDER BY created_at DESC');
     return NextResponse.json(rows);
