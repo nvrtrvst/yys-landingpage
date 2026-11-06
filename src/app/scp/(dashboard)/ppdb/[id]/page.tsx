@@ -61,6 +61,7 @@ interface PPDBDetail {
   sync_error: string | null;
   synced_at: string | null;
   sync_attempts: number;
+  is_printed?: boolean;
 }
 
 export default function PPDBDetailPage() {
@@ -68,6 +69,7 @@ export default function PPDBDetailPage() {
   const [data, setData] = useState<PPDBDetail | null>(null);
   const [history, setHistory] = useState<PPDBActivity[]>([]);
   const [loading, setLoading] = useState(true);
+  const [printing, setPrinting] = useState(false);
   const initialAttemptsRef = useRef(0);
 
   const pollSync = async (): Promise<boolean> => {
@@ -126,6 +128,25 @@ export default function PPDBDetailPage() {
     return () => { cancelled = true; };
   }, [id]);
 
+  const handlePrintCard = async () => {
+    const printWindow = window.open(`/print/ppdb/${id}`, "_blank");
+    setPrinting(true);
+    try {
+      const res = await fetch(`/api/admin/ppdb/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ is_printed: true }),
+      });
+      if (!res.ok) throw new Error("Gagal menandai cetak");
+      await fetchData();
+    } catch (err: unknown) {
+      toast.error(getErrorMessage(err));
+      printWindow?.close();
+    } finally {
+      setPrinting(false);
+    }
+  };
+
   const updateStatus = async (status: string) => {
     const initialAttempts = data?.sync_attempts ?? 0;
     const toastId = toast.loading("Memperbarui status...");
@@ -177,13 +198,15 @@ export default function PPDBDetailPage() {
           </Link>
           <h2 className="text-3xl font-bold text-slate-800 ml-2">Detail Pendaftar PPDB</h2>
         </div>
-        <Link 
-          href={`/print/ppdb/${id}`}
-          target="_blank"
-          className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-700"
+        <button
+          type="button"
+          onClick={handlePrintCard}
+          disabled={printing}
+          className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-700 disabled:opacity-50"
         >
-          <Printer className="h-4 w-4" aria-hidden="true" /> Cetak Kartu Peserta
-        </Link>
+          <Printer className="h-4 w-4" aria-hidden="true" />
+          {printing ? "Menyiapkan..." : data.is_printed ? "Cetak Ulang" : "Cetak Kartu Peserta"}
+        </button>
       </div>
 
       <div className="bg-white rounded-xl border border-slate-200 overflow-hidden mb-6">

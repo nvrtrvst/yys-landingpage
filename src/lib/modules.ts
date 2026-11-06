@@ -56,10 +56,14 @@ export const GRANTABLE_MODULES = MODULES.filter((module) => module.grantable);
 
 export function sanitizePetugasPermissions(value: unknown): string[] {
   if (!Array.isArray(value)) return [];
-  return value.filter(
+  const cleaned = value.filter(
     (entry): entry is string =>
       typeof entry === "string" && GRANTABLE_MODULES.some((module) => module.key === entry)
   );
+  if (cleaned.includes("dashboard") && !cleaned.includes("ppdb_data")) {
+    return cleaned.filter((entry) => entry !== "dashboard");
+  }
+  return cleaned;
 }
 
 export const MODULES_BY_KEY = Object.fromEntries(
@@ -86,7 +90,11 @@ export function hasModuleAccess(
   if (role === "superadmin" || role === "admin") return true;
   if (module === "profile") return true;
   if (role !== "petugas") return true;
-  return Array.isArray(permissions) && permissions.includes(module);
+  const granted = Array.isArray(permissions) && permissions.includes(module);
+  if (module === "dashboard") {
+    return granted && Array.isArray(permissions) && permissions.includes("ppdb_data");
+  }
+  return granted;
 }
 
 const API_MODULES: Array<{ prefix: string; module: ModuleKey }> = [
@@ -126,6 +134,8 @@ export function firstAccessibleHref(
 ): string | null {
   if (role === "superadmin" || role === "admin") return "/scp";
   if (role !== "petugas") return "/scp";
-  const granted = GRANTABLE_MODULES.find((module) => permissions?.includes(module.key));
+  const granted = GRANTABLE_MODULES.find((module) =>
+    hasModuleAccess("petugas", permissions, module.key)
+  );
   return granted?.href ?? null;
 }

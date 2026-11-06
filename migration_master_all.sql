@@ -247,6 +247,66 @@ INSERT IGNORE INTO settings (setting_key, setting_value) VALUES
 ('contact_address', 'Jl. Pendidikan No. 123, Kota Sahabat');
 
 -- ============================================================
+-- 5b. USER PERMISSIONS + PPDB ACTIVITY HISTORY
+-- ============================================================
+DELIMITER $$
+
+DROP PROCEDURE IF EXISTS master_add_column$$
+CREATE PROCEDURE master_add_column(IN tbl VARCHAR(64), IN col VARCHAR(64), IN ddl TEXT)
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema = DATABASE() AND table_name = tbl AND column_name = col
+  ) THEN
+    SET @s = CONCAT('ALTER TABLE `', tbl, '` ADD COLUMN ', ddl);
+    PREPARE stmt FROM @s; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+  END IF;
+END$$
+
+DROP PROCEDURE IF EXISTS master_add_index$$
+CREATE PROCEDURE master_add_index(IN tbl VARCHAR(64), IN idx VARCHAR(64), IN ddl TEXT)
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.statistics
+    WHERE table_schema = DATABASE() AND table_name = tbl AND index_name = idx
+  ) THEN
+    SET @s = CONCAT('ALTER TABLE `', tbl, '` ADD ', ddl);
+    PREPARE stmt FROM @s; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+  END IF;
+END$$
+
+DELIMITER ;
+
+CALL master_add_column('users', 'permissions', '`permissions` JSON NULL');
+CALL master_add_column('ppdb_submissions', 'updated_at', '`updated_at` DATETIME NULL');
+CALL master_add_column('ppdb_submissions', 'updated_by_name', '`updated_by_name` VARCHAR(255) NULL');
+CALL master_add_column('ppdb_submissions', 'last_action', '`last_action` VARCHAR(50) NULL');
+
+CREATE TABLE IF NOT EXISTS ppdb_activity_logs (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  ppdb_id INT NOT NULL,
+  action VARCHAR(50) NOT NULL,
+  field VARCHAR(50) NULL,
+  old_value VARCHAR(255) NULL,
+  new_value VARCHAR(255) NULL,
+  note TEXT NULL,
+  actor_id INT NULL,
+  actor_name VARCHAR(255) NOT NULL,
+  actor_role VARCHAR(50) NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_ppdb_activity_ppdb (ppdb_id, created_at),
+  INDEX idx_ppdb_activity_created (created_at)
+);
+
+CALL master_add_index('ppdb_submissions', 'idx_ppdb_created_at', 'INDEX `idx_ppdb_created_at` (`created_at`)');
+CALL master_add_index('ppdb_submissions', 'idx_ppdb_unit', 'INDEX `idx_ppdb_unit` (`unit`)');
+CALL master_add_index('ppdb_submissions', 'idx_ppdb_status', 'INDEX `idx_ppdb_status` (`status`)');
+CALL master_add_index('ppdb_submissions', 'idx_ppdb_updated_at', 'INDEX `idx_ppdb_updated_at` (`updated_at`)');
+
+DROP PROCEDURE IF EXISTS master_add_column;
+DROP PROCEDURE IF EXISTS master_add_index;
+
+-- ============================================================
 -- 6. POST-MIGRATION VERIFICATION
 -- ============================================================
 

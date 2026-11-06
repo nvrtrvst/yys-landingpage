@@ -17,6 +17,11 @@ describe("hasModuleAccess", () => {
     expect(hasModuleAccess("petugas", ["news"], "gallery")).toBe(false);
   });
 
+  it("requires ppdb_data for the dashboard", () => {
+    expect(hasModuleAccess("petugas", ["dashboard"], "dashboard")).toBe(false);
+    expect(hasModuleAccess("petugas", ["dashboard", "ppdb_data"], "dashboard")).toBe(true);
+  });
+
   it("always allows profile", () => {
     expect(hasModuleAccess("petugas", [], "profile")).toBe(true);
   });
@@ -71,6 +76,11 @@ describe("firstAccessibleHref", () => {
     expect(firstAccessibleHref("petugas", [])).toBeNull();
   });
 
+  it("ignores dashboard without ppdb data", () => {
+    expect(firstAccessibleHref("petugas", ["dashboard"])).toBeNull();
+    expect(firstAccessibleHref("petugas", ["dashboard", "ppdb_data"])).toBe("/scp");
+  });
+
   it("sends admins to the dashboard", () => {
     expect(firstAccessibleHref("admin", [])).toBe("/scp");
   });
@@ -79,5 +89,10 @@ describe("firstAccessibleHref", () => {
 describe("sanitizePetugasPermissions", () => {
   it("drops sensitive and unknown keys", () => {
     expect(sanitizePetugasPermissions(["news", "users", "backup", "mading_posts", "x"])).toEqual(["news"]);
+  });
+
+  it("drops dashboard without ppdb data", () => {
+    expect(sanitizePetugasPermissions(["dashboard"])).toEqual([]);
+    expect(sanitizePetugasPermissions(["dashboard", "ppdb_data"])).toEqual(["dashboard", "ppdb_data"]);
   });
 });

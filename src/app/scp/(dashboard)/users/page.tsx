@@ -239,10 +239,16 @@ export default function UsersPage() {
                                   type="checkbox"
                                   checked={formData.permissions.includes(module.key)}
                                   onChange={(e) => {
-                                    const next = e.target.checked
+                                    let next = e.target.checked
                                       ? [...formData.permissions, module.key]
                                       : formData.permissions.filter((key) => key !== module.key);
-                                    setFormData({ ...formData, permissions: next });
+                                    if (e.target.checked && module.key === "dashboard" && !next.includes("ppdb_data")) {
+                                      next = [...next, "ppdb_data"];
+                                    }
+                                    if (!e.target.checked && module.key === "ppdb_data") {
+                                      next = next.filter((key) => key !== "dashboard");
+                                    }
+                                    setFormData({ ...formData, permissions: Array.from(new Set(next)) });
                                   }}
                                   className="h-4 w-4 rounded border-slate-300 text-primary-600 focus:ring-primary-500"
                                 />

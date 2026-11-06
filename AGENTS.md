@@ -11,7 +11,7 @@ CMS + landing page untuk Yayasan Pendidikan Islam Nuurul Muttaqiin. Dua sisi:
 - **Site publik** (Next.js App Router): beranda, berita, agenda, PPDB (pendaftaran), unit sekolah.
 - **Admin SCP** (`/scp`): dashboard untuk superadmin/admin/editor kelola konten, user, galeri, event, testimoni, PPDB, backup DB.
 
-Bahasa UI: Indonesia. Role: `superadmin`, `admin`, `editor`.
+Bahasa UI: Indonesia. Role: `superadmin`, `admin`, `editor`, `petugas` (permission modul per user), `admin_unit`, `guru`, `siswa`.
 
 ## Tech Stack
 - **Next.js 16.2.9** (App Router), **React 19.2.4**, **TypeScript 5**.
@@ -51,6 +51,8 @@ Bahasa UI: Indonesia. Role: `superadmin`, `admin`, `editor`.
 - Proteksi halaman admin: `getServerSession` + cek `session.user.role` di tiap route handler & layout.
 - **Brute-force**: rate-limit (`src/lib/rate-limit.ts`, in-memory Map) + account lockout (5 gagal → `locked_until` +15 menit, kolom di tabel `users`).
 - Role gating: superadmin/admin kelola user & backup; editor terbatas.
+- **Petugas**: akses ditentukan `users.permissions` (JSON array modul). Superadmin/admin bypass; `users`/`settings`/`backup` superadmin-only; Mading belum grantable (fase 2). Refresh token ≤5 menit.
+- History PPDB: `ppdb_activity_logs` (append-only) + kolom `updated_at/updated_by_name/last_action` di `ppdb_submissions`.
 
 ## Model Keamanan (sudah diterapkan)
 - **Rate limit**: login (10/menit/IP + 5/15 menit/email), endpoint admin (`users` 10/m, `users/[id]` 20/m, `settings` 10/m, `upload` 20/m, `profile/password` 5/15m). Key by IP via `x-forwarded-for`.
@@ -90,12 +92,12 @@ Bahasa UI: Indonesia. Role: `superadmin`, `admin`, `editor`.
 
 ## Catatan Deployment
 - Port **5000** (bukan 3000).
-- **MIGRATION**: Jalankan `migration_master_all.sql` untuk semua optimizations sekaligus (idempotent, single execution).
+- **MIGRATION**: `migration_master_all.sql` sudah mencakup permission petugas (`users.permissions`), history PPDB (`ppdb_activity_logs` + kolom `updated_*`), dan index terkait. File terpisah: `migration_user_permissions.sql`, `migration_ppdb_activity.sql` (idempotent).
 - Pastikan `NEXTAUTH_SECRET` & `SMTP_PASS` di-set (jangan commit).
-- `middleware.ts` ada (proxy/rewrite) — review sebelum ubah routing.
+- `src/proxy.ts` menangani CSP, proteksi traversal, subdomain Mading, auth `/scp`, dan guard permission `petugas` — review sebelum ubah routing.
 
 ## Deployment Instructions
-1. **Database迁移**:`mysql -u root -p yayasan_db < migration_master_all.sql`
+1. **Database**: `mysql -u root -p yayasan_db < migration_master_all.sql`
 2. **Verify**: Jalankan queries verifikasi dari deployment guide
 3. **Monitor**: Cek performance improvements (10-100x faster search expectations)
 4. **Rollback**: Ready dengan backup database + deployment guide disaster plan
