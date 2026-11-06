@@ -53,16 +53,16 @@ export function UnitsManager() {
   }, []);
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+    <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
       <div className="flex border-b">
         <button 
-          className={`flex-1 py-4 text-center font-semibold ${activeTab === 'units' ? 'border-b-2 border-primary-600 text-primary-700' : 'text-gray-500 hover:text-gray-700'}`}
+          className={`flex-1 py-4 text-center font-semibold ${activeTab === 'units' ? 'border-b-2 border-primary-600 text-primary-700' : 'text-slate-500 hover:text-slate-700'}`}
           onClick={() => setActiveTab('units')}
         >
           Unit Sekolah
         </button>
         <button 
-          className={`flex-1 py-4 text-center font-semibold ${activeTab === 'programs' ? 'border-b-2 border-primary-600 text-primary-700' : 'text-gray-500 hover:text-gray-700'}`}
+          className={`flex-1 py-4 text-center font-semibold ${activeTab === 'programs' ? 'border-b-2 border-primary-600 text-primary-700' : 'text-slate-500 hover:text-slate-700'}`}
           onClick={() => setActiveTab('programs')}
         >
           Program Unggulan
@@ -71,7 +71,7 @@ export function UnitsManager() {
       
       <div className="p-6">
         {loading ? (
-          <div className="text-center py-12 text-gray-500">Memuat data...</div>
+          <div className="text-center py-12 text-slate-500">Memuat data...</div>
         ) : (
           <>
             {activeTab === 'units' && <UnitsTab units={units} refresh={fetchData} />}

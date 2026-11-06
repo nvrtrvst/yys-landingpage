@@ -5,6 +5,8 @@ import { getErrorMessage } from "@/lib/get-error-message";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useSession } from "next-auth/react";
+import { PageHeader } from "@/components/scp/PageHeader";
+import { btnPrimary, inputClass } from "@/components/scp/ui";
 
 export default function ProfilePage() {
   const { data: session } = useSession();
@@ -53,63 +55,62 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-        <h2 className="text-xl font-bold mb-1">Profil Saya</h2>
-        <p className="text-gray-500 mb-6 text-sm">Kelola informasi akun Anda.</p>
-        
-        <div className="space-y-4 border-b border-gray-100 pb-6 mb-6">
+    <div className="max-w-7xl mx-auto pb-12">
+      <PageHeader title="Profil Saya" description="Kelola informasi akun dan password Anda." />
+
+      <div className="bg-white rounded-xl border border-slate-200 p-6 max-w-2xl">
+        <div className="space-y-4 border-b border-slate-100 pb-6 mb-6">
           <div>
-            <label className="block text-sm font-medium text-gray-500 mb-1">Nama Lengkap</label>
-            <div className="font-semibold text-gray-900">{session?.user?.name || '-'}</div>
+            <label className="block text-xs font-medium text-slate-500 mb-1">Nama Lengkap</label>
+            <div className="font-semibold text-slate-900">{session?.user?.name || '-'}</div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-500 mb-1">Email</label>
-            <div className="font-semibold text-gray-900">{session?.user?.email || '-'}</div>
+            <label className="block text-xs font-medium text-slate-500 mb-1">Email</label>
+            <div className="font-semibold text-slate-900">{session?.user?.email || '-'}</div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-500 mb-1">Hak Akses</label>
-            <div className="font-semibold text-gray-900 uppercase">{(session?.user as { role?: string })?.role || '-'}</div>
+            <label className="block text-xs font-medium text-slate-500 mb-1">Hak Akses</label>
+            <div className="font-semibold text-slate-900 capitalize">{(session?.user as { role?: string })?.role || '-'}</div>
           </div>
         </div>
 
-        <h3 className="text-lg font-bold mb-4">Ganti Password</h3>
+        <h3 className="text-base font-semibold text-slate-900 mb-4">Ganti Password</h3>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Password Lama</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Password Lama</label>
             <input 
               type="password" 
               required 
               value={formData.oldPassword} 
               onChange={e => setFormData({...formData, oldPassword: e.target.value})} 
-              className="w-full p-3 border rounded-lg focus:ring-primary-500 focus:border-primary-500" 
+              className={inputClass} 
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Password Baru</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Password Baru</label>
             <input 
               type="password" 
               required 
               value={formData.newPassword} 
               onChange={e => setFormData({...formData, newPassword: e.target.value})} 
-              className="w-full p-3 border rounded-lg focus:ring-primary-500 focus:border-primary-500" 
+              className={inputClass} 
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Konfirmasi Password Baru</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Konfirmasi Password Baru</label>
             <input 
               type="password" 
               required 
               value={formData.confirmPassword} 
               onChange={e => setFormData({...formData, confirmPassword: e.target.value})} 
-              className="w-full p-3 border rounded-lg focus:ring-primary-500 focus:border-primary-500" 
+              className={inputClass} 
             />
           </div>
           <div className="pt-2">
             <button 
               type="submit" 
               disabled={loading} 
-              className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50"
+              className={btnPrimary}
             >
               {loading ? "Menyimpan..." : "Update Password"}
             </button>

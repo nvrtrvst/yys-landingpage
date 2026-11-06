@@ -1,3 +1,4 @@
+import { PageHeader } from "@/components/scp/PageHeader";
 import { PPDBSettingsForm } from "./PPDBSettingsForm";
 import pool from "@/lib/db";
 import { RowDataPacket } from "mysql2";
@@ -15,11 +16,11 @@ export default async function AdminPPDBSettingsPage() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto pb-12">
-      <h2 className="text-3xl font-bold mb-6 text-gray-800">Pengaturan PPDB & Kartu Peserta</h2>
-      <p className="text-gray-500 mb-8">
-        Atur jadwal kegiatan PPDB, nama panitia, dan tahun pelajaran untuk dicetak pada Kartu Peserta pendaftar.
-      </p>
+    <div className="max-w-7xl mx-auto pb-12">
+      <PageHeader
+        title="Pengaturan PPDB & Kartu Peserta"
+        description="Atur jadwal kegiatan PPDB, nama panitia, dan tahun pelajaran untuk kartu peserta."
+      />
       <PPDBSettingsForm initialConfig={initialConfig} />
     </div>
   );

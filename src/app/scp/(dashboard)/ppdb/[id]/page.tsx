@@ -5,7 +5,7 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
 import { useParams } from "next/navigation";
-import { Clock, CheckCircle2, XCircle, RefreshCw } from "lucide-react";
+import { Clock, CheckCircle2, XCircle, RefreshCw, Printer } from "lucide-react";
 import { useSyncPolling } from "@/lib/use-sync-polling";
 
 interface PPDBDetail {
@@ -125,42 +125,42 @@ export default function PPDBDetailPage() {
   };
 
   if (loading) return <div className="p-12 text-center">Memuat detail pendaftar...</div>;
-  if (!data) return <div className="p-12 text-center text-red-500">Data tidak ditemukan.</div>;
+  if (!data) return <div className="p-12 text-center text-rose-500">Data tidak ditemukan.</div>;
 
   return (
     <div className="max-w-4xl mx-auto pb-12">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-4">
-          <Link href="/scp/ppdb" className="text-gray-500 hover:text-gray-900 font-medium">
+          <Link href="/scp/ppdb" className="text-slate-500 hover:text-slate-900 font-medium">
             &larr; Kembali
           </Link>
-          <h2 className="text-3xl font-bold text-gray-800 ml-2">Detail Pendaftar PPDB</h2>
+          <h2 className="text-3xl font-bold text-slate-800 ml-2">Detail Pendaftar PPDB</h2>
         </div>
         <Link 
           href={`/print/ppdb/${id}`}
           target="_blank"
-          className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded font-semibold shadow-sm flex items-center gap-2"
+          className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-700"
         >
-          🖨️ Cetak Kartu Peserta
+          <Printer className="h-4 w-4" aria-hidden="true" /> Cetak Kartu Peserta
         </Link>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-6">
-        <div className="p-6 border-b bg-gray-50 flex justify-between items-center flex-wrap gap-4">
+      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden mb-6">
+        <div className="p-6 border-b bg-slate-50 flex justify-between items-center flex-wrap gap-4">
           <div>
-            <p className="text-sm text-gray-500 mb-1">Nomor Pendaftaran</p>
-            <p className="text-2xl font-mono font-bold text-gray-900">{data.registration_number}</p>
+            <p className="text-sm text-slate-500 mb-1">Nomor Pendaftaran</p>
+            <p className="text-2xl font-mono font-bold text-slate-900">{data.registration_number}</p>
           </div>
           <div className="flex items-center gap-4">
             <div className="text-right">
-              <p className="text-sm text-gray-500 mb-1">Status Pendaftaran</p>
+              <p className="text-sm text-slate-500 mb-1">Status Pendaftaran</p>
               <select 
                 value={data.status} 
                 onChange={(e) => updateStatus(e.target.value)}
                 className={`text-sm rounded px-3 py-1.5 font-semibold outline-none border cursor-pointer ${
-                  data.status === 'Diterima' ? 'bg-green-100 text-green-700 border-green-200' :
-                  data.status === 'Ditolak' ? 'bg-red-100 text-red-700 border-red-200' :
-                  'bg-yellow-100 text-yellow-700 border-yellow-200'
+                  data.status === 'Diterima' ? 'bg-emerald-50 text-emerald-700 border-green-200' :
+                  data.status === 'Ditolak' ? 'bg-rose-50 text-rose-700 border-red-200' :
+                  'bg-amber-50 text-amber-700 border-yellow-200'
                 }`}
               >
                 <option value="Proses">Pending</option>
@@ -172,87 +172,87 @@ export default function PPDBDetailPage() {
         </div>
 
         <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-          <h3 className="col-span-full text-lg font-bold border-b pb-2 text-gray-800">Data Calon Siswa</h3>
+          <h3 className="col-span-full text-lg font-bold border-b pb-2 text-slate-800">Data Calon Siswa</h3>
           
           <div>
-            <label className="text-xs text-gray-500 uppercase tracking-wider">Nama Lengkap</label>
-            <p className="font-semibold text-gray-900">{data.student_name}</p>
+            <label className="text-xs text-slate-500 uppercase tracking-wider">Nama Lengkap</label>
+            <p className="font-semibold text-slate-900">{data.student_name}</p>
           </div>
           <div>
-            <label className="text-xs text-gray-500 uppercase tracking-wider">Unit Sekolah & Kelas</label>
-            <p className="font-semibold text-gray-900">{data.unit} - {data.grade} {data.major ? `(${data.major})` : ''}</p>
+            <label className="text-xs text-slate-500 uppercase tracking-wider">Unit Sekolah & Kelas</label>
+            <p className="font-semibold text-slate-900">{data.unit} - {data.grade} {data.major ? `(${data.major})` : ''}</p>
           </div>
           <div>
-            <label className="text-xs text-gray-500 uppercase tracking-wider">NISN</label>
-            <p className="font-semibold text-gray-900">{data.nisn || '-'}</p>
+            <label className="text-xs text-slate-500 uppercase tracking-wider">NISN</label>
+            <p className="font-semibold text-slate-900">{data.nisn || '-'}</p>
           </div>
           <div>
-            <label className="text-xs text-gray-500 uppercase tracking-wider">Tempat, Tanggal Lahir</label>
-            <p className="font-semibold text-gray-900">{data.birth_place}, {new Date(data.birth_date).toLocaleDateString('id-ID')}</p>
+            <label className="text-xs text-slate-500 uppercase tracking-wider">Tempat, Tanggal Lahir</label>
+            <p className="font-semibold text-slate-900">{data.birth_place}, {new Date(data.birth_date).toLocaleDateString('id-ID')}</p>
           </div>
           <div>
-            <label className="text-xs text-gray-500 uppercase tracking-wider">Jenis Kelamin</label>
-            <p className="font-semibold text-gray-900">{data.gender}</p>
+            <label className="text-xs text-slate-500 uppercase tracking-wider">Jenis Kelamin</label>
+            <p className="font-semibold text-slate-900">{data.gender}</p>
           </div>
           <div>
-            <label className="text-xs text-gray-500 uppercase tracking-wider">Anak Ke / Jumlah Saudara</label>
-            <p className="font-semibold text-gray-900">{data.child_order || '-'} dari {data.siblings_count || '-'} bersaudara</p>
+            <label className="text-xs text-slate-500 uppercase tracking-wider">Anak Ke / Jumlah Saudara</label>
+            <p className="font-semibold text-slate-900">{data.child_order || '-'} dari {data.siblings_count || '-'} bersaudara</p>
           </div>
           <div className="md:col-span-2">
-            <label className="text-xs text-gray-500 uppercase tracking-wider">Alamat Lengkap</label>
-            <p className="font-semibold text-gray-900">{data.address}</p>
+            <label className="text-xs text-slate-500 uppercase tracking-wider">Alamat Lengkap</label>
+            <p className="font-semibold text-slate-900">{data.address}</p>
           </div>
           <div>
-            <label className="text-xs text-gray-500 uppercase tracking-wider">Asal Sekolah Sebelumnya</label>
-            <p className="font-semibold text-gray-900">{data.previous_school || '-'}</p>
+            <label className="text-xs text-slate-500 uppercase tracking-wider">Asal Sekolah Sebelumnya</label>
+            <p className="font-semibold text-slate-900">{data.previous_school || '-'}</p>
           </div>
 
-          <h3 className="col-span-full text-lg font-bold border-b pb-2 mt-4 text-gray-800">Data Orang Tua / Wali</h3>
+          <h3 className="col-span-full text-lg font-bold border-b pb-2 mt-4 text-slate-800">Data Orang Tua / Wali</h3>
           
           <div>
-            <label className="text-xs text-gray-500 uppercase tracking-wider">Nama Ayah</label>
-            <p className="font-semibold text-gray-900">{data.father_name}</p>
+            <label className="text-xs text-slate-500 uppercase tracking-wider">Nama Ayah</label>
+            <p className="font-semibold text-slate-900">{data.father_name}</p>
           </div>
           <div>
-            <label className="text-xs text-gray-500 uppercase tracking-wider">Pekerjaan Ayah</label>
-            <p className="font-semibold text-gray-900">{data.father_job || '-'}</p>
+            <label className="text-xs text-slate-500 uppercase tracking-wider">Pekerjaan Ayah</label>
+            <p className="font-semibold text-slate-900">{data.father_job || '-'}</p>
           </div>
           <div>
-            <label className="text-xs text-gray-500 uppercase tracking-wider">Nama Ibu</label>
-            <p className="font-semibold text-gray-900">{data.mother_name}</p>
+            <label className="text-xs text-slate-500 uppercase tracking-wider">Nama Ibu</label>
+            <p className="font-semibold text-slate-900">{data.mother_name}</p>
           </div>
           <div>
-            <label className="text-xs text-gray-500 uppercase tracking-wider">Pekerjaan Ibu</label>
-            <p className="font-semibold text-gray-900">{data.mother_job || '-'}</p>
+            <label className="text-xs text-slate-500 uppercase tracking-wider">Pekerjaan Ibu</label>
+            <p className="font-semibold text-slate-900">{data.mother_job || '-'}</p>
           </div>
           <div>
-            <label className="text-xs text-gray-500 uppercase tracking-wider">Nama Wali</label>
-            <p className="font-semibold text-gray-900">{data.guardian_name || '-'}</p>
+            <label className="text-xs text-slate-500 uppercase tracking-wider">Nama Wali</label>
+            <p className="font-semibold text-slate-900">{data.guardian_name || '-'}</p>
           </div>
           <div>
-            <label className="text-xs text-gray-500 uppercase tracking-wider">Pekerjaan Wali</label>
-            <p className="font-semibold text-gray-900">{data.guardian_job || '-'}</p>
+            <label className="text-xs text-slate-500 uppercase tracking-wider">Pekerjaan Wali</label>
+            <p className="font-semibold text-slate-900">{data.guardian_job || '-'}</p>
           </div>
 
-          <h3 className="col-span-full text-lg font-bold border-b pb-2 mt-4 text-gray-800">Kontak</h3>
+          <h3 className="col-span-full text-lg font-bold border-b pb-2 mt-4 text-slate-800">Kontak</h3>
           
           <div>
-            <label className="text-xs text-gray-500 uppercase tracking-wider">Nomor Handphone/WhatsApp</label>
-            <p className="font-semibold text-gray-900">{data.phone}</p>
+            <label className="text-xs text-slate-500 uppercase tracking-wider">Nomor Handphone/WhatsApp</label>
+            <p className="font-semibold text-slate-900">{data.phone}</p>
           </div>
           <div>
-            <label className="text-xs text-gray-500 uppercase tracking-wider">Email</label>
-            <p className="font-semibold text-gray-900">{data.email || '-'}</p>
+            <label className="text-xs text-slate-500 uppercase tracking-wider">Email</label>
+            <p className="font-semibold text-slate-900">{data.email || '-'}</p>
           </div>
           
-          <h3 className="col-span-full text-lg font-bold border-b pb-2 mt-4 text-gray-800">Sinkronisasi Sistem</h3>
-          <div className="col-span-full bg-gray-50 p-4 rounded-lg border space-y-3">
+          <h3 className="col-span-full text-lg font-bold border-b pb-2 mt-4 text-slate-800">Sinkronisasi Sistem</h3>
+          <div className="col-span-full bg-slate-50 p-4 rounded-lg border space-y-3">
             <div className="flex items-center justify-between gap-3">
               <div>
                 <p className="text-sm font-semibold">Status Sync SIM Keuangan</p>
                 <p className={`flex items-center gap-1.5 text-sm ${
-                  data.sync_status === 'success' ? 'text-green-600' :
-                  data.sync_status === 'failed' ? 'text-red-600' : 'text-yellow-600'
+                  data.sync_status === 'success' ? 'text-emerald-600' :
+                  data.sync_status === 'failed' ? 'text-rose-600' : 'text-amber-600'
                 }`}>
                   {data.sync_status === 'success' ? <><CheckCircle2 className="h-4 w-4" /> Berhasil Tersinkronisasi</> :
                    data.sync_status === 'failed' ? <><XCircle className="h-4 w-4" /> Gagal Sinkronisasi</> :
@@ -264,13 +264,13 @@ export default function PPDBDetailPage() {
                   </p>
                 )}
                 {data.sync_attempts > 0 && (
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs text-slate-500 mt-1">
                     {data.sync_attempts} percobaan{data.synced_at ? ` · terakhir ${new Date(data.synced_at).toLocaleString('id-ID')}` : ''}
                   </p>
                 )}
               </div>
               {data.sync_status !== 'success' && (
-                <button onClick={retrySync} className="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded text-sm font-medium shadow">
+                <button onClick={retrySync} className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-700">
                   {data.sync_status === 'failed' ? 'Coba Lagi' : 'Sinkronkan'}
                 </button>
               )}
@@ -279,7 +279,7 @@ export default function PPDBDetailPage() {
               <p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded p-3">{data.sync_warning}</p>
             )}
             {data.sync_error && (
-              <p className="text-sm text-red-700 bg-red-50 border border-red-200 rounded p-3">{data.sync_error}</p>
+              <p className="text-sm text-rose-700 bg-rose-50 border border-red-200 rounded p-3">{data.sync_error}</p>
             )}
           </div>
         </div>

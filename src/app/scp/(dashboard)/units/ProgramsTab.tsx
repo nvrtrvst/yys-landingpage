@@ -78,7 +78,7 @@ export function ProgramsTab({ programs, units, refresh }: { programs: Program[],
       <form onSubmit={handleSave} className="space-y-6">
         <div className="flex justify-between items-center mb-6">
           <h3 className="text-xl font-bold">{editingProgram.id ? "Edit Program" : "Tambah Program Baru"}</h3>
-          <button type="button" onClick={() => setEditingProgram(null)} className="text-gray-500 hover:text-gray-700">Kembali ke Daftar</button>
+          <button type="button" onClick={() => setEditingProgram(null)} className="text-slate-500 hover:text-slate-700">Kembali ke Daftar</button>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -102,10 +102,10 @@ export function ProgramsTab({ programs, units, refresh }: { programs: Program[],
           <div className="md:col-span-2">
             <label className="block text-sm font-medium mb-1">Gambar/Ikon Program (URL)</label>
             <div className="flex gap-2 items-center">
-              <input type="text" value={editingProgram.image_url || ""} onChange={e => setEditingProgram({...editingProgram, image_url: e.target.value})} className="w-full border rounded p-2 bg-gray-50" readOnly />
+              <input type="text" value={editingProgram.image_url || ""} onChange={e => setEditingProgram({...editingProgram, image_url: e.target.value})} className="w-full border rounded p-2 bg-slate-50" readOnly />
               <input type="file" accept="image/*" onChange={(e) => handleUpload(e, "image_url")} className="text-sm" />
             </div>
-            <p className="text-xs text-gray-500 mt-1">Optimal: 800 x 600 px (Rasio 4:3)</p>
+            <p className="text-xs text-slate-500 mt-1">Optimal: 800 x 600 px (Rasio 4:3)</p>
             {editingProgram.image_url && <img src={editingProgram.image_url} alt="Preview" className="mt-2 h-20 object-contain" />}
           </div>
 
@@ -123,8 +123,8 @@ export function ProgramsTab({ programs, units, refresh }: { programs: Program[],
         </div>
 
         <div className="flex justify-end gap-2 pt-4 border-t">
-          <button type="button" onClick={() => setEditingProgram(null)} className="px-4 py-2 border rounded text-gray-600 hover:bg-gray-50">Batal</button>
-          <button type="submit" disabled={isSaving} className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50">{isSaving ? "Menyimpan..." : "Simpan"}</button>
+          <button type="button" onClick={() => setEditingProgram(null)} className="px-4 py-2 border rounded text-slate-600 hover:bg-slate-50">Batal</button>
+          <button type="submit" disabled={isSaving} className="px-4 py-2 bg-primary-600 text-white rounded hover:bg-primary-700 disabled:opacity-50">{isSaving ? "Menyimpan..." : "Simpan"}</button>
         </div>
       </form>
     );
@@ -134,7 +134,7 @@ export function ProgramsTab({ programs, units, refresh }: { programs: Program[],
     <div>
       <div className="flex justify-between items-center mb-6">
         <h3 className="text-xl font-bold">Daftar Program Unggulan</h3>
-        <button onClick={() => setEditingProgram({})} className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center gap-2">
+        <button onClick={() => setEditingProgram({})} className="bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 flex items-center gap-2">
           + Tambah Program
         </button>
       </div>
@@ -142,7 +142,7 @@ export function ProgramsTab({ programs, units, refresh }: { programs: Program[],
       <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="bg-gray-50 text-gray-500 text-sm border-b">
+            <tr className="bg-slate-50 text-slate-500 text-sm border-b">
               <th className="p-3">Urutan</th>
               <th className="p-3">Nama Program</th>
               <th className="p-3">Unit Terkait</th>
@@ -152,21 +152,21 @@ export function ProgramsTab({ programs, units, refresh }: { programs: Program[],
           </thead>
           <tbody>
             {programs.length === 0 ? (
-              <tr><td colSpan={5} className="p-4 text-center text-gray-500">Belum ada data.</td></tr>
+              <tr><td colSpan={5} className="p-4 text-center text-slate-500">Belum ada data.</td></tr>
             ) : (
               programs.map(prog => (
-                <tr key={prog.id} className="border-b hover:bg-gray-50">
+                <tr key={prog.id} className="border-b hover:bg-slate-50">
                   <td className="p-3">{prog.order_index}</td>
-                  <td className="p-3 font-semibold text-gray-900">{prog.title}</td>
-                  <td className="p-3 text-gray-500">{prog.unit_name || <span className="italic">Semua Unit</span>}</td>
+                  <td className="p-3 font-semibold text-slate-900">{prog.title}</td>
+                  <td className="p-3 text-slate-500">{prog.unit_name || <span className="italic">Semua Unit</span>}</td>
                   <td className="p-3">
-                    <span className={`px-2 py-1 rounded text-xs font-semibold ${prog.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                    <span className={`px-2 py-1 rounded text-xs font-semibold ${prog.status === 'active' ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'}`}>
                       {prog.status === 'active' ? 'Aktif' : 'Nonaktif'}
                     </span>
                   </td>
                   <td className="p-3 text-right">
-                    <button onClick={() => setEditingProgram(prog)} className="text-blue-600 hover:text-blue-800 mr-3 text-sm">Edit</button>
-                    <button onClick={() => handleDelete(prog.id)} className="text-red-600 hover:text-red-800 text-sm">Hapus</button>
+                    <button onClick={() => setEditingProgram(prog)} className="text-sky-600 hover:text-sky-700 mr-3 text-sm">Edit</button>
+                    <button onClick={() => handleDelete(prog.id)} className="text-rose-600 hover:text-rose-700 text-sm">Hapus</button>
                   </td>
                 </tr>
               ))

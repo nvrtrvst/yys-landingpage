@@ -1,10 +1,10 @@
+import { PageHeader } from "@/components/scp/PageHeader";
 import { UnitsManager } from "./UnitsManager";
 
 export default function AdminUnitsPage() {
   return (
-    <div className="max-w-6xl mx-auto pb-12">
-      <h2 className="text-3xl font-bold mb-2 text-gray-800">Manajemen Unit & Program</h2>
-      <p className="text-gray-500 mb-6">Kelola unit sekolah (TK, SD, SMP, SMA, dsb) dan program-program unggulan yayasan.</p>
+    <div className="max-w-7xl mx-auto pb-12">
+      <PageHeader title="Manajemen Unit & Program" description="Kelola unit sekolah dan program-program unggulan yayasan." />
       <UnitsManager />
     </div>
   );

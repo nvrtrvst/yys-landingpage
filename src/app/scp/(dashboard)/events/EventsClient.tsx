@@ -116,9 +116,9 @@ export function EventsClient() {
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <div className="lg:col-span-2 bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+      <div className="lg:col-span-2 bg-white p-6 rounded-xl border border-slate-200">
         {loading ? (
-          <div className="h-96 flex items-center justify-center text-gray-500">Memuat kalender...</div>
+          <div className="h-96 flex items-center justify-center text-slate-500">Memuat kalender...</div>
         ) : (
           <div className="h-[600px]">
             <Calendar
@@ -141,20 +141,20 @@ export function EventsClient() {
             />
           </div>
         )}
-        <p className="text-sm text-gray-500 mt-4">* Klik pada tanggal untuk menambah agenda baru, atau klik pada agenda yang sudah ada untuk mengedit.</p>
+        <p className="text-sm text-slate-500 mt-4">* Klik pada tanggal untuk menambah agenda baru, atau klik pada agenda yang sudah ada untuk mengedit.</p>
       </div>
 
-      <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 h-fit">
+      <div className="bg-white p-6 rounded-xl border border-slate-200 h-fit">
         <div className="flex justify-between items-center mb-6">
           <h3 className="text-xl font-bold">{editingItem ? (editingItem.id ? "Edit Agenda" : "Tambah Agenda Baru") : "Form Agenda"}</h3>
-          {!editingItem && <button onClick={() => setEditingItem({})} className="text-sm bg-green-100 text-green-700 px-3 py-1 rounded hover:bg-green-200 font-semibold">+ Baru</button>}
+          {!editingItem && <button onClick={() => setEditingItem({})} className="text-sm bg-emerald-50 text-emerald-700 px-3 py-1 rounded hover:bg-emerald-100 font-semibold">+ Baru</button>}
         </div>
 
         {editingItem ? (
           <form onSubmit={handleSave} className="space-y-4">
             <div>
               <label className="block text-sm font-medium mb-1">Judul Agenda *</label>
-              <input type="text" value={editingItem.title || ""} onChange={e => setEditingItem({...editingItem, title: e.target.value})} className="w-full border rounded p-2 focus:ring-2 focus:ring-green-500" required />
+              <input type="text" value={editingItem.title || ""} onChange={e => setEditingItem({...editingItem, title: e.target.value})} className="w-full border rounded p-2 focus:ring-2 focus:ring-primary-100" required />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
@@ -168,20 +168,20 @@ export function EventsClient() {
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">Lokasi</label>
-              <input type="text" value={editingItem.location || ""} onChange={e => setEditingItem({...editingItem, location: e.target.value})} className="w-full border rounded p-2 focus:ring-2 focus:ring-green-500" />
+              <input type="text" value={editingItem.location || ""} onChange={e => setEditingItem({...editingItem, location: e.target.value})} className="w-full border rounded p-2 focus:ring-2 focus:ring-primary-100" />
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">Deskripsi Singkat</label>
-              <textarea value={editingItem.description || ""} onChange={e => setEditingItem({...editingItem, description: e.target.value})} rows={3} className="w-full border rounded p-2 focus:ring-2 focus:ring-green-500"></textarea>
+              <textarea value={editingItem.description || ""} onChange={e => setEditingItem({...editingItem, description: e.target.value})} rows={3} className="w-full border rounded p-2 focus:ring-2 focus:ring-primary-100"></textarea>
             </div>
             <div className="flex justify-end gap-2 pt-4">
-              {editingItem.id && <button type="button" onClick={() => handleDelete(editingItem.id!)} className="px-4 py-2 border border-red-500 text-red-500 rounded hover:bg-red-50">Hapus</button>}
-              <button type="button" onClick={() => setEditingItem(null)} className="px-4 py-2 border rounded hover:bg-gray-50">Batal</button>
-              <button type="submit" disabled={isSaving} className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 font-medium disabled:opacity-50">Simpan</button>
+              {editingItem.id && <button type="button" onClick={() => handleDelete(editingItem.id!)} className="px-4 py-2 border border-red-500 text-rose-500 rounded hover:bg-rose-50">Hapus</button>}
+              <button type="button" onClick={() => setEditingItem(null)} className="px-4 py-2 border rounded hover:bg-slate-50">Batal</button>
+              <button type="submit" disabled={isSaving} className="px-4 py-2 bg-primary-600 text-white rounded hover:bg-primary-700 font-medium disabled:opacity-50">Simpan</button>
             </div>
           </form>
         ) : (
-          <div className="text-center py-12 text-gray-400 bg-gray-50 rounded border border-dashed">
+          <div className="text-center py-12 text-slate-400 bg-slate-50 rounded border border-dashed">
             Pilih tanggal di kalender atau klik tombol &quot;+ Baru&quot; untuk menambah agenda.
           </div>
         )}

@@ -140,16 +140,16 @@ export function TestimonialsFaqManager() {
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+    <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
       <div className="flex border-b">
         <button 
-          className={`flex-1 py-4 text-center font-semibold ${activeTab === 'testimonials' ? 'border-b-2 border-primary-600 text-primary-700 bg-gray-50' : 'text-gray-500 hover:text-gray-700'}`}
+          className={`flex-1 py-4 text-center font-semibold ${activeTab === 'testimonials' ? 'border-b-2 border-primary-600 text-primary-700 bg-slate-50' : 'text-slate-500 hover:text-slate-700'}`}
           onClick={() => { setActiveTab('testimonials'); setEditingFaq(null); }}
         >
           Testimoni
         </button>
         <button 
-          className={`flex-1 py-4 text-center font-semibold ${activeTab === 'faqs' ? 'border-b-2 border-primary-600 text-primary-700 bg-gray-50' : 'text-gray-500 hover:text-gray-700'}`}
+          className={`flex-1 py-4 text-center font-semibold ${activeTab === 'faqs' ? 'border-b-2 border-primary-600 text-primary-700 bg-slate-50' : 'text-slate-500 hover:text-slate-700'}`}
           onClick={() => { setActiveTab('faqs'); setEditingTesti(null); }}
         >
           FAQ (Tanya Jawab)
@@ -158,7 +158,7 @@ export function TestimonialsFaqManager() {
       
       <div className="p-6">
         {loading ? (
-          <div className="text-center py-12 text-gray-500">Memuat data...</div>
+          <div className="text-center py-12 text-slate-500">Memuat data...</div>
         ) : (
           <>
             {/* TAB TESTIMONIALS */}
@@ -167,7 +167,7 @@ export function TestimonialsFaqManager() {
                 <form onSubmit={saveTestimonial} className="space-y-6">
                   <div className="flex justify-between items-center border-b pb-4">
                     <h3 className="text-xl font-bold">{editingTesti.id ? "Edit Testimoni" : "Tambah Testimoni"}</h3>
-                    <button type="button" onClick={() => setEditingTesti(null)} className="text-gray-500">Batal</button>
+                    <button type="button" onClick={() => setEditingTesti(null)} className="text-slate-500">Batal</button>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
@@ -185,10 +185,10 @@ export function TestimonialsFaqManager() {
                     <div className="md:col-span-2">
                       <label className="block text-sm font-medium mb-1">Foto Profile (Opsional)</label>
                       <div className="flex gap-2">
-                        <input type="text" value={editingTesti.image_url || ""} readOnly className="flex-1 border rounded p-2 bg-gray-50" />
+                        <input type="text" value={editingTesti.image_url || ""} readOnly className="flex-1 border rounded p-2 bg-slate-50" />
                         <input type="file" onChange={handleUpload} className="text-sm border p-1 rounded" />
                       </div>
-                      <p className="text-xs text-gray-500 mt-1">Optimal: 400 x 400 px (Persegi 1:1)</p>
+                      <p className="text-xs text-slate-500 mt-1">Optimal: 400 x 400 px (Persegi 1:1)</p>
                     </div>
                     <div>
                       <label className="block text-sm font-medium mb-1">Urutan</label>
@@ -202,14 +202,14 @@ export function TestimonialsFaqManager() {
                       </select>
                     </div>
                   </div>
-                  <button type="submit" disabled={isSaving} className="w-full bg-green-600 text-white p-3 rounded font-bold hover:bg-green-700">Simpan Testimoni</button>
+                  <button type="submit" disabled={isSaving} className="w-full bg-primary-600 text-white p-3 rounded font-bold hover:bg-primary-700">Simpan Testimoni</button>
                 </form>
               ) : (
                 <div className="overflow-x-auto">
-                  <button onClick={() => setEditingTesti({})} className="bg-green-600 text-white px-4 py-2 rounded mb-4">+ Tambah Testimoni</button>
+                  <button onClick={() => setEditingTesti({})} className="bg-primary-600 text-white px-4 py-2 rounded mb-4">+ Tambah Testimoni</button>
                   <table className="w-full text-left border-collapse">
                     <thead>
-                      <tr className="bg-gray-50 border-b"><th className="p-3">Urutan</th><th className="p-3">Nama</th><th className="p-3">Peran</th><th className="p-3">Status</th><th className="p-3 text-right">Aksi</th></tr>
+                      <tr className="bg-slate-50 border-b"><th className="p-3">Urutan</th><th className="p-3">Nama</th><th className="p-3">Peran</th><th className="p-3">Status</th><th className="p-3 text-right">Aksi</th></tr>
                     </thead>
                     <tbody>
                       {testimonials.map(t => (
@@ -219,8 +219,8 @@ export function TestimonialsFaqManager() {
                           <td className="p-3">{t.role}</td>
                           <td className="p-3">{t.is_active ? 'Aktif' : 'Nonaktif'}</td>
                           <td className="p-3 text-right">
-                            <button onClick={() => setEditingTesti(t)} className="text-blue-600 mr-3">Edit</button>
-                            <button onClick={() => handleDelete('testi', t.id)} className="text-red-600">Hapus</button>
+                            <button onClick={() => setEditingTesti(t)} className="text-sky-600 mr-3">Edit</button>
+                            <button onClick={() => handleDelete('testi', t.id)} className="text-rose-600">Hapus</button>
                           </td>
                         </tr>
                       ))}
@@ -236,7 +236,7 @@ export function TestimonialsFaqManager() {
                 <form onSubmit={saveFaq} className="space-y-6">
                   <div className="flex justify-between items-center border-b pb-4">
                     <h3 className="text-xl font-bold">{editingFaq.id ? "Edit FAQ" : "Tambah FAQ"}</h3>
-                    <button type="button" onClick={() => setEditingFaq(null)} className="text-gray-500">Batal</button>
+                    <button type="button" onClick={() => setEditingFaq(null)} className="text-slate-500">Batal</button>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="md:col-span-2">
@@ -263,14 +263,14 @@ export function TestimonialsFaqManager() {
                       </select>
                     </div>
                   </div>
-                  <button type="submit" disabled={isSaving} className="w-full bg-green-600 text-white p-3 rounded font-bold hover:bg-green-700">Simpan FAQ</button>
+                  <button type="submit" disabled={isSaving} className="w-full bg-primary-600 text-white p-3 rounded font-bold hover:bg-primary-700">Simpan FAQ</button>
                 </form>
               ) : (
                 <div className="overflow-x-auto">
-                  <button onClick={() => setEditingFaq({})} className="bg-green-600 text-white px-4 py-2 rounded mb-4">+ Tambah FAQ</button>
+                  <button onClick={() => setEditingFaq({})} className="bg-primary-600 text-white px-4 py-2 rounded mb-4">+ Tambah FAQ</button>
                   <table className="w-full text-left border-collapse">
                     <thead>
-                      <tr className="bg-gray-50 border-b"><th className="p-3">Urutan</th><th className="p-3 w-1/2">Pertanyaan</th><th className="p-3">Kategori</th><th className="p-3">Status</th><th className="p-3 text-right">Aksi</th></tr>
+                      <tr className="bg-slate-50 border-b"><th className="p-3">Urutan</th><th className="p-3 w-1/2">Pertanyaan</th><th className="p-3">Kategori</th><th className="p-3">Status</th><th className="p-3 text-right">Aksi</th></tr>
                     </thead>
                     <tbody>
                       {faqs.map(f => (
@@ -280,8 +280,8 @@ export function TestimonialsFaqManager() {
                           <td className="p-3">{f.category || '-'}</td>
                           <td className="p-3">{f.is_active ? 'Aktif' : 'Nonaktif'}</td>
                           <td className="p-3 text-right">
-                            <button onClick={() => setEditingFaq(f)} className="text-blue-600 mr-3">Edit</button>
-                            <button onClick={() => handleDelete('faq', f.id)} className="text-red-600">Hapus</button>
+                            <button onClick={() => setEditingFaq(f)} className="text-sky-600 mr-3">Edit</button>
+                            <button onClick={() => handleDelete('faq', f.id)} className="text-rose-600">Hapus</button>
                           </td>
                         </tr>
                       ))}

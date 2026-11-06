@@ -112,10 +112,10 @@ export function GalleryClient() {
 
   return (
     <div>
-      <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 mb-6 flex flex-col md:flex-row justify-between items-center gap-4">
+      <div className="bg-white p-6 rounded-xl border border-slate-200 mb-6 flex flex-col md:flex-row justify-between items-center gap-4">
         <div>
           <h3 className="text-lg font-bold">Unggah Foto Baru</h3>
-          <p className="text-sm text-gray-500">Pilih satu atau beberapa foto sekaligus. (Optimal: 1200x800 px, Rasio 3:2)</p>
+          <p className="text-sm text-slate-500">Pilih satu atau beberapa foto sekaligus. (Optimal: 1200x800 px, Rasio 3:2)</p>
         </div>
         <div className="relative">
           <input 
@@ -126,27 +126,27 @@ export function GalleryClient() {
             disabled={isUploading}
             className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
           />
-          <button disabled={isUploading} className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-bold shadow flex items-center gap-2 disabled:opacity-50">
+          <button disabled={isUploading} className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-700 disabled:opacity-50">
             {isUploading ? "Mengunggah..." : "+ Pilih Foto"}
           </button>
         </div>
       </div>
 
       {loading ? (
-        <div className="text-center py-12 text-gray-500">Memuat galeri...</div>
+        <div className="text-center py-12 text-slate-500">Memuat galeri...</div>
       ) : data.length === 0 ? (
-        <div className="text-center py-12 bg-white rounded-xl shadow-sm border border-gray-200 text-gray-500">
+        <div className="text-center py-12 bg-white rounded-xl border border-slate-200 text-slate-500">
           Belum ada foto di galeri.
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {data.map(item => (
-            <div key={item.id} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col group relative">
-              <div className="h-48 bg-gray-100 overflow-hidden relative">
+            <div key={item.id} className="bg-white rounded-xl border border-slate-200 overflow-hidden flex flex-col group relative">
+              <div className="h-48 bg-slate-100 overflow-hidden relative">
                 <img src={item.image_url} alt={item.title || 'Gallery'} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
                 <button 
                   onClick={() => handleDelete(item.id)}
-                  className="absolute top-2 right-2 bg-red-600 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg hover:bg-red-700"
+                  className="absolute top-2 right-2 rounded-full bg-rose-600 p-2 text-white opacity-0 transition-opacity hover:bg-rose-700 group-hover:opacity-100"
                   title="Hapus Foto"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path></svg>
@@ -163,9 +163,9 @@ export function GalleryClient() {
                       setData(prev => prev.map(it => it.id === item.id ? { ...it, title: e.target.value } : it));
                     }
                   }}
-                  className="w-full text-sm border-b border-transparent hover:border-gray-300 focus:border-green-500 focus:outline-none p-1 transition-colors"
+                  className="w-full text-sm border-b border-transparent hover:border-slate-300 focus:border-primary-400 focus:outline-none p-1 transition-colors"
                 />
-                <p className="text-xs text-gray-400 mt-2 px-1">
+                <p className="text-xs text-slate-400 mt-2 px-1">
                   {new Date(item.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
                 </p>
               </div>

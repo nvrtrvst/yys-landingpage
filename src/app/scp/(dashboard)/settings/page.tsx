@@ -1,3 +1,4 @@
+import { PageHeader } from "@/components/scp/PageHeader";
 import { SettingsForm } from "./SettingsForm";
 import pool from "@/lib/db";
 import { RowDataPacket } from "mysql2";
@@ -11,12 +12,11 @@ export default async function AdminSettingsPage() {
   });
 
   return (
-    <div className="max-w-5xl mx-auto pb-12">
-      <h2 className="text-3xl font-bold mb-6 text-gray-800">Pengaturan Global</h2>
-      <p className="text-gray-500 mb-8">
-        Atur informasi utama, kontak, hero section, dan tampilan website secara langsung. 
-        Perubahan yang disimpan akan langsung tampil di halaman depan.
-      </p>
+    <div className="max-w-7xl mx-auto pb-12">
+      <PageHeader
+        title="Pengaturan Global"
+        description="Atur informasi utama, kontak, hero section, dan tampilan website. Perubahan langsung tampil di halaman depan."
+      />
       <SettingsForm initialData={settingsData} />
     </div>
   );

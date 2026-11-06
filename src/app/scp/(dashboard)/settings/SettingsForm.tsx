@@ -90,7 +90,7 @@ export function SettingsForm({ initialData }: { initialData: Record<string, stri
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
       {/* 1. Identitas Website */}
-      <section className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+      <section className="bg-white p-6 rounded-xl border border-slate-200">
         <h3 className="text-xl font-bold mb-4 border-b pb-2">Identitas Yayasan</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
@@ -104,14 +104,14 @@ export function SettingsForm({ initialData }: { initialData: Record<string, stri
           <div className="md:col-span-2">
             <label className="block text-sm font-medium mb-1">Logo URL</label>
             <div className="flex gap-2 items-center">
-              <input type="text" name="site_logo" value={formData.site_logo} onChange={handleChange} className="w-full border rounded p-3 bg-gray-50" readOnly />
+              <input type="text" name="site_logo" value={formData.site_logo} onChange={handleChange} className="w-full border rounded p-3 bg-slate-50" readOnly />
               <input type="file" accept="image/*" onChange={(e) => handleFileUpload(e, "site_logo")} className="text-sm" />
             </div>
-            <p className="text-xs text-gray-500 mt-1">Optimal: 200 x 80 px (Transparan PNG)</p>
+            <p className="text-xs text-slate-500 mt-1">Optimal: 200 x 80 px (Transparan PNG)</p>
             {formData.site_logo && (
               <div className="mt-2 flex items-end gap-4">
                 <img src={formData.site_logo} alt="Logo" className="h-16 object-contain" />
-                <button type="button" onClick={() => handleRemoveImage("site_logo")} className="text-red-600 text-sm font-semibold hover:underline">Hapus Foto</button>
+                <button type="button" onClick={() => handleRemoveImage("site_logo")} className="text-rose-600 text-sm font-semibold hover:underline">Hapus Foto</button>
               </div>
             )}
           </div>
@@ -119,27 +119,27 @@ export function SettingsForm({ initialData }: { initialData: Record<string, stri
       </section>
 
       {/* 2. Tentang Kami */}
-      <section className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+      <section className="bg-white p-6 rounded-xl border border-slate-200">
         <h3 className="text-xl font-bold mb-4 border-b pb-2">Tentang Kami</h3>
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium mb-1">Foto Gedung/Sejarah</label>
             <div className="flex gap-2 items-center">
-              <input type="text" name="profile_image" value={formData.profile_image} onChange={handleChange} className="w-full border rounded p-3 bg-gray-50" readOnly />
+              <input type="text" name="profile_image" value={formData.profile_image} onChange={handleChange} className="w-full border rounded p-3 bg-slate-50" readOnly />
               <input type="file" accept="image/*" onChange={(e) => handleFileUpload(e, "profile_image")} className="text-sm" />
             </div>
-            <p className="text-xs text-gray-500 mt-1">Optimal: 600 x 600 px (Persegi 1:1)</p>
+            <p className="text-xs text-slate-500 mt-1">Optimal: 600 x 600 px (Persegi 1:1)</p>
             {formData.profile_image && (
               <div className="mt-2 flex items-end gap-4">
                 <img src={formData.profile_image} alt="Profile" className="h-24 object-cover rounded" />
-                <button type="button" onClick={() => handleRemoveImage("profile_image")} className="text-red-600 text-sm font-semibold hover:underline">Hapus Foto</button>
+                <button type="button" onClick={() => handleRemoveImage("profile_image")} className="text-rose-600 text-sm font-semibold hover:underline">Hapus Foto</button>
               </div>
             )}
           </div>
           <div>
             <label className="block text-sm font-medium mb-1">Sejarah Yayasan</label>
             <textarea name="profile_history" value={formData.profile_history} onChange={handleChange} rows={6} className="w-full border rounded p-3 focus:ring-2 focus:ring-primary-500" placeholder="Ceritakan sejarah berdirinya yayasan..." />
-            <p className="text-xs text-gray-500 mt-1">Mendukung format HTML dasar (akan disanitasi otomatis).</p>
+            <p className="text-xs text-slate-500 mt-1">Mendukung format HTML dasar (akan disanitasi otomatis).</p>
           </div>
           <div>
             <label className="block text-sm font-medium mb-1">Visi</label>
@@ -153,7 +153,7 @@ export function SettingsForm({ initialData }: { initialData: Record<string, stri
       </section>
 
       {/* 2. Hero Section */}
-      <section className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+      <section className="bg-white p-6 rounded-xl border border-slate-200">
         <h3 className="text-xl font-bold mb-4 border-b pb-2">Hero Section (Landing Page)</h3>
         <div className="space-y-4">
           <div>
@@ -167,28 +167,28 @@ export function SettingsForm({ initialData }: { initialData: Record<string, stri
           <div>
             <label className="block text-sm font-medium mb-1">Gambar Background URL (Hero)</label>
             <div className="flex gap-2 items-center">
-              <input type="text" name="hero_background" value={formData.hero_background} onChange={handleChange} className="w-full border rounded p-3 bg-gray-50" readOnly />
+              <input type="text" name="hero_background" value={formData.hero_background} onChange={handleChange} className="w-full border rounded p-3 bg-slate-50" readOnly />
               <input type="file" accept="image/*" onChange={(e) => handleFileUpload(e, "hero_background")} className="text-sm" />
             </div>
-            <p className="text-xs text-gray-500 mt-1">Optimal: 1920 x 1080 px (Rasio 16:9)</p>
+            <p className="text-xs text-slate-500 mt-1">Optimal: 1920 x 1080 px (Rasio 16:9)</p>
             {formData.hero_background && (
               <div className="mt-2 flex items-end gap-4">
                 <img src={formData.hero_background} alt="Hero BG" className="h-24 object-cover rounded" />
-                <button type="button" onClick={() => handleRemoveImage("hero_background")} className="text-red-600 text-sm font-semibold hover:underline">Hapus Foto</button>
+                <button type="button" onClick={() => handleRemoveImage("hero_background")} className="text-rose-600 text-sm font-semibold hover:underline">Hapus Foto</button>
               </div>
             )}
           </div>
           <div>
             <label className="block text-sm font-medium mb-1">Gambar Background Parallax (Program Unggulan)</label>
             <div className="flex gap-2 items-center">
-              <input type="text" name="programs_background" value={formData.programs_background} onChange={handleChange} className="w-full border rounded p-3 bg-gray-50" readOnly />
+              <input type="text" name="programs_background" value={formData.programs_background} onChange={handleChange} className="w-full border rounded p-3 bg-slate-50" readOnly />
               <input type="file" accept="image/*" onChange={(e) => handleFileUpload(e, "programs_background")} className="text-sm" />
             </div>
-            <p className="text-xs text-gray-500 mt-1">Optimal: 1920 x 1080 px (Rasio 16:9)</p>
+            <p className="text-xs text-slate-500 mt-1">Optimal: 1920 x 1080 px (Rasio 16:9)</p>
             {formData.programs_background && (
               <div className="mt-2 flex items-end gap-4">
                 <img src={formData.programs_background} alt="Programs BG" className="h-24 object-cover rounded" />
-                <button type="button" onClick={() => handleRemoveImage("programs_background")} className="text-red-600 text-sm font-semibold hover:underline">Hapus Foto</button>
+                <button type="button" onClick={() => handleRemoveImage("programs_background")} className="text-rose-600 text-sm font-semibold hover:underline">Hapus Foto</button>
               </div>
             )}
           </div>
@@ -196,7 +196,7 @@ export function SettingsForm({ initialData }: { initialData: Record<string, stri
       </section>
 
       {/* 3. Kontak & Sosmed */}
-      <section className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+      <section className="bg-white p-6 rounded-xl border border-slate-200">
         <h3 className="text-xl font-bold mb-4 border-b pb-2">Kontak & Sosial Media</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="md:col-span-2">
@@ -213,7 +213,7 @@ export function SettingsForm({ initialData }: { initialData: Record<string, stri
               placeholder="https://www.google.com/maps/embed?pb=..."
               className="w-full border rounded p-3 focus:ring-2 focus:ring-primary-500 font-mono text-sm"
             ></textarea>
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-xs text-slate-500 mt-1">
               Buka Google Maps, cari lokasi, klik Bagikan &gt; Sematkan peta (Embed a map), salin URL dari atribut src iframe (berawalan https://www.google.com/maps/embed...), lalu tempel di sini.
             </p>
           </div>
@@ -241,7 +241,7 @@ export function SettingsForm({ initialData }: { initialData: Record<string, stri
       </section>
 
       {/* 4. WhatsApp Widget */}
-      <section className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+      <section className="bg-white p-6 rounded-xl border border-slate-200">
         <h3 className="text-xl font-bold mb-4 border-b pb-2">WhatsApp Widget</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
@@ -260,7 +260,7 @@ export function SettingsForm({ initialData }: { initialData: Record<string, stri
         <button 
           type="submit" 
           disabled={isSaving}
-          className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition-transform active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed"
+          className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary-600 px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-primary-700 disabled:opacity-50"
         >
           {isSaving ? "Menyimpan..." : "Simpan & Refresh Cache"}
         </button>

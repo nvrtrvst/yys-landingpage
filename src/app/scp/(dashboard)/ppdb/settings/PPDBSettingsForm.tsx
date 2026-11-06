@@ -90,7 +90,7 @@ export function PPDBSettingsForm({ initialConfig }: { initialConfig: PPDBConfig 
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
       {/* Identitas PPDB */}
-      <section className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+      <section className="bg-white p-6 rounded-xl border border-slate-200">
         <h3 className="text-xl font-bold mb-4 border-b pb-2">Informasi Dasar</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
@@ -110,17 +110,17 @@ export function PPDBSettingsForm({ initialConfig }: { initialConfig: PPDBConfig 
       </section>
 
       {/* Jadwal Kegiatan */}
-      <section className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+      <section className="bg-white p-6 rounded-xl border border-slate-200 overflow-hidden">
         <div className="flex justify-between items-center mb-4 border-b pb-2">
           <h3 className="text-xl font-bold">Jadwal Kegiatan SPMB</h3>
-          <button type="button" onClick={addScheduleRow} className="flex items-center gap-1 text-sm bg-gray-100 hover:bg-gray-200 text-gray-800 py-1 px-3 rounded">
+          <button type="button" onClick={addScheduleRow} className="flex items-center gap-1 text-sm bg-slate-100 hover:bg-slate-200 text-slate-800 py-1 px-3 rounded">
             <Plus size={16} /> Tambah Baris
           </button>
         </div>
         
         <div className="overflow-x-auto">
           <table className="w-full text-sm text-left border">
-            <thead className="bg-gray-50 border-b">
+            <thead className="bg-slate-50 border-b">
               <tr>
                 <th className="p-3 border-r w-1/3">Uraian Kegiatan</th>
                 <th className="p-3 border-r w-1/3">Gelombang 1 (Hari/Tanggal)</th>
@@ -130,13 +130,13 @@ export function PPDBSettingsForm({ initialConfig }: { initialConfig: PPDBConfig 
             </thead>
             <tbody>
               {formData.schedules.map((item, index) => (
-                <tr key={index} className="border-b hover:bg-gray-50">
+                <tr key={index} className="border-b hover:bg-slate-50">
                   <td className="p-2 border-r">
                     <input 
                       type="text" 
                       value={item.activity} 
                       onChange={(e) => handleScheduleChange(index, "activity", e.target.value)} 
-                      className="w-full border-gray-300 rounded px-3 py-2 md:px-2 md:py-1 text-[16px] md:text-sm focus:ring-1 focus:ring-primary-500" 
+                      className="w-full border-slate-300 rounded px-3 py-2 md:px-2 md:py-1 text-[16px] md:text-sm focus:ring-1 focus:ring-primary-500" 
                       placeholder="Nama Kegiatan..."
                     />
                   </td>
@@ -145,7 +145,7 @@ export function PPDBSettingsForm({ initialConfig }: { initialConfig: PPDBConfig 
                       type="text" 
                       value={item.wave1} 
                       onChange={(e) => handleScheduleChange(index, "wave1", e.target.value)} 
-                      className="w-full border-gray-300 rounded px-3 py-2 md:px-2 md:py-1 text-[16px] md:text-sm focus:ring-1 focus:ring-primary-500"
+                      className="w-full border-slate-300 rounded px-3 py-2 md:px-2 md:py-1 text-[16px] md:text-sm focus:ring-1 focus:ring-primary-500"
                       placeholder="Misal: 1 Maret - 24 April"
                     />
                   </td>
@@ -154,12 +154,12 @@ export function PPDBSettingsForm({ initialConfig }: { initialConfig: PPDBConfig 
                       type="text" 
                       value={item.wave2} 
                       onChange={(e) => handleScheduleChange(index, "wave2", e.target.value)} 
-                      className="w-full border-gray-300 rounded px-3 py-2 md:px-2 md:py-1 text-[16px] md:text-sm focus:ring-1 focus:ring-primary-500"
+                      className="w-full border-slate-300 rounded px-3 py-2 md:px-2 md:py-1 text-[16px] md:text-sm focus:ring-1 focus:ring-primary-500"
                       placeholder="Kosongkan jika tidak ada"
                     />
                   </td>
                   <td className="p-2 text-center">
-                    <button type="button" onClick={() => removeScheduleRow(index)} className="text-red-500 hover:text-red-700 p-1" title="Hapus baris">
+                    <button type="button" onClick={() => removeScheduleRow(index)} className="text-rose-500 hover:text-rose-700 p-1" title="Hapus baris">
                       <Trash2 size={16} />
                     </button>
                   </td>
@@ -169,7 +169,7 @@ export function PPDBSettingsForm({ initialConfig }: { initialConfig: PPDBConfig 
           </table>
         </div>
         {formData.schedules.length === 0 && (
-          <p className="text-center text-gray-500 py-4 text-sm">Tidak ada jadwal. Klik &quot;Tambah Baris&quot; untuk menambahkan.</p>
+          <p className="text-center text-slate-500 py-4 text-sm">Tidak ada jadwal. Klik &quot;Tambah Baris&quot; untuk menambahkan.</p>
         )}
       </section>
 
@@ -178,7 +178,7 @@ export function PPDBSettingsForm({ initialConfig }: { initialConfig: PPDBConfig 
         <button 
           type="submit" 
           disabled={isSaving}
-          className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition-transform active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed"
+          className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary-600 px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-primary-700 disabled:opacity-50"
         >
           {isSaving ? "Menyimpan..." : "Simpan Pengaturan"}
         </button>
