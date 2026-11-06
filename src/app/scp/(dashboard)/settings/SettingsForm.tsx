@@ -3,6 +3,101 @@
 import { getErrorMessage } from "@/lib/get-error-message";
 import { useState } from "react";
 import { toast } from "sonner";
+import { btnGhostDanger, btnPrimary, btnSecondary, inputClass, textareaClass } from "@/components/scp/ui";
+
+const readOnlyInputClass =
+  "h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm text-slate-500";
+
+function Section({
+  title,
+  description,
+  children,
+}: {
+  title: string;
+  description?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="rounded-xl border border-slate-200 bg-white p-6">
+      <div className="mb-5">
+        <h2 className="text-base font-semibold text-slate-900">{title}</h2>
+        {description ? <p className="mt-1 text-sm text-slate-500">{description}</p> : null}
+      </div>
+      {children}
+    </section>
+  );
+}
+
+function Field({
+  id,
+  label,
+  hint,
+  children,
+}: {
+  id: string;
+  label: string;
+  hint?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div>
+      <label htmlFor={id} className="mb-1.5 block text-sm font-medium text-slate-700">
+        {label}
+      </label>
+      {children}
+      {hint ? <p className="mt-1 text-xs text-slate-500">{hint}</p> : null}
+    </div>
+  );
+}
+
+function ImageField({
+  id,
+  label,
+  hint,
+  value,
+  previewClass,
+  onChange,
+  onRemove,
+}: {
+  id: string;
+  label: string;
+  hint: string;
+  value: string;
+  previewClass: string;
+  onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  onRemove: () => void;
+}) {
+  return (
+    <div>
+      <label htmlFor={id} className="mb-1.5 block text-sm font-medium text-slate-700">
+        {label}
+      </label>
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+        <input id={id} type="text" value={value} readOnly className={readOnlyInputClass} placeholder="Belum ada file" />
+        <input id={`${id}-file`} type="file" accept="image/*" onChange={onChange} className="peer sr-only" />
+        <label
+          htmlFor={`${id}-file`}
+          className={`${btnSecondary} cursor-pointer peer-focus-visible:ring-2 peer-focus-visible:ring-primary-500 peer-focus-visible:ring-offset-2`}
+        >
+          Pilih gambar
+        </label>
+      </div>
+      <p className="mt-1 text-xs text-slate-500">{hint}</p>
+      {value ? (
+        <div className="mt-3 flex items-end gap-4 rounded-lg border border-slate-200 bg-slate-50 p-3">
+          <img src={value} alt={`Pratinjau ${label}`} className={previewClass} />
+          <button type="button" onClick={onRemove} className={btnGhostDanger} aria-label={`Hapus ${label}`}>
+            Hapus
+          </button>
+        </div>
+      ) : (
+        <p className="mt-3 rounded-lg border border-dashed border-slate-200 px-3 py-4 text-center text-xs text-slate-500">
+          Belum ada gambar.
+        </p>
+      )}
+    </div>
+  );
+}
 
 export function SettingsForm({ initialData }: { initialData: Record<string, string> }) {
   const [formData, setFormData] = useState<Record<string, string>>({
@@ -53,7 +148,7 @@ export function SettingsForm({ initialData }: { initialData: Record<string, stri
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Gagal upload");
-      
+
       setFormData(prev => ({ ...prev, [fieldName]: data.url }));
       toast.success("File berhasil diunggah", { id: toastId });
     } catch(err: unknown) {
@@ -69,7 +164,7 @@ export function SettingsForm({ initialData }: { initialData: Record<string, stri
     e.preventDefault();
     setIsSaving(true);
     const toastId = toast.loading("Menyimpan pengaturan...");
-    
+
     try {
       const res = await fetch("/api/admin/settings", {
         method: "POST",
@@ -77,7 +172,7 @@ export function SettingsForm({ initialData }: { initialData: Record<string, stri
         body: JSON.stringify(formData),
       });
       const data = await res.json();
-      
+
       if (!res.ok) throw new Error(data.error || "Gagal menyimpan");
       toast.success("Pengaturan berhasil disimpan & landing page di-refresh!", { id: toastId });
     } catch(err: unknown) {
@@ -88,180 +183,136 @@ export function SettingsForm({ initialData }: { initialData: Record<string, stri
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-8">
-      {/* 1. Identitas Website */}
-      <section className="bg-white p-6 rounded-xl border border-slate-200">
-        <h3 className="text-xl font-bold mb-4 border-b pb-2">Identitas Yayasan</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label className="block text-sm font-medium mb-1">Nama Yayasan</label>
-            <input type="text" name="site_name" value={formData.site_name} onChange={handleChange} className="w-full border rounded p-3 focus:ring-2 focus:ring-primary-500" required />
+    <form onSubmit={handleSubmit} className="max-w-5xl space-y-6">
+      <Section title="Identitas Yayasan" description="Nama, tagline, dan logo yang tampil di website.">
+        <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+          <Field id="site_name" label="Nama Yayasan">
+            <input id="site_name" type="text" name="site_name" value={formData.site_name} onChange={handleChange} className={inputClass} required />
+          </Field>
+          <Field id="site_tagline" label="Tagline">
+            <input id="site_tagline" type="text" name="site_tagline" value={formData.site_tagline} onChange={handleChange} className={inputClass} />
+          </Field>
+          <div className="md:col-span-2">
+            <ImageField
+              id="site_logo"
+              label="Logo Yayasan"
+              hint="Optimal 200 x 80 px, PNG transparan."
+              value={formData.site_logo}
+              previewClass="h-16 w-auto object-contain"
+              onChange={(e) => handleFileUpload(e, "site_logo")}
+              onRemove={() => handleRemoveImage("site_logo")}
+            />
           </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Tagline</label>
-            <input type="text" name="site_tagline" value={formData.site_tagline} onChange={handleChange} className="w-full border rounded p-3 focus:ring-2 focus:ring-primary-500" />
+        </div>
+      </Section>
+
+      <Section title="Tentang Kami" description="Sejarah, visi, dan misi yang tampil di halaman profil.">
+        <div className="space-y-5">
+          <ImageField
+            id="profile_image"
+            label="Foto Gedung / Sejarah"
+            hint="Optimal 600 x 600 px, rasio 1:1."
+            value={formData.profile_image}
+            previewClass="h-24 w-24 rounded object-cover"
+            onChange={(e) => handleFileUpload(e, "profile_image")}
+            onRemove={() => handleRemoveImage("profile_image")}
+          />
+          <Field id="profile_history" label="Sejarah Yayasan" hint="Mendukung HTML dasar dan disanitasi otomatis.">
+            <textarea id="profile_history" name="profile_history" value={formData.profile_history} onChange={handleChange} rows={6} className={textareaClass} placeholder="Ceritakan sejarah berdirinya yayasan..." />
+          </Field>
+          <Field id="profile_vision" label="Visi">
+            <textarea id="profile_vision" name="profile_vision" value={formData.profile_vision} onChange={handleChange} rows={3} className={textareaClass} placeholder="Visi yayasan..." />
+          </Field>
+          <Field id="profile_mission" label="Misi">
+            <textarea id="profile_mission" name="profile_mission" value={formData.profile_mission} onChange={handleChange} rows={4} className={textareaClass} placeholder="Misi yayasan..." />
+          </Field>
+        </div>
+      </Section>
+
+      <Section title="Hero Section" description="Konten utama di bagian atas landing page.">
+        <div className="space-y-5">
+          <Field id="hero_title" label="Judul Hero">
+            <input id="hero_title" type="text" name="hero_title" value={formData.hero_title} onChange={handleChange} className={inputClass} />
+          </Field>
+          <Field id="hero_subtitle" label="Subjudul Hero">
+            <textarea id="hero_subtitle" name="hero_subtitle" value={formData.hero_subtitle} onChange={handleChange} rows={2} className={textareaClass} />
+          </Field>
+          <ImageField
+            id="hero_background"
+            label="Background Hero"
+            hint="Optimal 1920 x 1080 px, rasio 16:9."
+            value={formData.hero_background}
+            previewClass="h-24 w-full max-w-xs rounded object-cover"
+            onChange={(e) => handleFileUpload(e, "hero_background")}
+            onRemove={() => handleRemoveImage("hero_background")}
+          />
+          <ImageField
+            id="programs_background"
+            label="Background Program Unggulan"
+            hint="Optimal 1920 x 1080 px, rasio 16:9."
+            value={formData.programs_background}
+            previewClass="h-24 w-full max-w-xs rounded object-cover"
+            onChange={(e) => handleFileUpload(e, "programs_background")}
+            onRemove={() => handleRemoveImage("programs_background")}
+          />
+        </div>
+      </Section>
+
+      <Section title="Kontak & Sosial Media" description="Informasi kontak dan tautan sosial yang tampil di footer.">
+        <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+          <div className="md:col-span-2">
+            <Field id="contact_address" label="Alamat Lengkap">
+              <textarea id="contact_address" name="contact_address" value={formData.contact_address} onChange={handleChange} rows={2} className={textareaClass} />
+            </Field>
           </div>
           <div className="md:col-span-2">
-            <label className="block text-sm font-medium mb-1">Logo URL</label>
-            <div className="flex gap-2 items-center">
-              <input type="text" name="site_logo" value={formData.site_logo} onChange={handleChange} className="w-full border rounded p-3 bg-slate-50" readOnly />
-              <input type="file" accept="image/*" onChange={(e) => handleFileUpload(e, "site_logo")} className="text-sm" />
-            </div>
-            <p className="text-xs text-slate-500 mt-1">Optimal: 200 x 80 px (Transparan PNG)</p>
-            {formData.site_logo && (
-              <div className="mt-2 flex items-end gap-4">
-                <img src={formData.site_logo} alt="Logo" className="h-16 object-contain" />
-                <button type="button" onClick={() => handleRemoveImage("site_logo")} className="text-rose-600 text-sm font-semibold hover:underline">Hapus Foto</button>
-              </div>
-            )}
+            <Field
+              id="map_embed_url"
+              label="URL Embed Google Maps"
+              hint="Buka Google Maps → Bagikan → Sematkan peta, lalu tempel URL dari atribut src iframe."
+            >
+              <textarea
+                id="map_embed_url"
+                name="map_embed_url"
+                value={formData.map_embed_url}
+                onChange={handleChange}
+                rows={3}
+                placeholder="https://www.google.com/maps/embed?pb=..."
+                className={`${textareaClass} font-mono`}
+              />
+            </Field>
           </div>
+          <Field id="contact_phone" label="Telepon">
+            <input id="contact_phone" type="text" name="contact_phone" value={formData.contact_phone} onChange={handleChange} className={inputClass} />
+          </Field>
+          <Field id="contact_email" label="Email">
+            <input id="contact_email" type="email" name="contact_email" value={formData.contact_email} onChange={handleChange} className={inputClass} />
+          </Field>
+          <Field id="social_instagram" label="Link Instagram">
+            <input id="social_instagram" type="text" name="social_instagram" value={formData.social_instagram} onChange={handleChange} className={inputClass} placeholder="https://instagram.com/..." />
+          </Field>
+          <Field id="social_facebook" label="Link Facebook">
+            <input id="social_facebook" type="text" name="social_facebook" value={formData.social_facebook} onChange={handleChange} className={inputClass} placeholder="https://facebook.com/..." />
+          </Field>
+          <Field id="social_youtube" label="Link YouTube">
+            <input id="social_youtube" type="text" name="social_youtube" value={formData.social_youtube} onChange={handleChange} className={inputClass} placeholder="https://youtube.com/..." />
+          </Field>
         </div>
-      </section>
+      </Section>
 
-      {/* 2. Tentang Kami */}
-      <section className="bg-white p-6 rounded-xl border border-slate-200">
-        <h3 className="text-xl font-bold mb-4 border-b pb-2">Tentang Kami</h3>
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium mb-1">Foto Gedung/Sejarah</label>
-            <div className="flex gap-2 items-center">
-              <input type="text" name="profile_image" value={formData.profile_image} onChange={handleChange} className="w-full border rounded p-3 bg-slate-50" readOnly />
-              <input type="file" accept="image/*" onChange={(e) => handleFileUpload(e, "profile_image")} className="text-sm" />
-            </div>
-            <p className="text-xs text-slate-500 mt-1">Optimal: 600 x 600 px (Persegi 1:1)</p>
-            {formData.profile_image && (
-              <div className="mt-2 flex items-end gap-4">
-                <img src={formData.profile_image} alt="Profile" className="h-24 object-cover rounded" />
-                <button type="button" onClick={() => handleRemoveImage("profile_image")} className="text-rose-600 text-sm font-semibold hover:underline">Hapus Foto</button>
-              </div>
-            )}
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Sejarah Yayasan</label>
-            <textarea name="profile_history" value={formData.profile_history} onChange={handleChange} rows={6} className="w-full border rounded p-3 focus:ring-2 focus:ring-primary-500" placeholder="Ceritakan sejarah berdirinya yayasan..." />
-            <p className="text-xs text-slate-500 mt-1">Mendukung format HTML dasar (akan disanitasi otomatis).</p>
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Visi</label>
-            <textarea name="profile_vision" value={formData.profile_vision} onChange={handleChange} rows={3} className="w-full border rounded p-3 focus:ring-2 focus:ring-primary-500" placeholder="Visi yayasan..." />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Misi</label>
-            <textarea name="profile_mission" value={formData.profile_mission} onChange={handleChange} rows={4} className="w-full border rounded p-3 focus:ring-2 focus:ring-primary-500" placeholder="Misi yayasan..." />
-          </div>
+      <Section title="WhatsApp Widget" description="Tombol chat yang muncul di website.">
+        <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+          <Field id="wa_number" label="Nomor WhatsApp" hint="Contoh: 62812...">
+            <input id="wa_number" type="text" name="wa_number" value={formData.wa_number} onChange={handleChange} className={inputClass} />
+          </Field>
+          <Field id="wa_message" label="Pesan Default">
+            <input id="wa_message" type="text" name="wa_message" value={formData.wa_message} onChange={handleChange} className={inputClass} />
+          </Field>
         </div>
-      </section>
+      </Section>
 
-      {/* 2. Hero Section */}
-      <section className="bg-white p-6 rounded-xl border border-slate-200">
-        <h3 className="text-xl font-bold mb-4 border-b pb-2">Hero Section (Landing Page)</h3>
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium mb-1">Judul Hero</label>
-            <input type="text" name="hero_title" value={formData.hero_title} onChange={handleChange} className="w-full border rounded p-3 focus:ring-2 focus:ring-primary-500" />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Subjudul Hero</label>
-            <textarea name="hero_subtitle" value={formData.hero_subtitle} onChange={handleChange} rows={2} className="w-full border rounded p-3 focus:ring-2 focus:ring-primary-500"></textarea>
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Gambar Background URL (Hero)</label>
-            <div className="flex gap-2 items-center">
-              <input type="text" name="hero_background" value={formData.hero_background} onChange={handleChange} className="w-full border rounded p-3 bg-slate-50" readOnly />
-              <input type="file" accept="image/*" onChange={(e) => handleFileUpload(e, "hero_background")} className="text-sm" />
-            </div>
-            <p className="text-xs text-slate-500 mt-1">Optimal: 1920 x 1080 px (Rasio 16:9)</p>
-            {formData.hero_background && (
-              <div className="mt-2 flex items-end gap-4">
-                <img src={formData.hero_background} alt="Hero BG" className="h-24 object-cover rounded" />
-                <button type="button" onClick={() => handleRemoveImage("hero_background")} className="text-rose-600 text-sm font-semibold hover:underline">Hapus Foto</button>
-              </div>
-            )}
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Gambar Background Parallax (Program Unggulan)</label>
-            <div className="flex gap-2 items-center">
-              <input type="text" name="programs_background" value={formData.programs_background} onChange={handleChange} className="w-full border rounded p-3 bg-slate-50" readOnly />
-              <input type="file" accept="image/*" onChange={(e) => handleFileUpload(e, "programs_background")} className="text-sm" />
-            </div>
-            <p className="text-xs text-slate-500 mt-1">Optimal: 1920 x 1080 px (Rasio 16:9)</p>
-            {formData.programs_background && (
-              <div className="mt-2 flex items-end gap-4">
-                <img src={formData.programs_background} alt="Programs BG" className="h-24 object-cover rounded" />
-                <button type="button" onClick={() => handleRemoveImage("programs_background")} className="text-rose-600 text-sm font-semibold hover:underline">Hapus Foto</button>
-              </div>
-            )}
-          </div>
-        </div>
-      </section>
-
-      {/* 3. Kontak & Sosmed */}
-      <section className="bg-white p-6 rounded-xl border border-slate-200">
-        <h3 className="text-xl font-bold mb-4 border-b pb-2">Kontak & Sosial Media</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="md:col-span-2">
-            <label className="block text-sm font-medium mb-1">Alamat Lengkap</label>
-            <textarea name="contact_address" value={formData.contact_address} onChange={handleChange} rows={2} className="w-full border rounded p-3 focus:ring-2 focus:ring-primary-500"></textarea>
-          </div>
-          <div className="md:col-span-2">
-            <label className="block text-sm font-medium mb-1">URL Embed Google Maps</label>
-            <textarea 
-              name="map_embed_url" 
-              value={formData.map_embed_url} 
-              onChange={handleChange} 
-              rows={3} 
-              placeholder="https://www.google.com/maps/embed?pb=..."
-              className="w-full border rounded p-3 focus:ring-2 focus:ring-primary-500 font-mono text-sm"
-            ></textarea>
-            <p className="text-xs text-slate-500 mt-1">
-              Buka Google Maps, cari lokasi, klik Bagikan &gt; Sematkan peta (Embed a map), salin URL dari atribut src iframe (berawalan https://www.google.com/maps/embed...), lalu tempel di sini.
-            </p>
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Telepon</label>
-            <input type="text" name="contact_phone" value={formData.contact_phone} onChange={handleChange} className="w-full border rounded p-3 focus:ring-2 focus:ring-primary-500" />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Email</label>
-            <input type="email" name="contact_email" value={formData.contact_email} onChange={handleChange} className="w-full border rounded p-3 focus:ring-2 focus:ring-primary-500" />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Link Instagram</label>
-            <input type="text" name="social_instagram" value={formData.social_instagram} onChange={handleChange} className="w-full border rounded p-3 focus:ring-2 focus:ring-primary-500" />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Link Facebook</label>
-            <input type="text" name="social_facebook" value={formData.social_facebook} onChange={handleChange} className="w-full border rounded p-3 focus:ring-2 focus:ring-primary-500" />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Link YouTube</label>
-            <input type="text" name="social_youtube" value={formData.social_youtube} onChange={handleChange} className="w-full border rounded p-3 focus:ring-2 focus:ring-primary-500" />
-          </div>
-        </div>
-      </section>
-
-      {/* 4. WhatsApp Widget */}
-      <section className="bg-white p-6 rounded-xl border border-slate-200">
-        <h3 className="text-xl font-bold mb-4 border-b pb-2">WhatsApp Widget</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label className="block text-sm font-medium mb-1">Nomor WhatsApp (Contoh: 62812...)</label>
-            <input type="text" name="wa_number" value={formData.wa_number} onChange={handleChange} className="w-full border rounded p-3 focus:ring-2 focus:ring-primary-500" />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Pesan Default</label>
-            <input type="text" name="wa_message" value={formData.wa_message} onChange={handleChange} className="w-full border rounded p-3 focus:ring-2 focus:ring-primary-500" />
-          </div>
-        </div>
-      </section>
-
-      {/* Submit Button */}
-      <div className="flex justify-end sticky bottom-6">
-        <button 
-          type="submit" 
-          disabled={isSaving}
-          className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary-600 px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-primary-700 disabled:opacity-50"
-        >
+      <div className="sticky bottom-4 flex justify-end rounded-xl border border-slate-200 bg-white p-3">
+        <button type="submit" disabled={isSaving} className={btnPrimary}>
           {isSaving ? "Menyimpan..." : "Simpan & Refresh Cache"}
         </button>
       </div>
