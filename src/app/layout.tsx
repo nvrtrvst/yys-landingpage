@@ -19,7 +19,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://nuurulmuttaqiin.or.id";
   const siteName = settings.site_name || "Yayasan Nuurul Muttaqiin";
   const description =
-    settings.site_tagline ||
+    settings.hero_subtitle?.trim() ||
     "Yayasan Pendidikan Islam Nuurul Muttaqiin menghadirkan pendidikan berkualitas dari jenjang LPQ hingga SMK dengan mengedepankan adab, ilmu, dan teknologi.";
   const image = settings.site_logo || settings.hero_background || "/uploads/dummy/hero_bg.png";
 
