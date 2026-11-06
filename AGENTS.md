@@ -77,7 +77,16 @@ Bahasa UI: Indonesia. Role: `superadmin`, `admin`, `editor`.
 - `npm run build` → `next build`
 - `npm run start` → `next start -p 5000`
 - `npm run lint` → `eslint`
+- `npm test` → `vitest run` (unit + api di `tests/`)
+- `npm run test:watch` → `vitest`
+- `npm run test:coverage` → `vitest run --coverage`
 - Typecheck: `npx tsc --noEmit` (jalankan sebelum commit).
+
+## Testing, CI & Deploy
+- Runner: **Vitest** (`vitest.config.mts`, alias `@`→`src`, environment node).
+- Test: `tests/unit/*` (fungsi murni) + `tests/api/*` (route handler). `tests/setup.ts` menyetel `DATABASE_URL` dummy agar modul yang mengimpor `@/lib/db` bisa dimuat.
+- **CI**: `.github/workflows/ci.yml` → `npm ci` + `lint` + `tsc --noEmit` + `npm test` pada push/PR ke `main`.
+- **Deploy**: `.github/workflows/deploy.yml` → SSH ke server, `git reset --hard origin/main`, `npm ci`, `npm run build`, `pm2 reload ecosystem.config.js`. Butuh secrets `SSH_PRIVATE_KEY`, `DEPLOY_HOST`, `DEPLOY_USER` + public key di `~/.ssh/authorized_keys` server. Aktifkan dengan repository variable `DEPLOY_ENABLED=true`.
 
 ## Catatan Deployment
 - Port **5000** (bukan 3000).
