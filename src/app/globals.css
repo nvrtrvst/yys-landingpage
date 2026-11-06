@@ -26,6 +26,20 @@ body {
 }
 
 @layer base {
+  html {
+    scroll-padding-top: 5rem;
+  }
+
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
   img {
     max-width: 100%;
     height: auto;

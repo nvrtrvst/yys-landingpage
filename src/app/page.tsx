@@ -110,7 +110,7 @@ export default async function Home() {
       <h1 className="sr-only">{heroTitle} — {heroSubtitle}</h1>
       
       {/* HERO SECTION — taller spacer to keep content from entering viewport during fill */}
-      <section style={{ minHeight: 'calc(100vh + 400px)' }} className="relative flex items-center justify-center overflow-hidden">
+      <section className="relative flex min-h-[calc(100dvh+220px)] items-center justify-center overflow-hidden md:min-h-[calc(100vh+400px)]">
         <HeroParallax />
 
         <LogoFill
@@ -344,7 +344,7 @@ export default async function Home() {
             </div>
             
             <div className="mt-8 text-center md:hidden">
-              <Link href="/berita" className="inline-block text-primary-600 font-semibold border border-primary-600 px-6 py-2 rounded-full">
+              <Link href="/berita" className="inline-flex min-h-11 items-center rounded-full border border-primary-600 px-6 py-3 font-semibold text-primary-600">
                 Lihat Semua Berita
               </Link>
             </div>

@@ -47,13 +47,13 @@ export function HeaderUI({ settings, units }: { settings: Record<string, string>
   return (
     <header
       className={`fixed w-full z-50 transition-all duration-300 ${
-        isScrolled ? "bg-white shadow-md py-3" : "bg-transparent py-5"
+        isScrolled || isMobileMenuOpen ? "bg-white shadow-md py-3" : "bg-transparent py-5"
       }`}
     >
       <div className="container mx-auto px-4 md:px-6">
         <div className="flex items-center justify-between">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 z-50">
+          <Link href="/" className="flex items-center gap-2 py-1 z-50">
             {isMounted && settings.site_logo && !settings.site_logo.startsWith('/uploads/dummy/')               ? (
                
               <img 
@@ -71,7 +71,7 @@ export function HeaderUI({ settings, units }: { settings: Record<string, string>
                
               <img src="/uploads/dummy/site_logo.png" alt={`Logo ${settings.site_name || "Yayasan Nuurul Muttaqiin"}`} className="h-10 md:h-12 w-auto object-contain" loading="eager" decoding="async" />
             )}
-            <div className={`font-serif text-xl md:text-2xl font-bold tracking-tight ${isScrolled ? 'text-primary-800' : 'text-white drop-shadow-md'}`}>
+            <div className={`max-w-[7.5rem] truncate font-serif text-lg font-bold tracking-tight md:max-w-none md:text-2xl ${isScrolled || isMobileMenuOpen ? "text-primary-800" : "text-white drop-shadow-md"}`}>
               {settings.site_name || "Nuurul Muttaqiin"}
             </div>
           </Link>
@@ -123,21 +123,29 @@ export function HeaderUI({ settings, units }: { settings: Record<string, string>
             </Link>
           </nav>
 
-          {/* Mobile menu button */}
-          <button
-            aria-label={isMobileMenuOpen ? "Tutup menu navigasi" : "Buka menu navigasi"}
-            aria-expanded={isMobileMenuOpen}
-            aria-controls="mobile-menu"
-            className="md:hidden z-50 p-2 focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 rounded"
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setIsMobileMenuOpen(!isMobileMenuOpen); } }}
-          >
-            {isMobileMenuOpen ? (
-              <X className={`h-6 w-6 ${isScrolled || isMobileMenuOpen ? 'text-gray-900' : 'text-white'}`} />
-            ) : (
-              <Menu className={`h-6 w-6 ${isScrolled ? 'text-gray-900' : 'text-white'}`} />
-            )}
-          </button>
+          <div className="z-50 flex items-center gap-1.5 md:hidden">
+            <Link
+              href="/ppdb"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="inline-flex min-h-11 items-center rounded-full bg-primary-600 px-3 text-xs font-semibold text-white"
+            >
+              PPDB
+            </Link>
+            <button
+              aria-label={isMobileMenuOpen ? "Tutup menu navigasi" : "Buka menu navigasi"}
+              aria-expanded={isMobileMenuOpen}
+              aria-controls="mobile-menu"
+              className="inline-flex min-h-11 min-w-11 items-center justify-center rounded p-2.5 focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setIsMobileMenuOpen(!isMobileMenuOpen); } }}
+            >
+              {isMobileMenuOpen ? (
+                <X className={`h-6 w-6 ${isScrolled || isMobileMenuOpen ? 'text-gray-900' : 'text-white'}`} />
+              ) : (
+                <Menu className={`h-6 w-6 ${isScrolled ? 'text-gray-900' : 'text-white'}`} />
+              )}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -151,7 +159,7 @@ export function HeaderUI({ settings, units }: { settings: Record<string, string>
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -20 }}
-          className="absolute top-0 left-0 w-full h-screen bg-white flex flex-col pt-24 px-6 gap-6 md:hidden shadow-xl overflow-y-auto"
+          className="absolute top-0 left-0 flex h-[100dvh] w-full flex-col gap-6 overflow-y-auto bg-white px-6 pb-[env(safe-area-inset-bottom)] pt-24 shadow-xl md:hidden"
         >
           {navLinks.map((link) => (
             <Link
@@ -167,7 +175,7 @@ export function HeaderUI({ settings, units }: { settings: Record<string, string>
             <span className="block mb-4">Unit Sekolah:</span>
             <div className="flex flex-col gap-3 pl-4">
                {units.map(u => (
-                  <Link key={u.slug} onClick={() => setIsMobileMenuOpen(false)} href={`/unit/${u.slug}`} className="text-lg text-gray-600 hover:text-primary-600">
+                  <Link key={u.slug} onClick={() => setIsMobileMenuOpen(false)} href={`/unit/${u.slug}`} className="inline-flex min-h-11 items-center py-2 text-lg text-gray-600 hover:text-primary-600">
                     {u.name}
                   </Link>
                 ))}

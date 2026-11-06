@@ -33,7 +33,12 @@ export function TestimonialsSection({ data }: { data: Testimonial[] }) {
         </div>
 
         {/* Gunakan flex overflow-x-auto di mobile agar bisa di-swipe, grid di desktop */}
-        <div className="flex overflow-x-auto pb-10 snap-x snap-mandatory scrollbar-hide md:grid md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 -mx-4 px-4 md:mx-0 md:px-0">
+        <p className="mb-3 text-sm text-gray-500 md:hidden">Geser untuk melihat semua testimoni.</p>
+        <div
+          role="region"
+          aria-label="Daftar testimoni, geser untuk melihat lainnya"
+          className="flex overflow-x-auto pb-10 snap-x snap-mandatory scrollbar-hide md:grid md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 -mx-4 px-4 md:mx-0 md:px-0"
+        >
           {data.map((testi) => (
             <div key={testi.id} className="bg-white p-8 md:p-10 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-primary-100/50 min-w-[320px] snap-center flex flex-col relative transition-all duration-300 hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] hover:-translate-y-2 group">
               <div className="absolute top-8 right-8 text-7xl text-primary-50 font-serif leading-none group-hover:text-primary-100 transition-colors duration-300">

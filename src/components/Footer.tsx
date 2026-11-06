@@ -76,7 +76,7 @@ export async function Footer() {
   ];
 
   return (
-    <footer className="bg-primary-900 text-white pt-16 pb-8">
+    <footer className="bg-primary-900 pb-24 pt-16 text-white md:pb-8">
       <div className="container mx-auto px-4 md:px-6">
         <div className="grid grid-cols-1 md:grid-cols-6 gap-12 mb-12">
           <div className="col-span-1 md:col-span-2">
@@ -129,11 +129,11 @@ export async function Footer() {
           <div className="col-span-1 md:col-span-1">
             <h4 className="text-lg font-semibold mb-4 text-primary-200">Unit Sekolah</h4>
             <ul className="space-y-3 text-primary-100">
-              <li><Link href="/unit/lpq" className="hover:text-white transition">LPQ Nuurul Muttaqiin</Link></li>
-              <li><Link href="/unit/tk" className="hover:text-white transition">TK Nuurul Muttaqiin</Link></li>
-              <li><Link href="/unit/sd" className="hover:text-white transition">SD Nuurul Muttaqiin</Link></li>
-              <li><Link href="/unit/smp" className="hover:text-white transition">SMP Nuurul Muttaqiin</Link></li>
-              <li><Link href="/unit/smk" className="hover:text-white transition">SMK Nuurul Muttaqiin</Link></li>
+              <li><Link href="/unit/lpq" className="inline-flex min-h-11 items-center py-2.5 hover:text-white transition">LPQ Nuurul Muttaqiin</Link></li>
+              <li><Link href="/unit/tk" className="inline-flex min-h-11 items-center py-2.5 hover:text-white transition">TK Nuurul Muttaqiin</Link></li>
+              <li><Link href="/unit/sd" className="inline-flex min-h-11 items-center py-2.5 hover:text-white transition">SD Nuurul Muttaqiin</Link></li>
+              <li><Link href="/unit/smp" className="inline-flex min-h-11 items-center py-2.5 hover:text-white transition">SMP Nuurul Muttaqiin</Link></li>
+              <li><Link href="/unit/smk" className="inline-flex min-h-11 items-center py-2.5 hover:text-white transition">SMK Nuurul Muttaqiin</Link></li>
             </ul>
           </div>
 
@@ -151,7 +151,7 @@ export async function Footer() {
                 </li>
                 <li className="flex items-center gap-3">
                   <Mail className="h-5 w-5 shrink-0 text-primary-300" aria-hidden="true" />
-                  <span className="whitespace-nowrap">{email}</span>
+                  <span className="break-all">{email}</span>
                 </li>
               </ul>
 
@@ -184,7 +184,7 @@ export async function Footer() {
                   href={mapLink}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-accent-default bg-white/5 hover:bg-white/10 border border-white/10 hover:border-accent-default/30 px-4 py-2.5 rounded-xl transition-all duration-300 hover:-translate-y-0.5 shadow-sm hover:shadow-md mt-1 w-fit"
+                  className="mt-1 inline-flex min-h-11 w-fit items-center gap-1.5 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-xs font-semibold text-accent-default shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-accent-default/30 hover:bg-white/10 hover:shadow-md"
                 >
                   Buka di Google Maps <span aria-hidden="true">&rarr;</span>
                 </a>
@@ -196,8 +196,8 @@ export async function Footer() {
         <div className="border-t border-primary-800 pt-8 flex flex-col md:flex-row items-center justify-between text-primary-200 text-sm">
           <p>&copy; {new Date().getFullYear()} Yayasan Nuurul Muttaqiin. All rights reserved.</p>
           <div className="flex gap-4 mt-4 md:mt-0">
-            <Link href="/privacy" className="hover:text-white transition">Privacy Policy</Link>
-            <Link href="/terms" className="hover:text-white transition">Terms of Service</Link>
+            <Link href="/privacy" className="inline-flex min-h-11 items-center py-3 hover:text-white transition">Privacy Policy</Link>
+            <Link href="/terms" className="inline-flex min-h-11 items-center py-3 hover:text-white transition">Terms of Service</Link>
           </div>
         </div>
       </div>
