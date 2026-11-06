@@ -2,6 +2,9 @@
 import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
+import { focusRing, inputClass } from "@/components/scp/ui";
+
+const authButton = `inline-flex w-full items-center justify-center gap-2 rounded-lg bg-primary-700 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-primary-800 disabled:opacity-50 ${focusRing}`;
 
 export default function ScpResetPasswordPage() {
   const { token } = useParams();
@@ -36,47 +39,45 @@ export default function ScpResetPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-primary-900 py-12 px-4">
-      <div className="max-w-md w-full p-8 bg-white rounded-xl shadow-lg">
+    <div className="min-h-screen flex items-center justify-center bg-slate-50 py-12 px-4">
+      <div className="max-w-md w-full p-8 bg-white rounded-xl border border-slate-200">
         <div className="text-center mb-8">
-          <h2 className="text-2xl font-bold text-gray-900">Buat Password CMS</h2>
-          <p className="text-gray-500 text-sm mt-1">Akun baru Anda perlu password</p>
+          <h2 className="text-2xl font-bold text-slate-900">Buat Password CMS</h2>
+          <p className="text-slate-500 text-sm mt-1">Akun baru Anda perlu password</p>
         </div>
 
-        {error && <div className="mb-4 p-3 bg-red-100 text-red-700 rounded text-sm">{error}</div>}
+        {error && <div role="alert" className="mb-4 rounded-lg bg-rose-50 px-3 py-2.5 text-sm text-rose-700">{error}</div>}
 
         {success ? (
           <div className="text-center">
-            <div className="mb-4 p-4 bg-green-100 text-green-700 rounded text-sm">
+            <div role="status" className="mb-4 rounded-lg bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
               Password berhasil dibuat! Mengalihkan ke halaman login...
             </div>
-            <Link href="/scp/login"
-              className="inline-block py-2.5 px-6 rounded-md text-sm font-medium text-white bg-primary-800 hover:bg-primary-900">
+            <Link href="/scp/login" className={authButton}>
               Login Sekarang
             </Link>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label className="block text-sm font-medium text-gray-700">Password Baru</label>
+              <label className="block text-sm font-medium text-slate-700">Password Baru</label>
               <input type="password" required value={password} onChange={e => setPassword(e.target.value)}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                className={inputClass}
                 placeholder="Minimal 6 karakter" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700">Konfirmasi Password</label>
+              <label className="block text-sm font-medium text-slate-700">Konfirmasi Password</label>
               <input type="password" required value={confirm} onChange={e => setConfirm(e.target.value)}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                className={inputClass}
                 placeholder="Ketik ulang password" />
             </div>
-            <button type="submit" disabled={loading}
-              className="w-full py-2.5 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-800 hover:bg-primary-900 disabled:opacity-50">
+            <button type="submit" disabled={loading} className={authButton}>
               {loading ? "Memproses..." : "Buat Password"}
             </button>
           </form>
         )}
 
-        <p className="text-center text-sm text-gray-500 mt-6">
+        <p className="text-center text-sm text-slate-500 mt-6">
           <Link href="/scp/login" className="text-primary-700 hover:underline">&larr; Kembali ke Login</Link>
         </p>
       </div>

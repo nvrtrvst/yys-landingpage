@@ -6,14 +6,14 @@ export const inputClass =
 export const selectClass =
   "h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-700 focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-100";
 
-export const btnPrimary =
-  "inline-flex items-center justify-center gap-2 rounded-lg bg-primary-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-700 disabled:opacity-50";
+export const focusRing =
+  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2";
 
-export const btnSecondary =
-  "inline-flex items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 disabled:opacity-50";
+export const btnPrimary = `inline-flex items-center justify-center gap-2 rounded-lg bg-primary-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-700 disabled:opacity-50 ${focusRing}`;
 
-export const btnGhostDanger =
-  "inline-flex items-center justify-center gap-1.5 rounded-md px-2 py-1.5 text-xs font-medium text-rose-600 transition-colors hover:bg-rose-50 disabled:opacity-50";
+export const btnSecondary = `inline-flex items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 disabled:opacity-50 ${focusRing}`;
+
+export const btnGhostDanger = `inline-flex items-center justify-center gap-1.5 rounded-md px-2 py-1.5 text-xs font-medium text-rose-600 transition-colors hover:bg-rose-50 disabled:opacity-50 ${focusRing}`;
 
 export const thClass = "px-4 py-3 text-xs font-semibold text-slate-500";
 
