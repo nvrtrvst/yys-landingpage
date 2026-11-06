@@ -10,7 +10,6 @@ import { syncPpdbSubmission } from '@/lib/sim-sync';
 
 const updateSchema = z.object({
   status: z.enum(['Proses', 'Diterima', 'Ditolak', 'pending', 'diterima', 'ditolak']).nullable().optional(),
-  sync_status: z.enum(['pending', 'success', 'failed']).nullable().optional(),
   is_printed: z.boolean().optional(),
 });
 
@@ -33,10 +32,6 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
       if (dbStatus === 'ditolak' || dbStatus === 'Ditolak') dbStatus = 'Ditolak';
       updates.push('status = ?');
       values.push(dbStatus);
-    }
-    if (data.sync_status) {
-      updates.push('sync_status = ?');
-      values.push(data.sync_status);
     }
     if (data.is_printed !== undefined) {
       updates.push('is_printed = ?');
