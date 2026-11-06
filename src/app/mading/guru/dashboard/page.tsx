@@ -9,7 +9,7 @@ import Link from "next/link";
 import { toast } from "sonner";
 import {
   Clock, CheckCircle2, FileEdit, XCircle, User, Tag, LogOut,
-  Inbox, Eye, AlertCircle, Send, Trash2, Megaphone, X,
+  Inbox, Eye, AlertCircle, Trash2, Megaphone, X,
 } from "lucide-react";
 import { StatusBadge } from "@/components/mading/StatusBadge";
 

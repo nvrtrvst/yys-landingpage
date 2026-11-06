@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import Link from "next/link";
 import {
-  FileText, Clock, CheckCircle2, FileEdit, XCircle, User, Tag,
+  FileText, Clock, CheckCircle2, FileEdit, XCircle, Tag,
   LogOut, Plus, Inbox, Eye, Send, AlertCircle, ArrowLeft,
 } from "lucide-react";
 import { StatusBadge } from "@/components/mading/StatusBadge";

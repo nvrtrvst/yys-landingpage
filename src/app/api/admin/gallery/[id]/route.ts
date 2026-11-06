@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { handleApiError } from '@/lib/errors';
 import pool from '@/lib/db';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
@@ -43,7 +44,7 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
     revalidatePath('/galeri');
     return NextResponse.json({ success: true });
   } catch (error) {
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return handleApiError(error);
   }
 }
 
@@ -71,6 +72,6 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     revalidatePath('/galeri');
     return NextResponse.json({ success: true });
   } catch (error) {
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return handleApiError(error);
   }
 }

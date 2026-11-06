@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
-import { FileText, Clock, CheckCircle, XCircle, Users, UserCheck, BarChart3, Eye, EyeOff } from "lucide-react";
+import { FileText, Clock, CheckCircle, XCircle, Users, BarChart3, Eye } from "lucide-react";
 
 interface MadingUnitStat {
   id: number;

@@ -50,7 +50,7 @@ export default async function MassPrintPPDBPage({ searchParams }: { searchParams
 
   const placeholders = idArray.map(() => '?').join(',');
   const [studentRows] = await pool.execute<RowDataPacket[]>(
-    `SELECT * FROM ppdb_submissions WHERE id IN (${placeholders})`,
+    `SELECT id, unit, registration_number, student_name, birth_place, birth_date, address, phone, previous_school, student_photo, email FROM ppdb_submissions WHERE id IN (${placeholders})`,
     idArray
   );
 

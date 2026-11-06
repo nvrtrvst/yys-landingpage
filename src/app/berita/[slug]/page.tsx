@@ -13,7 +13,7 @@ export default async function BeritaDetailPage({ params }: { params: Promise<{ s
   
   try {
     const [rows] = await pool.execute<RowDataPacket[]>(
-      "SELECT * FROM news WHERE slug = ? AND status = 'published'",
+      "SELECT title, content, image_url, published_at, created_at FROM news WHERE slug = ? AND status = 'published'",
       [(await params).slug]
     );
     

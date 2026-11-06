@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server';
+import { handleApiError } from '@/lib/errors';
 import pool from '@/lib/db';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
-import { RowDataPacket } from 'mysql2';
 
 const programSchema = z.object({
   title: z.string().min(1),
@@ -35,7 +35,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     revalidatePath('/');
     return NextResponse.json({ success: true });
   } catch (error) {
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return handleApiError(error);
   }
 }
 
@@ -50,6 +50,6 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
     revalidatePath('/');
     return NextResponse.json({ success: true });
   } catch (error) {
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return handleApiError(error);
   }
 }

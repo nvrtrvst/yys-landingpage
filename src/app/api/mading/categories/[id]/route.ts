@@ -11,7 +11,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     if (!["superadmin", "admin", "admin_unit"].includes(session.user.role))
       return NextResponse.json({ error: "Dilarang" }, { status: 403 });
 
-    const [rows] = await pool.execute<RowDataPacket[]>("SELECT * FROM mading_categories WHERE id = ?", [(await params).id]);
+    const [rows] = await pool.execute<RowDataPacket[]>("SELECT id, name, description, unit_id, is_active, order_index FROM mading_categories WHERE id = ?", [(await params).id]);
     if (rows.length === 0) return NextResponse.json({ error: "Tidak ditemukan" }, { status: 404 });
     const cat = rows[0] as RowDataPacket;
     if (session.user.role === "admin_unit" && (cat.unit_id !== session.user.unit_id || cat.unit_id === null))
@@ -36,7 +36,7 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
     if (!["superadmin", "admin", "admin_unit"].includes(session.user.role))
       return NextResponse.json({ error: "Dilarang" }, { status: 403 });
 
-    const [rows] = await pool.execute<RowDataPacket[]>("SELECT * FROM mading_categories WHERE id = ?", [(await params).id]);
+    const [rows] = await pool.execute<RowDataPacket[]>("SELECT id, name, description, unit_id, is_active, order_index FROM mading_categories WHERE id = ?", [(await params).id]);
     if (rows.length === 0) return NextResponse.json({ error: "Tidak ditemukan" }, { status: 404 });
     const cat = rows[0] as RowDataPacket;
     if (session.user.role === "admin_unit" && cat.unit_id !== session.user.unit_id)

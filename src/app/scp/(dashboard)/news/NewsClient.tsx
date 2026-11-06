@@ -2,7 +2,6 @@
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { RichTextEditor } from "@/components/admin/RichTextEditor";
-import Link from "next/link";
 
 type News = { id: number, title: string, slug: string, content: string, image_url: string, category: string, status: string, published_at: string, created_at: string };
 
@@ -217,7 +216,7 @@ export function NewsClient() {
                   <tr key={row.id} className="border-b hover:bg-gray-50">
                     <td className="p-4">
                       <div className="w-16 h-12 bg-gray-200 rounded overflow-hidden flex items-center justify-center">
-                        {row.image_url ? <img src={row.image_url} className="w-full h-full object-cover" /> : <span className="text-xs text-gray-400">No Img</span>}
+                        {row.image_url ? <img src={row.image_url} alt={row.title} className="w-full h-full object-cover" /> : <span className="text-xs text-gray-400">No Img</span>}
                       </div>
                     </td>
                     <td className="p-4 font-semibold text-gray-900">{row.title}</td>

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { handleApiError } from '@/lib/errors';
 import pool from '@/lib/db';
 import { ResultSetHeader } from 'mysql2';
 import { getServerSession } from 'next-auth';
@@ -26,7 +27,7 @@ export async function GET(request: Request) {
     const [rows] = await pool.execute('SELECT p.id, p.title, p.description, p.image_url, p.order_index, p.status, u.name as unit_name FROM programs p LEFT JOIN units u ON p.unit_id = u.id ORDER BY p.order_index ASC, p.id DESC');
     return NextResponse.json(rows);
   } catch (error) {
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return handleApiError(error);
   }
 }
 
@@ -51,6 +52,6 @@ export async function POST(request: Request) {
     revalidatePath('/');
     return NextResponse.json({ success: true, id: insertResult.insertId });
   } catch (error) {
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return handleApiError(error);
   }
 }

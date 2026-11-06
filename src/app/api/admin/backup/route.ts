@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { handleApiError } from '@/lib/errors';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { checkRateLimit, getClientIp } from '@/lib/rate-limit';
@@ -66,6 +67,6 @@ export async function GET(request: Request) {
 
   } catch(error: unknown) {
     console.error('Database backup error:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return handleApiError(error);
   }
 }

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { handleApiError } from '@/lib/errors';
 import pool from '@/lib/db';
 import { ResultSetHeader } from 'mysql2';
 import { getServerSession } from 'next-auth';
@@ -29,7 +30,7 @@ export async function GET(request: Request) {
     const [rows] = await pool.execute('SELECT id, title, image_url, created_at FROM galleries ORDER BY created_at DESC');
     return NextResponse.json(rows);
   } catch (error) {
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return handleApiError(error);
   }
 }
 
@@ -60,6 +61,6 @@ export async function POST(request: Request) {
     
     return NextResponse.json({ success: true, id: insertResult.insertId });
   } catch (error) {
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return handleApiError(error);
   }
 }

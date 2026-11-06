@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
-import { Save, Settings, ToggleLeft, ToggleRight } from "lucide-react";
+import { Save, Settings, ToggleRight } from "lucide-react";
 
 interface MadingUnitSetting {
   id: number;

@@ -12,7 +12,7 @@ export default async function PPDBPage() {
   let faqs: RowDataPacket[] = [];
   try {
     const [rows] = await pool.execute<RowDataPacket[]>(
-      "SELECT * FROM faqs ORDER BY order_index ASC, id ASC"
+      "SELECT id, question, answer, category FROM faqs ORDER BY order_index ASC, id ASC"
     );
     faqs = rows;
   } catch (error) {

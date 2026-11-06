@@ -3,7 +3,6 @@ import { Footer } from "@/components/Footer";
 import pool from "@/lib/db";
 import { RowDataPacket } from "mysql2";
 import Link from "next/link";
-import Image from "next/image";
 
 const PAGE_SIZE = 9;
 
@@ -20,7 +19,7 @@ export default async function BeritaPage({
   let total = 0;
   try {
     const [rows] = await pool.execute<RowDataPacket[]>(
-      `SELECT * FROM news WHERE status = 'published' ORDER BY published_at DESC LIMIT ${PAGE_SIZE} OFFSET ${offset}`
+      `SELECT id, title, slug, content, image_url, published_at, created_at FROM news WHERE status = 'published' ORDER BY published_at DESC LIMIT ${PAGE_SIZE} OFFSET ${offset}`
     );
     newsList = rows;
     const [count] = await pool.execute<RowDataPacket[]>(

@@ -1,12 +1,8 @@
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth";
 import pool from "@/lib/db";
 import { RowDataPacket } from "mysql2";
 import Link from "next/link";
 
 export default async function AdminDashboard() {
-  const session = await getServerSession(authOptions);
-
   const [
     [ppdbRows],
     [newsRows],

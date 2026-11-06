@@ -15,7 +15,7 @@ export default async function UnitDetailPage({ params }: { params: Promise<{ slu
   try {
     const slug = (await params).slug;
     const [unitRows] = await pool.execute<RowDataPacket[]>(
-      "SELECT * FROM units WHERE slug = ? AND status = 'active'",
+      "SELECT id, name, image_url, description, address, phone, content FROM units WHERE slug = ? AND status = 'active'",
       [slug]
     );
     
@@ -26,7 +26,7 @@ export default async function UnitDetailPage({ params }: { params: Promise<{ slu
     unit = unitRows[0];
 
     const [programRows] = await pool.execute<RowDataPacket[]>(
-      "SELECT * FROM programs WHERE unit_id = ? AND status = 'active' ORDER BY order_index ASC",
+      "SELECT id, title, description, image_url FROM programs WHERE unit_id = ? AND status = 'active' ORDER BY order_index ASC",
       [unit.id]
     );
     programs = programRows;

@@ -56,6 +56,7 @@ export default function PPDBPage() {
       fetchData();
     }, 300);
     return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchData already depends on these filters
   }, [filterUnit, filterStatus, filterPrint, search]);
 
   const updateStatus = async (id: number, status: string) => {

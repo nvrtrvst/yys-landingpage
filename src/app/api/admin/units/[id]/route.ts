@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { handleApiError } from '@/lib/errors';
 import pool from '@/lib/db';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
@@ -26,11 +27,11 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     const role = session.user.role;
     if (role !== 'superadmin' && role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
-    const [rows] = await pool.execute<RowDataPacket[]>('SELECT * FROM units WHERE id = ?', [(await params).id]);
+    const [rows] = await pool.execute<RowDataPacket[]>('SELECT id, name, slug, description, content, image_url, logo_url, primary_color, secondary_color, order_index, address, phone, tagline, map_coordinates, status, mading_enabled, created_at FROM units WHERE id = ?', [(await params).id]);
     if (rows.length === 0) return NextResponse.json({ error: 'Not Found' }, { status: 404 });
     return NextResponse.json(rows[0]);
   } catch (error) {
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return handleApiError(error);
   }
 }
 
@@ -56,7 +57,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     return NextResponse.json({ success: true });
   } catch(error: unknown) {
     if ((error as { code?: string }).code === 'ER_DUP_ENTRY') return NextResponse.json({ error: 'Slug sudah digunakan.' }, { status: 400 });
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return handleApiError(error);
   }
 }
 
@@ -75,6 +76,6 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
     revalidatePath('/');
     return NextResponse.json({ success: true });
   } catch (error) {
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return handleApiError(error);
   }
 }

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { handleApiError } from '@/lib/errors';
 import pool from '@/lib/db';
 import { ResultSetHeader } from 'mysql2';
 import { getServerSession } from 'next-auth';
@@ -30,7 +31,7 @@ export async function GET(request: Request) {
     return NextResponse.json(rows);
   } catch (error) {
     console.error(error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return handleApiError(error);
   }
 }
 
@@ -61,6 +62,6 @@ export async function POST(request: Request) {
     if ((error as { code?: string }).code === 'ER_DUP_ENTRY') {
       return NextResponse.json({ error: 'Slug sudah digunakan. Silakan gunakan slug lain.' }, { status: 400 });
     }
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return handleApiError(error);
   }
 }

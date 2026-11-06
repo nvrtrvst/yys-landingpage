@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
 import pool from "@/lib/db";
 import { RowDataPacket } from "mysql2";
-import { getServerSession } from "next-auth";
-import { getServerSessionDual, madingAuthOptions } from "@/lib/mading-auth";
+import { getServerSessionDual } from "@/lib/mading-auth";
 import { canAccessUnit, createAuditLog } from "@/lib/mading";
 import { getClientIp } from "@/lib/rate-limit";
 import { revalidatePath } from "next/cache";
@@ -42,7 +41,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     const session = await getServerSessionDual();
     if (!session) return NextResponse.json({ error: "Tidak terautentikasi" }, { status: 401 });
 
-    const [rows] = await pool.execute<RowDataPacket[]>("SELECT * FROM mading_posts WHERE id = ?", [(await params).id]);
+    const [rows] = await pool.execute<RowDataPacket[]>("SELECT id, title, content, cover_image, category_id, author_id, unit_id, status FROM mading_posts WHERE id = ?", [(await params).id]);
     if (rows.length === 0) return NextResponse.json({ error: "Tidak ditemukan" }, { status: 404 });
     const post = rows[0] as RowDataPacket;
 
@@ -70,7 +69,7 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
     const session = await getServerSessionDual();
     if (!session) return NextResponse.json({ error: "Tidak terautentikasi" }, { status: 401 });
 
-    const [rows] = await pool.execute<RowDataPacket[]>("SELECT * FROM mading_posts WHERE id = ?", [(await params).id]);
+    const [rows] = await pool.execute<RowDataPacket[]>("SELECT id, title, content, cover_image, category_id, author_id, unit_id, status FROM mading_posts WHERE id = ?", [(await params).id]);
     if (rows.length === 0) return NextResponse.json({ error: "Tidak ditemukan" }, { status: 404 });
     const post = rows[0] as RowDataPacket;
 

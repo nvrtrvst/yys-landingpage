@@ -1,6 +1,5 @@
 import pool from "@/lib/db";
 import { RowDataPacket } from "mysql2";
-import Image from "next/image";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
@@ -16,7 +15,7 @@ export default async function PrintPPDBPage({ params }: { params: Promise<{ id: 
   const { id } = await params;
 
   const [studentRows] = await pool.execute<RowDataPacket[]>(
-    'SELECT * FROM ppdb_submissions WHERE id = ?',
+    'SELECT id, unit, registration_number, student_name, birth_place, birth_date, address, phone, previous_school, student_photo, email FROM ppdb_submissions WHERE id = ?',
     [id]
   );
   if (studentRows.length === 0) {

@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
-import { Search, Shield, Filter } from "lucide-react";
+import { Search, Shield } from "lucide-react";
 
 interface AuditLog {
   id: number;

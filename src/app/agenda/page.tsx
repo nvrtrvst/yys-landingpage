@@ -9,7 +9,7 @@ export default async function AgendaPage() {
   let events: RowDataPacket[] = [];
   try {
     const [rows] = await pool.execute<RowDataPacket[]>(
-      "SELECT * FROM events WHERE start_date >= CURRENT_DATE() ORDER BY start_date ASC LIMIT 30"
+      "SELECT id, title, description, start_date, end_date, location, image_url FROM events WHERE start_date >= CURRENT_DATE() ORDER BY start_date ASC LIMIT 30"
     );
     events = rows;
   } catch (error) {

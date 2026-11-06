@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Toaster } from "sonner";
 import Link from "next/link";
-import { Home, SettingsIcon, Users, Image as ImageIcon, MessageSquare, Calendar, FileText, LogOut, UserCog, UserCircle, Database, Menu, X, Newspaper, FolderOpen, BarChart3, Shield } from "lucide-react";
+import { Home, SettingsIcon, Users, Image as ImageIcon, MessageSquare, Calendar, FileText, UserCog, UserCircle, Database, Menu, X, Newspaper, FolderOpen, BarChart3, Shield } from "lucide-react";
 import { SignOutButton } from "./SignOutButton";
 
 const navItems = [
