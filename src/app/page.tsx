@@ -11,6 +11,7 @@ import { TiltCard } from "@/components/parallax/TiltCard";
 import DOMPurify from "isomorphic-dompurify";
 import { Award } from "lucide-react";
 import { LogoFill } from "@/components/LogoFill";
+import { SectionMotif } from "@/components/SectionMotif";
 
 // Revalidate page every 60 seconds (ISR)
 export const revalidate = 60;
@@ -132,18 +133,10 @@ export default async function Home() {
 
       {/* TENTANG SECTION — Heritage */}
       <section id="tentang" className="py-16 md:py-24 bg-gray-50 relative overflow-hidden">
-        {/* 8-point star motif */}
-        <svg className="absolute -top-10 -right-10 w-[28rem] h-[28rem] text-primary-500 opacity-[0.05] pointer-events-none" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
-          <rect x="15" y="15" width="70" height="70" />
-          <rect x="15" y="15" width="70" height="70" transform="rotate(45 50 50)" />
-          <circle cx="50" cy="50" r="33" />
-        </svg>
-        <svg className="absolute -bottom-16 -left-12 w-80 h-80 text-accent-default opacity-[0.06] pointer-events-none" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
-          <rect x="15" y="15" width="70" height="70" />
-          <rect x="15" y="15" width="70" height="70" transform="rotate(45 50 50)" />
-        </svg>
+        <SectionMotif className="-top-10 -right-10 h-80 w-80 opacity-[0.09] md:h-[28rem] md:w-[28rem]" />
+        <SectionMotif className="-bottom-16 -left-12 h-64 w-64 opacity-[0.10] md:h-80 md:w-80" />
 
-        <div className="container mx-auto px-4 md:px-6 relative">
+        <div className="container mx-auto px-4 md:px-6 relative z-10">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-start">
             {/* Left: narrative */}
             <div className="lg:col-span-7">
@@ -228,8 +221,10 @@ export default async function Home() {
       </section>
 
       {/* UNIT SEKOLAH SECTION */}
-      <section id="unit" className="py-16 md:py-24 bg-white">
-        <div className="container mx-auto px-4 md:px-6">
+      <section id="unit" className="relative overflow-hidden py-16 md:py-24 bg-white">
+        <SectionMotif className="-right-24 -top-24 h-56 w-56 opacity-[0.07] md:h-[28rem] md:w-[28rem]" />
+        <SectionMotif className="-bottom-20 -left-20 h-52 w-52 opacity-[0.06] md:h-80 md:w-80" />
+        <div className="container mx-auto px-4 md:px-6 relative z-10">
           <div className="text-center max-w-3xl mx-auto mb-14">
             <div className="flex items-center justify-center gap-3 mb-3">
               <span className="h-px w-8 bg-primary-500"></span>
@@ -306,8 +301,10 @@ export default async function Home() {
 
       {/* BERITA & KEGIATAN TERBARU */}
       {news.length > 0 && (
-        <section className="py-16 md:py-24 bg-white">
-          <div className="container mx-auto px-4 md:px-6">
+        <section className="relative overflow-hidden py-16 md:py-24 bg-white">
+          <SectionMotif className="-left-16 -top-16 h-56 w-56 opacity-[0.07] md:h-80 md:w-80" />
+          <SectionMotif className="-bottom-20 -right-20 h-52 w-52 opacity-[0.06] md:h-[22rem] md:w-[22rem]" />
+          <div className="container mx-auto px-4 md:px-6 relative z-10">
             <div className="flex justify-between items-end mb-12">
               <div>
                 <h2 className="font-serif text-4xl font-bold text-gray-900 mb-4">Berita & Kegiatan</h2>
