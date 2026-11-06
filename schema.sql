@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS users (
     email VARCHAR(255) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
     role VARCHAR(50) DEFAULT 'admin',
+    permissions JSON NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -139,10 +140,17 @@ CREATE TABLE IF NOT EXISTS ppdb_submissions (
     synced_at DATETIME,
     sync_attempts INT NOT NULL DEFAULT 0,
     sync_external_id VARCHAR(64),
+    updated_at DATETIME NULL,
+    updated_by_name VARCHAR(255) NULL,
+    last_action VARCHAR(50) NULL,
 
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     INDEX idx_sync_status (sync_status),
-    INDEX idx_status_sync (status, sync_status)
+    INDEX idx_status_sync (status, sync_status),
+    INDEX idx_ppdb_created_at (created_at),
+    INDEX idx_ppdb_unit (unit),
+    INDEX idx_ppdb_status (status),
+    INDEX idx_ppdb_updated_at (updated_at)
 );
 
 CREATE TABLE IF NOT EXISTS ppdb_sync_logs (
@@ -153,6 +161,22 @@ CREATE TABLE IF NOT EXISTS ppdb_sync_logs (
     message TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     INDEX idx_sync_log_ppdb (ppdb_id)
+);
+
+CREATE TABLE IF NOT EXISTS ppdb_activity_logs (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    ppdb_id INT NOT NULL,
+    action VARCHAR(50) NOT NULL,
+    field VARCHAR(50) NULL,
+    old_value VARCHAR(255) NULL,
+    new_value VARCHAR(255) NULL,
+    note TEXT NULL,
+    actor_id INT NULL,
+    actor_name VARCHAR(255) NOT NULL,
+    actor_role VARCHAR(50) NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_ppdb_activity_ppdb (ppdb_id, created_at),
+    INDEX idx_ppdb_activity_created (created_at)
 );
 
 -- 11. Contact Messages

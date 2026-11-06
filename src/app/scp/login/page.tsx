@@ -5,13 +5,7 @@ import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
 import { focusRing, inputClass } from "@/components/scp/ui";
-
-const roleRedirect: Record<string, string> = {
-  superadmin: "/scp",
-  admin: "/scp",
-  admin_unit: "/scp",
-  editor: "/scp",
-};
+import { firstAccessibleHref } from "@/lib/modules";
 
 const authButton = `inline-flex w-full items-center justify-center gap-2 rounded-lg bg-primary-700 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-primary-800 disabled:opacity-50 ${focusRing}`;
 
@@ -45,7 +39,8 @@ export default function LoginPage() {
       const sessionRes = await fetch("/api/auth/session");
       const session = await sessionRes.json();
       const role = session?.user?.role || "";
-      router.push(roleRedirect[role] || "/scp");
+      const target = firstAccessibleHref(role, session?.user?.permissions ?? []);
+      router.push(target ?? "/scp/no-access");
     }
   };
 

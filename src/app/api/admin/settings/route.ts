@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { handleApiError } from '@/lib/errors';
 import pool from '@/lib/db';
-import { requireRole } from '@/lib/api-auth';
+import { requireModuleOrRoles } from '@/lib/api-auth';
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
 import { rateLimitOrThrow, getClientIp } from '@/lib/rate-limit';
@@ -11,11 +11,12 @@ const settingsSchema = z.record(z.string(), z.string().nullable());
 
 export async function GET(request: Request) {
   try {
-    await requireRole(['superadmin', 'admin']);
+    const session = await requireModuleOrRoles('ppdb_settings', ['superadmin', 'admin']);
 
     const [rows] = await pool.execute<RowDataPacket[]>('SELECT setting_key, setting_value FROM settings');
     const settings: Record<string, string> = {};
     rows.forEach(row => {
+      if (session.user.role === 'petugas' && !row.setting_key.startsWith('ppdb_')) return;
       settings[row.setting_key] = row.setting_value;
     });
 
@@ -28,7 +29,7 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    await requireRole(['superadmin', 'admin']);
+    const session = await requireModuleOrRoles('ppdb_settings', ['superadmin', 'admin']);
 
     rateLimitOrThrow(`admin:settings:${getClientIp(request)}`, 10, 60 * 1000);
 
@@ -40,6 +41,13 @@ export async function POST(request: Request) {
     }
 
     const updates = result.data;
+    if (
+      session.user.role === 'petugas' &&
+      Object.keys(updates).some((key) => !key.startsWith('ppdb_'))
+    ) {
+      return NextResponse.json({ error: 'Dilarang' }, { status: 403 });
+    }
+
     const connection = await pool.getConnection();
     try {
       await connection.beginTransaction();

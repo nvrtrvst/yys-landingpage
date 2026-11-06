@@ -8,12 +8,14 @@ import { sendNewUserEmail } from '@/lib/mailer';
 import { RowDataPacket, ResultSetHeader } from 'mysql2';
 import { rateLimitOrThrow, getClientIp } from '@/lib/rate-limit';
 import { z } from 'zod';
+import { sanitizePetugasPermissions } from '@/lib/modules';
 
 const createUserSchema = z.object({
   name: z.string().min(2).max(100),
   email: z.string().email().max(255),
   password: z.string().min(8).max(128),
-  role: z.enum(['superadmin', 'admin', 'editor', 'admin_unit', 'guru', 'siswa']),
+  role: z.enum(['superadmin', 'admin', 'editor', 'admin_unit', 'guru', 'siswa', 'petugas']),
+  permissions: z.array(z.string()).optional(),
 });
 
 export async function GET(request: Request) {
@@ -21,7 +23,7 @@ export async function GET(request: Request) {
     await requireRole(['superadmin', 'admin']);
 
     const [rows] = await pool.execute<RowDataPacket[]>(
-      'SELECT id, name, email, role, created_at FROM users ORDER BY created_at DESC'
+      'SELECT id, name, email, role, permissions, created_at FROM users ORDER BY created_at DESC'
     );
     
     return NextResponse.json(rows);
@@ -33,7 +35,7 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    await requireRole(['superadmin', 'admin']);
+    const session = await requireRole(['superadmin', 'admin']);
 
     rateLimitOrThrow(`admin:users:${getClientIp(request)}`, 10, 60 * 1000);
 
@@ -43,6 +45,12 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Data tidak valid', details: valid.error.issues }, { status: 400 });
     }
     const { name, email, password, role } = valid.data;
+    const permissions =
+      role === 'petugas' ? JSON.stringify(sanitizePetugasPermissions(valid.data.permissions)) : null;
+
+    if (role === 'superadmin' && session.user.role !== 'superadmin') {
+      return NextResponse.json({ error: 'Dilarang' }, { status: 403 });
+    }
 
     const [existing] = await pool.execute<RowDataPacket[]>(
       'SELECT id FROM users WHERE email = ?',
@@ -57,8 +65,8 @@ export async function POST(request: Request) {
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
     await pool.execute(
-      'INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)',
-      [name, email, hashedPassword, role]
+      'INSERT INTO users (name, email, password, role, permissions) VALUES (?, ?, ?, ?, ?)',
+      [name, email, hashedPassword, role, permissions]
     );
 
     // Generate a one-time setup token and email a "set password" link

@@ -8,6 +8,30 @@ import { useParams } from "next/navigation";
 import { Clock, CheckCircle2, XCircle, RefreshCw, Printer } from "lucide-react";
 import { useSyncPolling } from "@/lib/use-sync-polling";
 
+interface PPDBActivity {
+  id: number;
+  action: string;
+  field: string | null;
+  old_value: string | null;
+  new_value: string | null;
+  note: string | null;
+  actor_name: string;
+  actor_role: string | null;
+  created_at: string;
+}
+
+const activityLabels: Record<string, string> = {
+  created: "Pendaftaran baru",
+  status_changed: "Ubah status",
+  printed: "Cetak kartu",
+  print_reset: "Batalkan tanda cetak",
+  card_emailed: "Kirim kartu via email",
+  sync_auto: "Sinkronisasi otomatis",
+  sync_manual: "Sinkronisasi manual",
+  sync_failed: "Sinkronisasi gagal",
+  deactivated: "Nonaktifkan di SIM",
+};
+
 interface PPDBDetail {
   id: number;
   registration_number: string;
@@ -42,6 +66,7 @@ interface PPDBDetail {
 export default function PPDBDetailPage() {
   const { id } = useParams();
   const [data, setData] = useState<PPDBDetail | null>(null);
+  const [history, setHistory] = useState<PPDBActivity[]>([]);
   const [loading, setLoading] = useState(true);
   const initialAttemptsRef = useRef(0);
 
@@ -57,11 +82,21 @@ export default function PPDBDetailPage() {
 
   const { polling: syncing, start: startSyncPolling } = useSyncPolling(pollSync);
 
+  const fetchHistory = async () => {
+    try {
+      const res = await fetch(`/api/admin/ppdb/${id}/history`);
+      if (res.ok) setHistory(await res.json());
+    } catch {
+      // History is supplementary; leave the current list on failure.
+    }
+  };
+
   const fetchData = async () => {
     try {
       const res = await fetch(`/api/admin/ppdb/${id}`);
       if (!res.ok) throw new Error("Data tidak ditemukan");
       setData(await res.json());
+      await fetchHistory();
     } catch(err: unknown) {
       toast.error((getErrorMessage(err)));
     } finally {
@@ -73,9 +108,15 @@ export default function PPDBDetailPage() {
     let cancelled = false;
     (async () => {
       try {
-        const res = await fetch(`/api/admin/ppdb/${id}`);
+        const [res, historyRes] = await Promise.all([
+          fetch(`/api/admin/ppdb/${id}`),
+          fetch(`/api/admin/ppdb/${id}/history`),
+        ]);
         if (!res.ok) throw new Error("Data tidak ditemukan");
-        if (!cancelled) setData(await res.json());
+        if (!cancelled) {
+          setData(await res.json());
+          if (historyRes.ok) setHistory(await historyRes.json());
+        }
       } catch(err: unknown) {
         toast.error((getErrorMessage(err)));
       } finally {
@@ -283,6 +324,42 @@ export default function PPDBDetailPage() {
             )}
           </div>
         </div>
+      </div>
+
+      <div className="mt-6 bg-white rounded-xl border border-slate-200 p-6">
+        <h3 className="text-lg font-semibold text-slate-900">Riwayat Aktivitas</h3>
+        <p className="mt-1 text-sm text-slate-500">Setiap perubahan dan persetujuan dicatat beserta pelakunya.</p>
+
+        {history.length === 0 ? (
+          <p className="mt-4 text-sm text-slate-500">Belum ada perubahan tercatat.</p>
+        ) : (
+          <ol className="mt-5 space-y-5 border-l border-slate-200 pl-5">
+            {history.map((item) => (
+              <li key={item.id} className="relative">
+                <span className="absolute -left-[1.4rem] top-1.5 h-2 w-2 rounded-full bg-slate-300" aria-hidden="true" />
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                  <span className="text-sm font-semibold text-slate-900">{item.actor_name}</span>
+                  <span className="text-sm text-slate-500">{activityLabels[item.action] ?? item.action}</span>
+                  {item.old_value || item.new_value ? (
+                    <span className="text-xs text-slate-500">
+                      {item.old_value ?? "—"} &rarr; {item.new_value ?? "—"}
+                    </span>
+                  ) : null}
+                </div>
+                {item.note ? <p className="mt-1 text-sm text-slate-600">{item.note}</p> : null}
+                <p className="mt-1 text-xs text-slate-400" title={new Date(item.created_at).toLocaleString("id-ID")}>
+                  {new Date(item.created_at).toLocaleString("id-ID", {
+                    day: "numeric",
+                    month: "short",
+                    year: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </p>
+              </li>
+            ))}
+          </ol>
+        )}
       </div>
     </div>
   );

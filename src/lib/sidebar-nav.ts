@@ -15,12 +15,14 @@ import {
   Shield,
   type LucideIcon,
 } from "lucide-react";
+import type { ModuleKey } from "@/lib/modules";
 
 export interface NavItem {
   name: string;
   href: string;
   icon: LucideIcon;
   roles: string[];
+  module: ModuleKey;
 }
 
 export interface NavSection {
@@ -33,45 +35,46 @@ export const dashboardItem: NavItem = {
   href: "/scp",
   icon: Home,
   roles: ["superadmin", "admin", "editor"],
+  module: "dashboard",
 };
 
 export const navSections: NavSection[] = [
   {
     label: "PPDB",
     items: [
-      { name: "Data Pendaftar", href: "/scp/ppdb", icon: Users, roles: ["superadmin", "admin"] },
-      { name: "Pengaturan PPDB", href: "/scp/ppdb/settings", icon: SettingsIcon, roles: ["superadmin", "admin"] },
+      { name: "Data Pendaftar", href: "/scp/ppdb", icon: Users, roles: ["superadmin", "admin"], module: "ppdb_data" },
+      { name: "Pengaturan PPDB", href: "/scp/ppdb/settings", icon: SettingsIcon, roles: ["superadmin", "admin"], module: "ppdb_settings" },
     ],
   },
   {
     label: "Konten",
     items: [
-      { name: "Units & Program", href: "/scp/units", icon: Users, roles: ["superadmin", "admin"] },
-      { name: "Berita & Artikel", href: "/scp/news", icon: FileText, roles: ["superadmin", "admin", "editor"] },
-      { name: "Galeri", href: "/scp/gallery", icon: ImageIcon, roles: ["superadmin", "admin", "editor"] },
-      { name: "Testimoni & FAQ", href: "/scp/testimonials", icon: MessageSquare, roles: ["superadmin", "admin"] },
-      { name: "Agenda", href: "/scp/events", icon: Calendar, roles: ["superadmin", "admin", "editor"] },
+      { name: "Units & Program", href: "/scp/units", icon: Users, roles: ["superadmin", "admin"], module: "units" },
+      { name: "Berita & Artikel", href: "/scp/news", icon: FileText, roles: ["superadmin", "admin", "editor"], module: "news" },
+      { name: "Galeri", href: "/scp/gallery", icon: ImageIcon, roles: ["superadmin", "admin", "editor"], module: "gallery" },
+      { name: "Testimoni & FAQ", href: "/scp/testimonials", icon: MessageSquare, roles: ["superadmin", "admin"], module: "testimonials" },
+      { name: "Agenda", href: "/scp/events", icon: Calendar, roles: ["superadmin", "admin", "editor"], module: "events" },
     ],
   },
   {
     label: "Mading",
     items: [
-      { name: "Dashboard", href: "/scp/mading", icon: BarChart3, roles: ["superadmin", "admin", "admin_unit", "guru"] },
-      { name: "Tulisan & Moderasi", href: "/scp/mading/posts", icon: Newspaper, roles: ["superadmin", "admin", "admin_unit", "guru"] },
-      { name: "Kategori", href: "/scp/mading/categories", icon: FolderOpen, roles: ["superadmin", "admin", "admin_unit"] },
-      { name: "Komentar", href: "/scp/mading/comments", icon: Shield, roles: ["superadmin", "admin", "admin_unit"] },
-      { name: "Pengguna Mading", href: "/scp/mading/users", icon: UserCircle, roles: ["superadmin", "admin", "admin_unit"] },
-      { name: "Audit Log", href: "/scp/mading/audit-logs", icon: Shield, roles: ["superadmin", "admin", "admin_unit"] },
-      { name: "Pengaturan Mading", href: "/scp/mading/settings", icon: SettingsIcon, roles: ["superadmin", "admin", "admin_unit"] },
+      { name: "Dashboard", href: "/scp/mading", icon: BarChart3, roles: ["superadmin", "admin", "admin_unit", "guru"], module: "mading_dashboard" },
+      { name: "Tulisan & Moderasi", href: "/scp/mading/posts", icon: Newspaper, roles: ["superadmin", "admin", "admin_unit", "guru"], module: "mading_posts" },
+      { name: "Kategori", href: "/scp/mading/categories", icon: FolderOpen, roles: ["superadmin", "admin", "admin_unit"], module: "mading_categories" },
+      { name: "Komentar", href: "/scp/mading/comments", icon: Shield, roles: ["superadmin", "admin", "admin_unit"], module: "mading_comments" },
+      { name: "Pengguna Mading", href: "/scp/mading/users", icon: UserCircle, roles: ["superadmin", "admin", "admin_unit"], module: "mading_users" },
+      { name: "Audit Log", href: "/scp/mading/audit-logs", icon: Shield, roles: ["superadmin", "admin", "admin_unit"], module: "mading_audit" },
+      { name: "Pengaturan Mading", href: "/scp/mading/settings", icon: SettingsIcon, roles: ["superadmin", "admin", "admin_unit"], module: "mading_settings" },
     ],
   },
   {
     label: "Sistem",
     items: [
-      { name: "Manajemen Pengguna", href: "/scp/users", icon: UserCog, roles: ["superadmin", "admin"] },
-      { name: "Pengaturan Global", href: "/scp/settings", icon: SettingsIcon, roles: ["superadmin", "admin"] },
-      { name: "Backup Database", href: "/scp/backup", icon: Database, roles: ["superadmin", "admin"] },
-      { name: "Profil Saya", href: "/scp/profile", icon: UserCircle, roles: ["superadmin", "admin", "editor"] },
+      { name: "Manajemen Pengguna", href: "/scp/users", icon: UserCog, roles: ["superadmin", "admin"], module: "users" },
+      { name: "Pengaturan Global", href: "/scp/settings", icon: SettingsIcon, roles: ["superadmin", "admin"], module: "settings" },
+      { name: "Backup Database", href: "/scp/backup", icon: Database, roles: ["superadmin", "admin"], module: "backup" },
+      { name: "Profil Saya", href: "/scp/profile", icon: UserCircle, roles: ["superadmin", "admin", "editor"], module: "profile" },
     ],
   },
 ];

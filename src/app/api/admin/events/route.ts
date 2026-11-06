@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { handleApiError } from '@/lib/errors';
 import pool from '@/lib/db';
 import { ResultSetHeader } from 'mysql2';
-import { requireRole } from '@/lib/api-auth';
+import { requireModuleOrRoles } from '@/lib/api-auth';
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
 import DOMPurify from "isomorphic-dompurify";
@@ -18,7 +18,7 @@ const eventSchema = z.object({
 
 export async function GET(request: Request) {
   try {
-    await requireRole(['superadmin', 'admin', 'editor']);
+    await requireModuleOrRoles('events', ['superadmin', 'admin', 'editor']);
 
     const [rows] = await pool.execute('SELECT id, title, description, start_date, end_date, location, image_url FROM events ORDER BY start_date ASC');
     return NextResponse.json(rows);
@@ -29,7 +29,7 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    await requireRole(['superadmin', 'admin', 'editor']);
+    await requireModuleOrRoles('events', ['superadmin', 'admin', 'editor']);
 
     const body = await request.json();
     const result = eventSchema.safeParse(body);

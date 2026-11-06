@@ -18,6 +18,9 @@ interface PPDBRow {
   sync_warning: string | null;
   sync_attempts: number;
   created_at: string;
+  updated_at: string | null;
+  updated_by_name: string | null;
+  last_action: string | null;
   is_printed: boolean;
   birth_place: string;
   birth_date: string;
@@ -37,6 +40,7 @@ export default function PPDBPage() {
   const [filterStatus, setFilterStatus] = useState("");
   const [filterPrint, setFilterPrint] = useState("");
   const [filterSync, setFilterSync] = useState("");
+  const [filterIncomplete, setFilterIncomplete] = useState("");
   const [search, setSearch] = useState("");
   const [pollingIds, setPollingIds] = useState<Set<number>>(new Set());
   const pollTimersRef = useRef<Record<number, ReturnType<typeof setInterval>>>({});
@@ -50,6 +54,7 @@ export default function PPDBPage() {
       if (filterStatus) query.append("status", filterStatus);
       if (filterPrint) query.append("print_status", filterPrint);
       if (filterSync) query.append("sync", filterSync);
+      if (filterIncomplete === "1") query.append("incomplete", "1");
       if (search) query.append("search", search);
 
       const res = await fetch(`/api/admin/ppdb?${query.toString()}`);
@@ -68,7 +73,21 @@ export default function PPDBPage() {
     }, 300);
     return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchData already depends on these filters
-  }, [filterUnit, filterStatus, filterPrint, filterSync, search]);
+  }, [filterUnit, filterStatus, filterPrint, filterSync, filterIncomplete, search]);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const status = params.get("status");
+    const print = params.get("print_status");
+    const sync = params.get("sync");
+    const incomplete = params.get("incomplete");
+    // URL params are client-only; apply them once after mount.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (status) setFilterStatus(status);
+    if (print) setFilterPrint(print);
+    if (sync) setFilterSync(sync);
+    if (incomplete) setFilterIncomplete(incomplete);
+  }, []);
 
   useEffect(() => {
     return () => {
@@ -303,7 +322,7 @@ export default function PPDBPage() {
       </div>
 
       <div className="mb-6 rounded-xl border border-slate-200 bg-white p-4">
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-[1.6fr_1fr_1fr_1fr_1fr]">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1fr_1fr_1fr]">
           <div>
             <label className="mb-1 block text-xs font-medium text-slate-500">Cari</label>
             <div className="relative">
@@ -374,6 +393,18 @@ export default function PPDBPage() {
               <option value="failed">Gagal</option>
             </select>
           </div>
+
+          <div>
+            <label className="mb-1 block text-xs font-medium text-slate-500">Berkas</label>
+            <select
+              value={filterIncomplete}
+              onChange={(e) => setFilterIncomplete(e.target.value)}
+              className="h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-700 focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-100"
+            >
+              <option value="">Semua</option>
+              <option value="1">Belum lengkap</option>
+            </select>
+          </div>
         </div>
       </div>
 
@@ -386,6 +417,7 @@ export default function PPDBPage() {
                 <th className="px-4 py-3 text-xs font-semibold text-slate-500">Nama Siswa</th>
                 <th className="px-4 py-3 text-xs font-semibold text-slate-500">Unit & Kelas</th>
                 <th className="px-4 py-3 text-xs font-semibold text-slate-500">Tanggal Daftar</th>
+                <th className="px-4 py-3 text-xs font-semibold text-slate-500">Terakhir diubah</th>
                 <th className="px-4 py-3 text-xs font-semibold text-slate-500">Status</th>
                 <th className="px-4 py-3 text-xs font-semibold text-slate-500">Sync</th>
                 <th className="px-4 py-3 text-right text-xs font-semibold text-slate-500">Aksi</th>
@@ -394,14 +426,14 @@ export default function PPDBPage() {
             <tbody className="divide-y divide-slate-100">
               {loading ? (
                 <tr>
-                  <td colSpan={7} className="px-4 py-16 text-center">
+                  <td colSpan={8} className="px-4 py-16 text-center">
                     <Loader2 className="mx-auto h-5 w-5 animate-spin text-slate-400" />
                     <p className="mt-2 text-sm text-slate-500">Memuat data pendaftar…</p>
                   </td>
                 </tr>
               ) : data.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-4 py-16 text-center">
+                  <td colSpan={8} className="px-4 py-16 text-center">
                     <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-slate-100">
                       <Inbox className="h-6 w-6 text-slate-400" />
                     </div>
@@ -433,6 +465,25 @@ export default function PPDBPage() {
                         month: "short",
                         year: "numeric",
                       })}
+                    </td>
+                    <td className="px-4 py-3 text-xs">
+                      {row.updated_by_name ? (
+                        <div>
+                          <p className="font-medium text-slate-700">{row.updated_by_name}</p>
+                          {row.updated_at ? (
+                            <p className="text-slate-400">
+                              {new Date(row.updated_at).toLocaleDateString("id-ID", {
+                                day: "numeric",
+                                month: "short",
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })}
+                            </p>
+                          ) : null}
+                        </div>
+                      ) : (
+                        <span className="text-slate-400">—</span>
+                      )}
                     </td>
                     <td className="px-4 py-3">
                       <select

@@ -1,12 +1,12 @@
 import { NextResponse } from 'next/server';
 import { handleApiError } from '@/lib/errors';
 import pool from '@/lib/db';
-import { requireRole } from '@/lib/api-auth';
+import { requireModuleOrRoles } from '@/lib/api-auth';
 import { rateLimitOrThrow, getClientIp } from '@/lib/rate-limit';
 
 export async function GET(request: Request) {
   try {
-    await requireRole(['superadmin', 'admin']);
+    await requireModuleOrRoles('ppdb_data', ['superadmin', 'admin']);
 
     rateLimitOrThrow(`admin:ppdb:${getClientIp(request)}`, 20, 60 * 1000);
 
@@ -18,7 +18,8 @@ export async function GET(request: Request) {
     let query = `SELECT 
       id, registration_number, status, sync_status, sync_warning, sync_attempts, unit, grade, major, is_printed,
       student_name, nisn, birth_place, birth_date, gender, phone, email,
-      previous_school, father_name, mother_name, created_at
+      previous_school, father_name, mother_name, created_at,
+      updated_at, updated_by_name, last_action
       FROM ppdb_submissions WHERE 1=1`;
     const params: string[] = [];
 
@@ -63,6 +64,16 @@ export async function GET(request: Request) {
       if (!allowedSync.includes(sync)) return NextResponse.json({ error: 'Invalid sync filter' }, { status: 400 });
       query += ' AND sync_status = ?';
       params.push(sync);
+    }
+    if (url.searchParams.get('incomplete') === '1') {
+      query += ` AND (
+        nisn IS NULL OR nisn = '' OR
+        email IS NULL OR email = '' OR
+        student_photo IS NULL OR
+        kk_document IS NULL OR
+        birth_cert_document IS NULL OR
+        diploma_document IS NULL
+      )`;
     }
 
     query += ' ORDER BY created_at DESC LIMIT 500'; // cap result size

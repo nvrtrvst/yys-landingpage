@@ -14,15 +14,16 @@ export default async function AdminLayout({
     redirect("/scp/login");
   }
 
-  const allowed = ["superadmin", "admin", "admin_unit", "editor"];
+  const allowed = ["superadmin", "admin", "admin_unit", "editor", "petugas"];
   if (!allowed.includes(session.user.role)) {
     redirect("/");
   }
 
   const userRole = session.user.role || "editor";
+  const userPermissions = session.user.permissions ?? [];
 
   return (
-    <SidebarLayout userRole={userRole} userName={session.user?.name}>
+    <SidebarLayout userRole={userRole} userPermissions={userPermissions} userName={session.user?.name}>
       {children}
     </SidebarLayout>
   );

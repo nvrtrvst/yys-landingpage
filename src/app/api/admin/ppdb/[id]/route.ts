@@ -1,12 +1,13 @@
 import { NextResponse } from 'next/server';
 import { handleApiError, logError } from '@/lib/errors';
 import pool from '@/lib/db';
-import { requireRole } from '@/lib/api-auth';
+import { requireModuleOrRoles } from '@/lib/api-auth';
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
 import { RowDataPacket } from 'mysql2';
 import { sendPPDBStatusEmail } from '@/lib/mailer';
 import { syncPpdbSubmission, deactivatePpdbStudent } from '@/lib/sim-sync';
+import { actorFromSession, logPpdbActivity } from '@/lib/ppdb-activity';
 
 const updateSchema = z.object({
   status: z.enum(['Proses', 'Diterima', 'Ditolak', 'pending', 'diterima', 'ditolak']).nullable().optional(),
@@ -15,7 +16,8 @@ const updateSchema = z.object({
 
 export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    await requireRole(['superadmin', 'admin']);
+    const session = await requireModuleOrRoles('ppdb_data', ['superadmin', 'admin']);
+    const actor = actorFromSession(session);
 
     const body = await request.json();
     const result = updateSchema.safeParse(body);
@@ -27,10 +29,11 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     let newStatus: string | null = null;
 
     const [currentRows] = await pool.execute<RowDataPacket[]>(
-      'SELECT status, sync_status FROM ppdb_submissions WHERE id = ?',
+      'SELECT status, sync_status, is_printed FROM ppdb_submissions WHERE id = ?',
       [(await params).id]
     );
     const previous = currentRows[0];
+    if (!previous) return NextResponse.json({ error: 'Not Found' }, { status: 404 });
 
     if (data.status) {
       let dbStatus = data.status;
@@ -49,6 +52,32 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     if (updates.length > 0) {
       values.push((await params).id);
       await pool.execute(`UPDATE ppdb_submissions SET ${updates.join(', ')} WHERE id = ?`, values);
+
+      const idNum = Number((await params).id);
+      if (data.status && previous?.status !== newStatus) {
+        await logPpdbActivity({
+          ppdbId: idNum,
+          action: 'status_changed',
+          field: 'status',
+          oldValue: previous?.status ?? null,
+          newValue: newStatus,
+          actor,
+        });
+      }
+      if (data.is_printed !== undefined) {
+        const oldPrinted = previous?.is_printed ? '1' : '0';
+        const newPrinted = data.is_printed ? '1' : '0';
+        if (oldPrinted !== newPrinted) {
+          await logPpdbActivity({
+            ppdbId: idNum,
+            action: data.is_printed ? 'printed' : 'print_reset',
+            field: 'is_printed',
+            oldValue: oldPrinted,
+            newValue: newPrinted,
+            actor,
+          });
+        }
+      }
 
       if (data.status) {
         try {
@@ -71,9 +100,9 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 
     const idNum = Number((await params).id);
     if (newStatus === 'Diterima' && (previous?.status !== 'Diterima' || previous?.sync_status !== 'success')) {
-      void syncPpdbSubmission(idNum, { force: true }).catch((error) => logError(error, 'Auto sync PPDB'));
+      void syncPpdbSubmission(idNum, { force: true, actor, trigger: 'auto' }).catch((error) => logError(error, 'Auto sync PPDB'));
     } else if (previous?.status === 'Diterima' && newStatus !== null && newStatus !== 'Diterima') {
-      void deactivatePpdbStudent(idNum).catch((error) => logError(error, 'Deactivate PPDB'));
+      void deactivatePpdbStudent(idNum, actor).catch((error) => logError(error, 'Deactivate PPDB'));
     }
 
     revalidatePath('/scp/ppdb');
@@ -85,9 +114,9 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    await requireRole(['superadmin', 'admin']);
+    await requireModuleOrRoles('ppdb_data', ['superadmin', 'admin']);
 
-    const [rows] = await pool.execute<RowDataPacket[]>('SELECT id, registration_number, status, sync_status, unit, grade, major, student_name, nisn, nik, birth_place, birth_date, gender, religion, address, child_order, siblings_count, previous_school, is_pip, father_name, father_job, mother_name, mother_job, guardian_name, guardian_job, phone, email, student_photo, kk_document, birth_cert_document, diploma_document, created_at, is_printed, sync_warning, sync_error, synced_at, sync_attempts, sync_external_id FROM ppdb_submissions WHERE id = ?', [(await params).id]);
+    const [rows] = await pool.execute<RowDataPacket[]>('SELECT id, registration_number, status, sync_status, unit, grade, major, student_name, nisn, nik, birth_place, birth_date, gender, religion, address, child_order, siblings_count, previous_school, is_pip, father_name, father_job, mother_name, mother_job, guardian_name, guardian_job, phone, email, student_photo, kk_document, birth_cert_document, diploma_document, created_at, is_printed, updated_at, updated_by_name, last_action, sync_warning, sync_error, synced_at, sync_attempts, sync_external_id FROM ppdb_submissions WHERE id = ?', [(await params).id]);
     if (rows.length === 0) return NextResponse.json({ error: 'Not Found' }, { status: 404 });
 
     return NextResponse.json(rows[0]);

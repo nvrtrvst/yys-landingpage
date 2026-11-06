@@ -25,6 +25,7 @@ declare module "next-auth" {
     user: {
       id: string;
       role: string;
+      permissions: string[];
       unit_id: number | null;
       name?: string | null;
       email?: string | null;
@@ -33,6 +34,7 @@ declare module "next-auth" {
   }
   interface User {
     role: string;
+    permissions: string[];
     unit_id: number | null;
     photo?: string | null;
   }
@@ -41,6 +43,7 @@ declare module "next-auth" {
 declare module "next-auth/jwt" {
   interface JWT {
     role: string;
+    permissions: string[];
     unit_id: number | null;
     photo?: string | null;
   }
@@ -102,6 +105,7 @@ export const madingAuthOptions: NextAuthOptions = {
             email: user.email,
             name: user.name,
             role: user.role,
+            permissions: [],
             unit_id: user.unit_id,
             photo: user.photo,
           };
@@ -118,6 +122,7 @@ export const madingAuthOptions: NextAuthOptions = {
       if (user) {
         token.role = user.role ?? token.role;
         token.id = user.id ?? token.id;
+        token.permissions = user.permissions ?? token.permissions ?? [];
         token.unit_id = user.unit_id ?? token.unit_id;
         token.photo = (user as { photo?: string | null }).photo ?? token.photo ?? null;
       }
@@ -139,6 +144,7 @@ export const madingAuthOptions: NextAuthOptions = {
       if (token && session.user) {
         session.user.role = token.role as string;
         session.user.id = token.id as string;
+        session.user.permissions = (token.permissions as string[]) ?? [];
         session.user.unit_id = token.unit_id as number | null;
         session.user.photo = (token.photo as string | null) ?? null;
       }

@@ -5,19 +5,40 @@ import { requireRole } from '@/lib/api-auth';
 import bcrypt from 'bcrypt';
 import { RowDataPacket, ResultSetHeader } from 'mysql2';
 import { rateLimitOrThrow, getClientIp } from '@/lib/rate-limit';
+import { sanitizePetugasPermissions } from '@/lib/modules';
 
 export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    await requireRole(['superadmin', 'admin']);
+    const session = await requireRole(['superadmin', 'admin']);
 
     rateLimitOrThrow(`admin:user-edit:${getClientIp(request)}`, 20, 60 * 1000);
 
     const { id } = await params;
-    const { name, email, password, role } = await request.json();
+    const { name, email, password, role, permissions: rawPermissions } = await request.json();
 
     if (!name || !email || !role) {
       return NextResponse.json({ error: 'Nama, Email, dan Role wajib diisi' }, { status: 400 });
     }
+
+    const allowedRoles = ['superadmin', 'admin', 'editor', 'admin_unit', 'guru', 'siswa', 'petugas'];
+    if (!allowedRoles.includes(role)) {
+      return NextResponse.json({ error: 'Role tidak valid' }, { status: 400 });
+    }
+
+    const [targetRows] = await pool.execute<RowDataPacket[]>('SELECT role FROM users WHERE id = ?', [id]);
+    if (targetRows.length === 0) {
+      return NextResponse.json({ error: 'Pengguna tidak ditemukan' }, { status: 404 });
+    }
+
+    if (
+      session.user.role !== 'superadmin' &&
+      (role === 'superadmin' || targetRows[0].role === 'superadmin')
+    ) {
+      return NextResponse.json({ error: 'Dilarang' }, { status: 403 });
+    }
+
+    const permissions =
+      role === 'petugas' ? JSON.stringify(sanitizePetugasPermissions(rawPermissions)) : null;
 
     const [existing] = await pool.execute<RowDataPacket[]>(
       'SELECT id FROM users WHERE email = ? AND id != ?',
@@ -32,13 +53,13 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
       const saltRounds = 10;
       const hashedPassword = await bcrypt.hash(password, saltRounds);
       await pool.execute(
-        'UPDATE users SET name = ?, email = ?, password = ?, role = ? WHERE id = ?',
-        [name, email, hashedPassword, role, id]
+        'UPDATE users SET name = ?, email = ?, password = ?, role = ?, permissions = ? WHERE id = ?',
+        [name, email, hashedPassword, role, permissions, id]
       );
     } else {
       await pool.execute(
-        'UPDATE users SET name = ?, email = ?, role = ? WHERE id = ?',
-        [name, email, role, id]
+        'UPDATE users SET name = ?, email = ?, role = ?, permissions = ? WHERE id = ?',
+        [name, email, role, permissions, id]
       );
     }
 

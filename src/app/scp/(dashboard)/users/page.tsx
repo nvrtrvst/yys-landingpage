@@ -7,21 +7,34 @@ import { toast } from "sonner";
 import { PageHeader } from "@/components/scp/PageHeader";
 import { LoadingState } from "@/components/scp/LoadingState";
 import { btnPrimary, inputClass, selectClass } from "@/components/scp/ui";
+import { GRANTABLE_MODULES } from "@/lib/modules";
 
 interface AdminUser {
   id: number;
   name: string;
   email: string;
   role: string;
+  permissions?: string | string[] | null;
   unit_id: number | null;
   created_at?: string;
+}
+
+function parsePermissions(value: AdminUser["permissions"]): string[] {
+  if (Array.isArray(value)) return value;
+  if (!value) return [];
+  try {
+    const parsed: unknown = JSON.parse(value);
+    return Array.isArray(parsed) ? parsed.filter((item): item is string => typeof item === "string") : [];
+  } catch {
+    return [];
+  }
 }
 
 export default function UsersPage() {
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
-  const [formData, setFormData] = useState<{ id: number | string; name: string; email: string; password: string; role: string }>({ id: "", name: "", email: "", password: "", role: "editor" });
+  const [formData, setFormData] = useState<{ id: number | string; name: string; email: string; password: string; role: string; permissions: string[] }>({ id: "", name: "", email: "", password: "", role: "editor", permissions: [] });
   const [isEditing, setIsEditing] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -100,13 +113,13 @@ export default function UsersPage() {
   };
 
   const openModalForAdd = () => {
-    setFormData({ id: "", name: "", email: "", password: "", role: "editor" });
+    setFormData({ id: "", name: "", email: "", password: "", role: "editor", permissions: [] });
     setIsEditing(false);
     setShowModal(true);
   };
 
   const openModalForEdit = (user: AdminUser) => {
-    setFormData({ id: user.id, name: user.name, email: user.email, password: "", role: user.role });
+    setFormData({ id: user.id, name: user.name, email: user.email, password: "", role: user.role, permissions: parsePermissions(user.permissions) });
     setIsEditing(true);
     setShowModal(true);
   };
@@ -178,12 +191,72 @@ export default function UsersPage() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Hak Akses (Role)</label>
-                <select required value={formData.role} onChange={e => setFormData({...formData, role: e.target.value})} className={selectClass}>
+                <select
+                  required
+                  value={formData.role}
+                  onChange={e => setFormData({ ...formData, role: e.target.value, permissions: e.target.value === "petugas" ? formData.permissions : [] })}
+                  className={selectClass}
+                >
                   <option value="editor">Editor (Hanya update Berita/Mading)</option>
+                  <option value="petugas">Petugas (Modul dipilih)</option>
                   <option value="admin">Admin (Akses Penuh)</option>
                   <option value="superadmin">Superadmin (Akses Penuh + Sistem)</option>
                 </select>
               </div>
+
+              {formData.role === "petugas" && (
+                <div className="rounded-lg border border-slate-200 p-4">
+                  <div className="mb-3 flex items-center justify-between">
+                    <p className="text-sm font-medium text-slate-700">Modul yang dapat diakses</p>
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setFormData({ ...formData, permissions: GRANTABLE_MODULES.map((module) => module.key) })}
+                        className="text-xs font-medium text-primary-700 hover:underline"
+                      >
+                        Pilih semua
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setFormData({ ...formData, permissions: [] })}
+                        className="text-xs font-medium text-slate-500 hover:underline"
+                      >
+                        Kosongkan
+                      </button>
+                    </div>
+                  </div>
+                  <div className="space-y-3">
+                    {["PPDB", "Konten", "Sistem"].map((group) => {
+                      const modules = GRANTABLE_MODULES.filter((module) => module.group === group);
+                      if (modules.length === 0) return null;
+                      return (
+                        <div key={group}>
+                          <p className="mb-1 text-xs font-semibold text-slate-500">{group}</p>
+                          <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
+                            {modules.map((module) => (
+                              <label key={module.key} className="flex items-center gap-2 text-sm text-slate-700">
+                                <input
+                                  type="checkbox"
+                                  checked={formData.permissions.includes(module.key)}
+                                  onChange={(e) => {
+                                    const next = e.target.checked
+                                      ? [...formData.permissions, module.key]
+                                      : formData.permissions.filter((key) => key !== module.key);
+                                    setFormData({ ...formData, permissions: next });
+                                  }}
+                                  className="h-4 w-4 rounded border-slate-300 text-primary-600 focus:ring-primary-500"
+                                />
+                                {module.label}
+                              </label>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
               <div className="flex justify-end gap-3 pt-4">
                 <button type="button" onClick={() => setShowModal(false)} className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50">Batal</button>
                 <button type="submit" disabled={isSubmitting} className={btnPrimary}>

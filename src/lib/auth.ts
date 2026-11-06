@@ -5,6 +5,7 @@ import pool from "@/lib/db";
 import { RowDataPacket } from "mysql2";
 import { checkRateLimit, getClientIpFromHeaders } from "@/lib/rate-limit";
 import { logError } from "@/lib/errors";
+import { MODULE_KEYS, type ModuleKey } from "@/lib/modules";
 
 interface UserRow extends RowDataPacket {
   id: number;
@@ -12,9 +13,23 @@ interface UserRow extends RowDataPacket {
   email: string;
   password: string;
   role: string;
+  permissions: string | null;
   unit_id: number | null;
   failed_attempts: number;
   locked_until: Date | null;
+}
+
+function parsePermissions(raw: string | null): string[] {
+  if (!raw) return [];
+  try {
+    const parsed: unknown = typeof raw === "string" ? JSON.parse(raw) : raw;
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter(
+      (value): value is string => typeof value === "string" && MODULE_KEYS.includes(value as ModuleKey)
+    );
+  } catch {
+    return [];
+  }
 }
 
 declare module "next-auth" {
@@ -22,6 +37,7 @@ declare module "next-auth" {
     user: {
       id: string;
       role: string;
+      permissions: string[];
       unit_id: number | null;
       name?: string | null;
       email?: string | null;
@@ -30,6 +46,7 @@ declare module "next-auth" {
   }
   interface User {
     role: string;
+    permissions: string[];
     unit_id: number | null;
     photo?: string | null;
   }
@@ -38,6 +55,8 @@ declare module "next-auth" {
 declare module "next-auth/jwt" {
   interface JWT {
     role: string;
+    permissions: string[];
+    permissionsUpdatedAt: number;
     unit_id: number | null;
     photo?: string | null;
   }
@@ -61,17 +80,15 @@ export const authOptions: NextAuthOptions = {
 
         const ip = getClientIpFromHeaders((req as { headers?: unknown }).headers as Headers | Record<string, string | string[]> | undefined);
 
-        // 1. Rate limit per IP (throttle global)
         const ipLimit = checkRateLimit(`login:ip:${ip}`, 10, 60 * 1000);
         if (!ipLimit.allowed) return null;
 
-        // 2. Rate limit per email (blokir 1 akun)
         const emailLimit = checkRateLimit(`login:email:${credentials.email.toLowerCase()}`, 5, 15 * 60 * 1000);
         if (!emailLimit.allowed) return null;
 
         try {
           const [rows] = await pool.execute<UserRow[]>(
-            "SELECT id, name, email, password, role, unit_id, failed_attempts, locked_until FROM users WHERE email = ?",
+            "SELECT id, name, email, password, role, permissions, unit_id, failed_attempts, locked_until FROM users WHERE email = ?",
             [credentials.email]
           );
 
@@ -81,7 +98,6 @@ export const authOptions: NextAuthOptions = {
             return null;
           }
 
-          // 3. Cek lockout
           if (user.locked_until && new Date(user.locked_until).getTime() > Date.now()) {
             throw new Error("LOCKED");
           }
@@ -104,10 +120,9 @@ export const authOptions: NextAuthOptions = {
             return null;
           }
 
-          // 4. Tolak guru/siswa — mereka pakai /mading/login
+          // Guru/siswa memakai /mading/login.
           if (["guru", "siswa"].includes(user.role)) return null;
 
-          // 5. Sukses — reset lockout
           await pool.execute(
             "UPDATE users SET failed_attempts = 0, locked_until = NULL WHERE id = ?",
             [user.id]
@@ -118,6 +133,7 @@ export const authOptions: NextAuthOptions = {
             email: user.email,
             name: user.name,
             role: user.role,
+            permissions: parsePermissions(user.permissions),
             unit_id: user.unit_id,
           };
         } catch (error) {
@@ -136,13 +152,39 @@ export const authOptions: NextAuthOptions = {
         token.role = user.role;
         token.id = user.id;
         token.unit_id = user.unit_id;
+        token.permissions = user.permissions ?? [];
+        token.permissionsUpdatedAt = Date.now();
       }
+
+      // Keep petugas permissions fresh without a DB query on every request.
+      if (token.role === "petugas") {
+        const lastRefresh = Number(token.permissionsUpdatedAt || 0);
+        if (Date.now() - lastRefresh > 5 * 60 * 1000) {
+          try {
+            const [rows] = await pool.execute<RowDataPacket[]>(
+              "SELECT role, permissions, unit_id FROM users WHERE id = ?",
+              [token.id]
+            );
+            const fresh = rows[0];
+            if (fresh) {
+              token.role = fresh.role;
+              token.permissions = parsePermissions(fresh.permissions);
+              token.unit_id = fresh.unit_id;
+            }
+          } catch (error) {
+            logError(error, "SCP permission refresh");
+          }
+          token.permissionsUpdatedAt = Date.now();
+        }
+      }
+
       return token;
     },
     async session({ session, token }) {
       if (token && session.user) {
         session.user.role = token.role as string;
         session.user.id = token.id as string;
+        session.user.permissions = (token.permissions as string[]) ?? [];
         session.user.unit_id = token.unit_id as number | null;
       }
       return session;

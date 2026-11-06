@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { RowDataPacket } from "mysql2";
+import { RowDataPacket, ResultSetHeader } from "mysql2";
 import pool from "@/lib/db";
 import { sendPPDBSingleEmail } from "@/lib/mailer";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
+import { logPpdbActivity, PUBLIC_ACTOR } from "@/lib/ppdb-activity";
 
 // Validation Schema
 const ppdbSchema = z.object({
@@ -67,24 +68,33 @@ export async function POST(req: Request) {
       const seq = (maxSeq + 1).toString().padStart(4, '0');
       const registration_number = `${prefix}${seq}`;
 
-      await connection.execute(
+      const [insertResult] = await connection.execute<ResultSetHeader>(
         `INSERT INTO ppdb_submissions (
           registration_number, unit, grade, major, student_name, nisn, nik, 
           birth_place, birth_date, gender, religion, address, child_order, siblings_count, 
           previous_school, is_pip, father_name, father_job, mother_name, mother_job, 
-          guardian_name, guardian_job, phone, email
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          guardian_name, guardian_job, phone, email,
+          updated_at, updated_by_name, last_action
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?, 'created')`,
         [
           registration_number, parsed.unit, parsed.grade, parsed.major || null, 
           parsed.student_name, parsed.nisn || null, parsed.nik || null, parsed.birth_place, parsed.birth_date, 
           parsed.gender, parsed.religion || null, parsed.address, parsed.child_order || null, parsed.siblings_count || null, 
           parsed.previous_school || null, parsed.is_pip || 'TIDAK', parsed.father_name, parsed.father_job || null, 
           parsed.mother_name, parsed.mother_job || null, parsed.guardian_name || null, 
-          parsed.guardian_job || null, parsed.phone, parsed.email || null
+          parsed.guardian_job || null, parsed.phone, parsed.email || null,
+          PUBLIC_ACTOR.name
         ]
       );
 
       await connection.commit();
+
+      await logPpdbActivity({
+        ppdbId: insertResult.insertId,
+        action: "created",
+        note: `${parsed.unit} - ${parsed.grade}`,
+        actor: PUBLIC_ACTOR,
+      });
 
       if (parsed.email) {
         sendPPDBSingleEmail({

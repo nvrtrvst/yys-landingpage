@@ -1,16 +1,18 @@
 import { NextResponse } from 'next/server';
 import { RowDataPacket } from 'mysql2';
 import pool from '@/lib/db';
-import { requireRole } from '@/lib/api-auth';
+import { requireModuleOrRoles } from '@/lib/api-auth';
 import { rateLimitOrThrow, getClientIp } from '@/lib/rate-limit';
 import { handleApiError } from '@/lib/errors';
 import { syncPpdbSubmission } from '@/lib/sim-sync';
+import { actorFromSession } from '@/lib/ppdb-activity';
 
 const MAX_BATCH = 20;
 
 export async function POST(request: Request) {
   try {
-    await requireRole(['superadmin', 'admin']);
+    const session = await requireModuleOrRoles('ppdb_data', ['superadmin', 'admin']);
+    const actor = actorFromSession(session);
     rateLimitOrThrow(`ppdb-sync-bulk:${getClientIp(request)}`, 5, 60_000);
 
     const body = await request.json().catch(() => ({}));
@@ -38,7 +40,7 @@ export async function POST(request: Request) {
     let failed = 0;
 
     for (const id of ids) {
-      const result = await syncPpdbSubmission(id, { force: true });
+      const result = await syncPpdbSubmission(id, { force: true, actor, trigger: 'manual' });
       if (result.skipped) skipped++;
       else if (result.ok) {
         if (result.alreadyExists) alreadyExists++;

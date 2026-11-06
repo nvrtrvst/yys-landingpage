@@ -7,6 +7,7 @@ import Link from "next/link";
 import { Menu, X, PanelLeftClose, PanelLeftOpen, ChevronDown, ChevronRight } from "lucide-react";
 import { SignOutButton } from "./SignOutButton";
 import { dashboardItem, findActiveHref, navSections, type NavItem } from "@/lib/sidebar-nav";
+import { MODULES_BY_KEY } from "@/lib/modules";
 
 const PREF_EVENT = "scp-sidebar-prefs";
 const COLLAPSED_KEY = "scp_sidebar_collapsed";
@@ -107,10 +108,12 @@ export function SidebarLayout({
   children,
   userName,
   userRole,
+  userPermissions,
 }: {
   children: React.ReactNode;
   userName?: string | null;
   userRole: string;
+  userPermissions: string[];
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const pathname = usePathname();
@@ -120,24 +123,38 @@ export function SidebarLayout({
   const collapsed = collapsedRaw === "1";
   const openSections = useMemo(() => parseSections(sectionsRaw), [sectionsRaw]);
 
+  const canSee = useMemo(
+    () =>
+      (item: NavItem) => {
+        if (userRole === "superadmin" || userRole === "admin") return true;
+        if (userRole === "petugas") {
+          if (item.module === "profile") return true;
+          return MODULES_BY_KEY[item.module].grantable && userPermissions.includes(item.module);
+        }
+        return item.roles.includes(userRole);
+      },
+    [userRole, userPermissions]
+  );
+
   const visibleSections = useMemo(
     () =>
       navSections
         .map((section) => ({
           ...section,
-          items: section.items.filter((item) => item.roles.includes(userRole)),
+          items: section.items.filter(canSee),
         }))
         .filter((section) => section.items.length > 0),
-    [userRole]
+    [canSee]
   );
 
-  const showDashboard = dashboardItem.roles.includes(userRole);
+  const showDashboard = canSee(dashboardItem);
   const visibleHrefs = useMemo(
     () => [
       ...(showDashboard ? [dashboardItem.href] : []),
       ...visibleSections.flatMap((section) => section.items.map((item) => item.href)),
     ],
     [showDashboard, visibleSections]
+
   );
   const activeHref = findActiveHref(pathname, visibleHrefs);
 

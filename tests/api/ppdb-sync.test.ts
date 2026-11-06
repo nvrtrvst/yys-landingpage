@@ -1,6 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-vi.mock('@/lib/api-auth', () => ({ requireRole: vi.fn().mockResolvedValue({}) }));
+vi.mock('@/lib/api-auth', () => ({
+  requireRole: vi.fn().mockResolvedValue({ user: { id: '1', name: 'Admin', role: 'admin', permissions: [] } }),
+  requireModuleOrRoles: vi.fn().mockResolvedValue({ user: { id: '1', name: 'Admin', role: 'admin', permissions: [] } }),
+}));
 vi.mock('@/lib/rate-limit', () => ({
   rateLimitOrThrow: vi.fn(),
   getClientIp: () => '1.1.1.1',
@@ -39,7 +42,11 @@ describe('POST /api/admin/ppdb/[id]/sync', () => {
 
     expect(response.status).toBe(200);
     await expect(response.json()).resolves.toEqual({ ok: true, warnings: [] });
-    expect(syncPpdbSubmission).toHaveBeenCalledWith(5, { force: true });
+    expect(syncPpdbSubmission).toHaveBeenCalledWith(5, {
+      force: true,
+      actor: { id: 1, name: 'Admin', role: 'admin' },
+      trigger: 'manual',
+    });
   });
 
   it('rejects an invalid id', async () => {

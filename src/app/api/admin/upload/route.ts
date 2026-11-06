@@ -1,12 +1,13 @@
 import { NextResponse } from 'next/server';
 import { getErrorMessage } from '@/lib/get-error-message';
 import { requireRole } from '@/lib/api-auth';
+import { hasModuleAccess, type ModuleKey } from '@/lib/modules';
 import { writeFile, mkdir } from 'fs/promises';
 import { join } from 'path';
 import crypto from 'crypto';
 import sharp from 'sharp';
 import { rateLimitOrThrow, getClientIp } from '@/lib/rate-limit';
-import { ValidationError, FileTooLargeError, handleApiError, logError } from '@/lib/errors';
+import { ValidationError, FileTooLargeError, ForbiddenError, handleApiError, logError } from '@/lib/errors';
 
 function checkMagicNumber(buffer: Buffer): boolean {
   // JPEG: FF D8 FF
@@ -30,7 +31,14 @@ const MAX_FILE_SIZE_DISPLAY = process.env.MAX_FILE_SIZE_DISPLAY || '10MB';
 
 export async function POST(request: Request) {
   try {
-    const session = await requireRole(['siswa', 'superadmin', 'admin', 'admin_unit', 'guru', 'editor']);
+    const session = await requireRole(['siswa', 'superadmin', 'admin', 'admin_unit', 'guru', 'editor', 'petugas']);
+    if (session.user.role === 'petugas') {
+      const uploadModules: ModuleKey[] = ['ppdb_data', 'units', 'news', 'gallery', 'testimonials', 'events'];
+      const allowed = uploadModules.some((module) =>
+        hasModuleAccess('petugas', session.user.permissions, module)
+      );
+      if (!allowed) throw new ForbiddenError();
+    }
     const isSiswa = session.user.role === "siswa";
 
     rateLimitOrThrow(`admin:upload:${getClientIp(request)}`, 20, 60 * 1000);

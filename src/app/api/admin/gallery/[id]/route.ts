@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { handleApiError } from '@/lib/errors';
 import pool from '@/lib/db';
-import { requireRole } from '@/lib/api-auth';
+import { requireModuleOrRoles } from '@/lib/api-auth';
 import { z } from 'zod';
 import fs from 'fs/promises';
 import path from 'path';
@@ -11,7 +11,7 @@ import { rateLimitOrThrow, getClientIp } from "@/lib/rate-limit";
 
 export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    await requireRole(['superadmin', 'admin', 'admin_unit', 'editor']);
+    await requireModuleOrRoles('gallery', ['superadmin', 'admin', 'admin_unit', 'editor']);
 
     rateLimitOrThrow(`gallery-write:${getClientIp(request)}`, 20, 60_000);
 
@@ -41,7 +41,7 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
 
 export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    await requireRole(['superadmin', 'admin', 'admin_unit', 'editor']);
+    await requireModuleOrRoles('gallery', ['superadmin', 'admin', 'admin_unit', 'editor']);
 
     rateLimitOrThrow(`gallery-write:${getClientIp(request)}`, 20, 60_000);
 

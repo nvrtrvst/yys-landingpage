@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { handleApiError } from '@/lib/errors';
 import pool from '@/lib/db';
 import { ResultSetHeader } from 'mysql2';
-import { requireRole } from '@/lib/api-auth';
+import { requireModuleOrRoles } from '@/lib/api-auth';
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
 import { rateLimitOrThrow, getClientIp } from "@/lib/rate-limit";
@@ -14,7 +14,7 @@ const gallerySchema = z.object({
 
 export async function GET(request: Request) {
   try {
-    await requireRole(['superadmin', 'admin', 'admin_unit', 'editor']);
+    await requireModuleOrRoles('gallery', ['superadmin', 'admin', 'admin_unit', 'editor']);
 
     rateLimitOrThrow(`gallery-get:${getClientIp(request)}`, 60, 60_000);
 
@@ -27,7 +27,7 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    await requireRole(['superadmin', 'admin', 'admin_unit', 'editor']);
+    await requireModuleOrRoles('gallery', ['superadmin', 'admin', 'admin_unit', 'editor']);
 
     rateLimitOrThrow(`gallery-write:${getClientIp(request)}`, 20, 60_000);
 

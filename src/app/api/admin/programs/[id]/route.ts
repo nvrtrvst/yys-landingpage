@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { handleApiError } from '@/lib/errors';
 import pool from '@/lib/db';
-import { requireRole } from '@/lib/api-auth';
+import { requireModuleOrRoles } from '@/lib/api-auth';
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
 
@@ -16,7 +16,7 @@ const programSchema = z.object({
 
 export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    await requireRole(['superadmin', 'admin']);
+    await requireModuleOrRoles('units', ['superadmin', 'admin']);
 
     const body = await request.json();
     const result = programSchema.safeParse(body);
@@ -37,7 +37,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 
 export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    await requireRole(['superadmin', 'admin']);
+    await requireModuleOrRoles('units', ['superadmin', 'admin']);
 
     await pool.execute('DELETE FROM programs WHERE id = ?', [(await params).id]);
     revalidatePath('/');

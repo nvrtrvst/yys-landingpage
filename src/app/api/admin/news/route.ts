@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { handleApiError } from '@/lib/errors';
-import { requireRole } from '@/lib/api-auth';
+import { requireModuleOrRoles } from '@/lib/api-auth';
 import pool from '@/lib/db';
 import { ResultSetHeader } from 'mysql2';
 import { z } from 'zod';
@@ -19,7 +19,7 @@ const newsSchema = z.object({
 
 export async function GET(request: Request) {
   try {
-    await requireRole(['superadmin', 'admin', 'editor']);
+    await requireModuleOrRoles('news', ['superadmin', 'admin', 'editor']);
 
     const [rows] = await pool.execute('SELECT id, title, slug, image_url, category, status, published_at, created_at FROM news ORDER BY created_at DESC');
     return NextResponse.json(rows);
@@ -30,7 +30,7 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    await requireRole(['superadmin', 'admin', 'editor']);
+    await requireModuleOrRoles('news', ['superadmin', 'admin', 'editor']);
 
     const body = await request.json();
     const result = newsSchema.safeParse(body);

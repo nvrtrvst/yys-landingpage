@@ -1,6 +1,7 @@
 import pool from "@/lib/db";
 import { RowDataPacket } from "mysql2";
 import { logError } from "@/lib/errors";
+import { logPpdbActivity, SYSTEM_ACTOR, type PpdBActor } from "@/lib/ppdb-activity";
 
 const KEU_URL = process.env.KEUANGAN_API_URL || "http://localhost:3000";
 const KEU_KEY = process.env.KEUANGAN_INTEGRATION_KEY;
@@ -36,18 +37,19 @@ async function logSync(ppdbId: number, action: string, status: string, message: 
   }
 }
 
-async function markFailed(id: number, message: string): Promise<SyncResult> {
+async function markFailed(id: number, message: string, actor: PpdBActor): Promise<SyncResult> {
   await pool.execute(
     "UPDATE ppdb_submissions SET sync_status = 'failed', sync_error = ?, sync_warning = NULL, sync_attempts = sync_attempts + 1 WHERE id = ?",
     [message.slice(0, 500), id]
   );
   await logSync(id, "sync", "failed", message.slice(0, 500));
+  await logPpdbActivity({ ppdbId: id, action: "sync_failed", note: message.slice(0, 500), actor });
   return { ok: false, error: message };
 }
 
 export async function syncPpdbSubmission(
   id: number,
-  opts: { force?: boolean } = {}
+  opts: { force?: boolean; actor?: PpdBActor; trigger?: "auto" | "manual" } = {}
 ): Promise<SyncResult> {
   const [rows] = await pool.execute<RowDataPacket[]>(
     `SELECT id, registration_number, status, sync_status, nisn, student_name, gender,
@@ -61,8 +63,10 @@ export async function syncPpdbSubmission(
   if (submission.sync_status === "success" && !opts.force) {
     return { ok: true, skipped: true };
   }
+  const actor = opts.actor ?? SYSTEM_ACTOR;
+
   if (!KEU_KEY) {
-    return markFailed(id, "Integrasi SIM Keuangan belum dikonfigurasi");
+    return markFailed(id, "Integrasi SIM Keuangan belum dikonfigurasi", actor);
   }
 
   const payload = {
@@ -97,7 +101,7 @@ export async function syncPpdbSubmission(
         typeof data?.error === "string" && data.error
           ? data.error
           : `SIM Keuangan menolak permintaan (HTTP ${res.status})`;
-      return markFailed(id, message);
+      return markFailed(id, message, actor);
     }
 
     const warnings: string[] = Array.isArray(data?.data?.warnings) ? data.data.warnings : [];
@@ -115,6 +119,12 @@ export async function syncPpdbSubmission(
       data?.alreadyExists ? "alreadyExists" : "success",
       warnings.length > 0 ? warnings.join(" ") : null
     );
+    await logPpdbActivity({
+      ppdbId: id,
+      action: opts.trigger === "manual" ? "sync_manual" : "sync_auto",
+      note: warnings.length > 0 ? warnings.join(" ") : data?.alreadyExists ? "Data sudah ada di SIM." : null,
+      actor,
+    });
 
     return {
       ok: true,
@@ -129,11 +139,11 @@ export async function syncPpdbSubmission(
       error instanceof Error && error.name === "TimeoutError"
         ? "SIM Keuangan tidak merespons (timeout)"
         : "Gagal menghubungi SIM Keuangan";
-    return markFailed(id, message);
+    return markFailed(id, message, actor);
   }
 }
 
-export async function deactivatePpdbStudent(id: number): Promise<void> {
+export async function deactivatePpdbStudent(id: number, actor: PpdBActor = SYSTEM_ACTOR): Promise<void> {
   if (!KEU_KEY) return;
 
   const [rows] = await pool.execute<RowDataPacket[]>(
@@ -162,9 +172,11 @@ export async function deactivatePpdbStudent(id: number): Promise<void> {
       ["Sinkronisasi dibatalkan karena status bukan Diterima. Siswa dinonaktifkan di SIM Keuangan.", id]
     );
     await logSync(id, "deactivate", "success", null);
+    await logPpdbActivity({ ppdbId: id, action: "deactivated", note: "Dinonaktifkan di SIM Keuangan.", actor });
   } catch (error) {
     logError(error, "SIM deactivate");
     const message = error instanceof Error ? error.message : "Gagal menonaktifkan siswa di SIM Keuangan";
     await logSync(id, "deactivate", "failed", message.slice(0, 500));
+    await logPpdbActivity({ ppdbId: id, action: "sync_failed", note: message.slice(0, 500), actor });
   }
 }

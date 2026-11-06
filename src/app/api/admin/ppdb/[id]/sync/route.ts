@@ -1,12 +1,13 @@
 import { NextResponse } from 'next/server';
-import { requireRole } from '@/lib/api-auth';
+import { requireModuleOrRoles } from '@/lib/api-auth';
 import { rateLimitOrThrow, getClientIp } from '@/lib/rate-limit';
 import { handleApiError } from '@/lib/errors';
 import { syncPpdbSubmission } from '@/lib/sim-sync';
+import { actorFromSession } from '@/lib/ppdb-activity';
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    await requireRole(['superadmin', 'admin']);
+    const session = await requireModuleOrRoles('ppdb_data', ['superadmin', 'admin']);
     rateLimitOrThrow(`ppdb-sync:${getClientIp(request)}`, 20, 60_000);
 
     const id = Number((await params).id);
@@ -14,7 +15,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       return NextResponse.json({ ok: false, error: 'ID tidak valid' }, { status: 400 });
     }
 
-    const result = await syncPpdbSubmission(id, { force: true });
+    const result = await syncPpdbSubmission(id, { force: true, actor: actorFromSession(session), trigger: 'manual' });
     return NextResponse.json(result);
   } catch (error) {
     return handleApiError(error);

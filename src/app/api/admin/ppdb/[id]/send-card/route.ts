@@ -1,13 +1,14 @@
 import { NextResponse } from 'next/server';
-import { requireRole } from '@/lib/api-auth';
+import { requireModuleOrRoles } from '@/lib/api-auth';
 import { handleApiError } from '@/lib/errors';
 import pool from '@/lib/db';
 import { RowDataPacket } from 'mysql2';
 import nodemailer from 'nodemailer';
+import { actorFromSession, logPpdbActivity } from '@/lib/ppdb-activity';
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    await requireRole(['superadmin', 'admin']);
+    const session = await requireModuleOrRoles('ppdb_data', ['superadmin', 'admin']);
 
     const { id } = await params;
     const body = await request.json();
@@ -52,6 +53,13 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     };
 
     await transporter.sendMail(mailOptions);
+
+    await logPpdbActivity({
+      ppdbId: Number(id),
+      action: 'card_emailed',
+      note: student.email,
+      actor: actorFromSession(session),
+    });
 
     return NextResponse.json({ success: true });
   } catch(error: unknown) {
