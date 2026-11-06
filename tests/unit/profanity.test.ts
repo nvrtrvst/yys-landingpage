@@ -18,8 +18,12 @@ describe('containsProfanity', () => {
     expect(containsProfanity('')).toBe(false);
   });
 
-  it('documents false positives caused by short common words', () => {
-    expect(containsProfanity('the quick brown fox')).toBe(true);
+  it('does not flag common words that merely contain a fragment', () => {
+    expect(containsProfanity('sosial')).toBe(false);
+    expect(containsProfanity('sedan')).toBe(false);
+    expect(containsProfanity('asuransi')).toBe(false);
+    expect(containsProfanity('the quick brown fox')).toBe(false);
+    expect(containsProfanity('gak apa-apa')).toBe(false);
   });
 });
 

@@ -1,22 +1,13 @@
-// Daftar kata kasar / umpatan bahasa Indonesia untuk moderasi komentar mading.
-// Disimpan di sini (bukan DB) agar sederhana; dapat diperluas sewaktu-waktu.
-
+// Daftar umpatan Indonesia untuk moderasi komentar mading. Disimpan di sini (bukan DB).
 const BAD_WORDS: string[] = [
-  // umpatan umum
   "anjing", "bangsat", "bajingan", "brengsek", "tolol", "goblok", "goblog",
   "idiot", "bodoh", "kampret", "kontol", "memek", "titit", "pler", "plerek",
-  "ngentot", "gentot", "tai", "tahi", "sial", "sinting", "edan", "gila",
-  "babi", "bacot", "bacot", "pantek", "pantat", "perek", "lonte", "lonte",
-  "jancuk", "jancok", "cuk", "cok", "kimak", "jembut", "jembut", "pelacur",
-  "setan", "iblis", "sundal", "sundal", "laknat", "brengsek", "asw", "asu",
-  "bangsat", "keparat", "celeng", "celeng", "bangke", "bangkai", "bajingan",
-  "kacung", "nyinyir", "sumpah", "astagfirullah", "tho", "the", "gak", "bodoh",
-  "tolol", "goblok", "goblog", "idiot", "kampret", "kontol", "memek", "titit",
-  // variasi huruf berulang / leet sederhana ditangani di normalisasi
+  "ngentot", "gentot", "babi", "bacot", "pantek", "pantat", "lonte",
+  "jancuk", "jancok", "kimak", "jembut", "pelacur", "setan", "iblis",
+  "sundal", "laknat", "keparat", "celeng", "bangke", "bangkai", "kacung", "tahi",
 ];
 
-// Normalisasi: lowercase, buang spasi & titik & pengganti voyel umum agar
-// obfuscasi sederhana (mis. "t0l0l", "t o l o l") tetap tertangkap.
+// Normalisasi untuk menangkap obfuscasi sederhana (mis. "t0l0l", "t o l o l").
 function normalize(text: string): string {
   return text
     .toLowerCase()
@@ -31,8 +22,12 @@ function normalize(text: string): string {
 
 export function containsProfanity(text: string): boolean {
   if (!text) return false;
+  const lower = text.toLowerCase();
   const norm = normalize(text);
-  return BAD_WORDS.some((w) => norm.includes(w));
+  return BAD_WORDS.some((word) => {
+    const bounded = new RegExp(`(^|[^a-z])${word}([^a-z]|$)`).test(lower);
+    return bounded || norm.includes(word);
+  });
 }
 
 export function getProfanityWords(): string[] {
