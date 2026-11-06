@@ -7,14 +7,13 @@ import fs from 'fs/promises';
 import path from 'path';
 import { revalidatePath } from 'next/cache';
 import { RowDataPacket } from 'mysql2';
-import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
+import { rateLimitOrThrow, getClientIp } from "@/lib/rate-limit";
 
 export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     await requireRole(['superadmin', 'admin', 'admin_unit', 'editor']);
 
-    const rl = checkRateLimit(`gallery-write:${getClientIp(request)}`, 20, 60_000);
-    if (!rl.allowed) return NextResponse.json({ error: 'Terlalu banyak permintaan' }, { status: 429 });
+    rateLimitOrThrow(`gallery-write:${getClientIp(request)}`, 20, 60_000);
 
     const [rows] = await pool.execute<RowDataPacket[]>('SELECT image_url FROM galleries WHERE id = ?', [(await params).id]);
     if (rows.length === 0) return NextResponse.json({ error: 'Not Found' }, { status: 404 });
@@ -44,8 +43,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   try {
     await requireRole(['superadmin', 'admin', 'admin_unit', 'editor']);
 
-    const rl = checkRateLimit(`gallery-write:${getClientIp(request)}`, 20, 60_000);
-    if (!rl.allowed) return NextResponse.json({ error: 'Terlalu banyak permintaan' }, { status: 429 });
+    rateLimitOrThrow(`gallery-write:${getClientIp(request)}`, 20, 60_000);
 
     const body = await request.json();
     // Validate title — prevent arbitrary data injection

@@ -5,7 +5,7 @@ import { ResultSetHeader } from 'mysql2';
 import { requireRole } from '@/lib/api-auth';
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
-import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
+import { rateLimitOrThrow, getClientIp } from "@/lib/rate-limit";
 
 const gallerySchema = z.object({
   title: z.string().optional().nullable(),
@@ -16,8 +16,7 @@ export async function GET(request: Request) {
   try {
     await requireRole(['superadmin', 'admin', 'admin_unit', 'editor']);
 
-    const rl = checkRateLimit(`gallery-get:${getClientIp(request)}`, 60, 60_000);
-    if (!rl.allowed) return NextResponse.json({ error: 'Terlalu banyak permintaan' }, { status: 429 });
+    rateLimitOrThrow(`gallery-get:${getClientIp(request)}`, 60, 60_000);
 
     const [rows] = await pool.execute('SELECT id, title, image_url, created_at FROM galleries ORDER BY created_at DESC');
     return NextResponse.json(rows);
@@ -30,8 +29,7 @@ export async function POST(request: Request) {
   try {
     await requireRole(['superadmin', 'admin', 'admin_unit', 'editor']);
 
-    const rl = checkRateLimit(`gallery-write:${getClientIp(request)}`, 20, 60_000);
-    if (!rl.allowed) return NextResponse.json({ error: 'Terlalu banyak permintaan' }, { status: 429 });
+    rateLimitOrThrow(`gallery-write:${getClientIp(request)}`, 20, 60_000);
 
     const body = await request.json();
     const result = gallerySchema.safeParse(body);

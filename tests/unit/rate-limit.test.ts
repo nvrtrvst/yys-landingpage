@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { checkRateLimit, getClientIpFromHeaders } from '@/lib/rate-limit';
+import { checkRateLimit, getClientIpFromHeaders, rateLimitOrThrow } from '@/lib/rate-limit';
+import { RateLimitError } from '@/lib/errors';
 
 afterEach(() => {
   vi.restoreAllMocks();
@@ -45,5 +46,18 @@ describe('getClientIpFromHeaders', () => {
 
   it('returns unknown when headers are missing', () => {
     expect(getClientIpFromHeaders(undefined)).toBe('unknown');
+  });
+});
+
+describe('rateLimitOrThrow', () => {
+  it('passes while under the limit', () => {
+    const key = `ok-${Math.random()}`;
+    expect(() => rateLimitOrThrow(key, 1, 1000)).not.toThrow();
+  });
+
+  it('throws RateLimitError once the limit is exceeded', () => {
+    const key = `blocked-${Math.random()}`;
+    rateLimitOrThrow(key, 1, 1000);
+    expect(() => rateLimitOrThrow(key, 1, 1000)).toThrow(RateLimitError);
   });
 });

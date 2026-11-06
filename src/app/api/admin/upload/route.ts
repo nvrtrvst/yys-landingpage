@@ -5,7 +5,7 @@ import { writeFile, mkdir } from 'fs/promises';
 import { join } from 'path';
 import crypto from 'crypto';
 import sharp from 'sharp';
-import { checkRateLimit, getClientIp } from '@/lib/rate-limit';
+import { rateLimitOrThrow, getClientIp } from '@/lib/rate-limit';
 import { ValidationError, FileTooLargeError, handleApiError, logError } from '@/lib/errors';
 
 function checkMagicNumber(buffer: Buffer): boolean {
@@ -33,10 +33,7 @@ export async function POST(request: Request) {
     const session = await requireRole(['siswa', 'superadmin', 'admin', 'admin_unit', 'guru', 'editor']);
     const isSiswa = session.user.role === "siswa";
 
-    const rl = checkRateLimit(`admin:upload:${getClientIp(request)}`, 20, 60 * 1000);
-    if (!rl.allowed) {
-      return NextResponse.json({ error: 'Terlalu banyak permintaan. Coba lagi nanti.' }, { status: 429 });
-    }
+    rateLimitOrThrow(`admin:upload:${getClientIp(request)}`, 20, 60 * 1000);
 
     const formData = await request.formData();
     const file = formData.get('file') as File;

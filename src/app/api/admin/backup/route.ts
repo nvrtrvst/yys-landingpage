@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { handleApiError } from '@/lib/errors';
 import { requireRole } from '@/lib/api-auth';
-import { checkRateLimit, getClientIp } from '@/lib/rate-limit';
+import { rateLimitOrThrow, getClientIp } from '@/lib/rate-limit';
 import mysqldump from 'mysqldump';
 import fs from 'fs/promises';
 import path from 'path';
@@ -11,8 +11,7 @@ export async function GET(request: Request) {
   try {
     await requireRole(['superadmin']);
 
-    const rl = checkRateLimit(`admin:backup:${getClientIp(request)}`, 5, 60 * 1000);
-    if (!rl.allowed) return NextResponse.json({ error: 'Terlalu banyak permintaan' }, { status: 429 });
+    rateLimitOrThrow(`admin:backup:${getClientIp(request)}`, 5, 60 * 1000);
 
     // Parse the DATABASE_URL to get connection details
     // Format: mysql://user:password@host:port/database

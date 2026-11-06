@@ -6,7 +6,7 @@ import bcrypt from 'bcrypt';
 import crypto from 'crypto';
 import { sendNewUserEmail } from '@/lib/mailer';
 import { RowDataPacket, ResultSetHeader } from 'mysql2';
-import { checkRateLimit, getClientIp } from '@/lib/rate-limit';
+import { rateLimitOrThrow, getClientIp } from '@/lib/rate-limit';
 import { z } from 'zod';
 
 const createUserSchema = z.object({
@@ -35,10 +35,7 @@ export async function POST(request: Request) {
   try {
     await requireRole(['superadmin', 'admin']);
 
-    const rl = checkRateLimit(`admin:users:${getClientIp(request)}`, 10, 60 * 1000);
-    if (!rl.allowed) {
-      return NextResponse.json({ error: 'Terlalu banyak permintaan. Coba lagi nanti.' }, { status: 429 });
-    }
+    rateLimitOrThrow(`admin:users:${getClientIp(request)}`, 10, 60 * 1000);
 
     const body = await request.json();
     const valid = createUserSchema.safeParse(body);

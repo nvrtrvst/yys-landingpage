@@ -4,7 +4,7 @@ import pool from '@/lib/db';
 import { requireRole } from '@/lib/api-auth';
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
-import { checkRateLimit, getClientIp } from '@/lib/rate-limit';
+import { rateLimitOrThrow, getClientIp } from '@/lib/rate-limit';
 import { RowDataPacket } from 'mysql2';
 
 const settingsSchema = z.record(z.string(), z.string().nullable());
@@ -30,10 +30,7 @@ export async function POST(request: Request) {
   try {
     await requireRole(['superadmin', 'admin']);
 
-    const rl = checkRateLimit(`admin:settings:${getClientIp(request)}`, 10, 60 * 1000);
-    if (!rl.allowed) {
-      return NextResponse.json({ error: 'Terlalu banyak permintaan. Coba lagi nanti.' }, { status: 429 });
-    }
+    rateLimitOrThrow(`admin:settings:${getClientIp(request)}`, 10, 60 * 1000);
 
     const body = await request.json();
     const result = settingsSchema.safeParse(body);

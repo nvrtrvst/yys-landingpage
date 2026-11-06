@@ -1,3 +1,5 @@
+import { RateLimitError } from '@/lib/errors';
+
 const rateLimitMap = new Map<string, { count: number; timestamp: number }>();
 
 // Periodic cleanup every 60s — avoids O(n) scan on every request
@@ -31,6 +33,10 @@ export function checkRateLimit(
 
   entry.count++;
   return { allowed: true, remaining: limit - entry.count };
+}
+
+export function rateLimitOrThrow(key: string, limit: number = 10, windowMs: number = 60 * 1000): void {
+  if (!checkRateLimit(key, limit, windowMs).allowed) throw new RateLimitError();
 }
 
 export function getClientIpFromHeaders(headers: Headers | Record<string, string | string[]> | undefined): string {

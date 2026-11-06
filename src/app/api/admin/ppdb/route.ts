@@ -2,14 +2,13 @@ import { NextResponse } from 'next/server';
 import { handleApiError } from '@/lib/errors';
 import pool from '@/lib/db';
 import { requireRole } from '@/lib/api-auth';
-import { checkRateLimit, getClientIp } from '@/lib/rate-limit';
+import { rateLimitOrThrow, getClientIp } from '@/lib/rate-limit';
 
 export async function GET(request: Request) {
   try {
     await requireRole(['superadmin', 'admin']);
 
-    const rl = checkRateLimit(`admin:ppdb:${getClientIp(request)}`, 20, 60 * 1000);
-    if (!rl.allowed) return NextResponse.json({ error: 'Terlalu banyak permintaan' }, { status: 429 });
+    rateLimitOrThrow(`admin:ppdb:${getClientIp(request)}`, 20, 60 * 1000);
 
     const url = new URL(request.url);
     const unit = url.searchParams.get('unit');

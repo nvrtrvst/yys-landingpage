@@ -4,16 +4,13 @@ import pool from '@/lib/db';
 import { requireRole } from '@/lib/api-auth';
 import bcrypt from 'bcrypt';
 import { RowDataPacket, ResultSetHeader } from 'mysql2';
-import { checkRateLimit, getClientIp } from '@/lib/rate-limit';
+import { rateLimitOrThrow, getClientIp } from '@/lib/rate-limit';
 
 export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     await requireRole(['superadmin', 'admin']);
 
-    const rl = checkRateLimit(`admin:user-edit:${getClientIp(request)}`, 20, 60 * 1000);
-    if (!rl.allowed) {
-      return NextResponse.json({ error: 'Terlalu banyak permintaan. Coba lagi nanti.' }, { status: 429 });
-    }
+    rateLimitOrThrow(`admin:user-edit:${getClientIp(request)}`, 20, 60 * 1000);
 
     const { id } = await params;
     const { name, email, password, role } = await request.json();
@@ -57,10 +54,7 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
     const session = await requireRole(['superadmin', 'admin']);
     const sessionId = session.user.id;
 
-    const rlDel = checkRateLimit(`admin:user-delete:${getClientIp(request)}`, 20, 60 * 1000);
-    if (!rlDel.allowed) {
-      return NextResponse.json({ error: 'Terlalu banyak permintaan. Coba lagi nanti.' }, { status: 429 });
-    }
+    rateLimitOrThrow(`admin:user-delete:${getClientIp(request)}`, 20, 60 * 1000);
 
     const { id } = await params;
 

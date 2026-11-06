@@ -4,7 +4,7 @@ import pool from '@/lib/db';
 import { requireAuth } from '@/lib/api-auth';
 import bcrypt from 'bcrypt';
 import { RowDataPacket } from 'mysql2';
-import { checkRateLimit, getClientIp } from '@/lib/rate-limit';
+import { rateLimitOrThrow, getClientIp } from '@/lib/rate-limit';
 
 export async function PUT(request: Request) {
   try {
@@ -13,10 +13,7 @@ export async function PUT(request: Request) {
     const userId = session.user.id;
     if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const rl = checkRateLimit(`admin:password:${getClientIp(request)}`, 5, 15 * 60 * 1000);
-    if (!rl.allowed) {
-      return NextResponse.json({ error: 'Terlalu banyak percobaan. Coba lagi nanti.' }, { status: 429 });
-    }
+    rateLimitOrThrow(`admin:password:${getClientIp(request)}`, 5, 15 * 60 * 1000);
 
     const { oldPassword, newPassword } = await request.json();
 
