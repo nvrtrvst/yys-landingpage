@@ -1,0 +1,45 @@
+name: Deploy CMS
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npx tsc --noEmit
+      - run: npm test
+
+  deploy:
+    needs: check
+    if: ${{ vars.DEPLOY_ENABLED == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+      - name: Deploy to server
+        env:
+          HOST: ${{ secrets.DEPLOY_HOST }}
+          USER: ${{ secrets.DEPLOY_USER }}
+        run: |
+          ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null $USER@$HOST '
+            set -e
+            cd /var/www/yys-landingpage
+            source ~/.nvm/nvm.sh && nvm use 20
+            git fetch origin
+            git reset --hard origin/main
+            npm ci
+            npm run build
+            pm2 reload ecosystem.config.js --update-env || pm2 start ecosystem.config.js --update-env
+            pm2 save
+          '
