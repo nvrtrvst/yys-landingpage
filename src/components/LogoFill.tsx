@@ -2,7 +2,17 @@
 
 import { useEffect, useState } from "react";
 
-export function LogoFill({ logoSrc }: { logoSrc: string }) {
+export function LogoFill({
+  logoSrc,
+  eyebrow = "YAYASAN",
+  title = "Nuurul Muttaqiin",
+  subtitle = "Pendidikan Islam Terpadu",
+}: {
+  logoSrc: string;
+  eyebrow?: string;
+  title?: string;
+  subtitle?: string;
+}) {
   const [fill, setFill] = useState(0);
   const [fadeOut, setFadeOut] = useState(1);
 
@@ -75,16 +85,16 @@ export function LogoFill({ logoSrc }: { logoSrc: string }) {
         {/* YAYASAN — scroll-linked clip reveal */}
         <div className="relative mt-4 md:mt-6">
           <span className="invisible text-lg md:text-xl lg:text-2xl font-bold tracking-[0.25em]">
-            YAYASAN
+            {eyebrow}
           </span>
           <span className="absolute inset-0 flex items-center justify-center text-white/15 text-lg md:text-xl lg:text-2xl font-bold tracking-[0.25em]">
-            YAYASAN
+            {eyebrow}
           </span>
           <span
             className="absolute inset-0 flex items-center justify-center text-white text-lg md:text-xl lg:text-2xl font-bold tracking-[0.25em] drop-shadow-lg"
             style={{ clipPath: `inset(${pct}% 0 0 0)` }}
           >
-            YAYASAN
+            {eyebrow}
           </span>
         </div>
 
@@ -94,7 +104,7 @@ export function LogoFill({ logoSrc }: { logoSrc: string }) {
           style={{ opacity: textOpacity }}
         >
           <span className="text-white/70 text-xs md:text-sm lg:text-base font-medium tracking-[0.2em] uppercase">
-            Pendidikan Islam Terpadu
+            {subtitle}
           </span>
         </div>
 
@@ -103,8 +113,8 @@ export function LogoFill({ logoSrc }: { logoSrc: string }) {
           className="mt-1"
           style={{ opacity: textOpacity }}
         >
-          <span className="text-white text-2xl md:text-3xl lg:text-4xl font-bold drop-shadow-lg">
-            Nuurul Muttaqiin
+          <span className="mx-auto max-w-xs text-balance text-center text-2xl font-bold leading-tight text-white drop-shadow-lg md:max-w-sm md:text-3xl lg:max-w-md lg:text-4xl">
+            {title}
           </span>
         </div>
       </div>

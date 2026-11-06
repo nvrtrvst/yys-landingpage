@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Construction } from "lucide-react";
 import { motion } from "framer-motion";
 import { useMounted } from "@/lib/useMounted";
 
@@ -11,6 +11,7 @@ export interface UnitItem { slug: string; name: string }
 export function HeaderUI({ settings, units }: { settings: Record<string, string>, units: UnitItem[] }) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const mobileMenuRef = useRef<HTMLDivElement>(null);
   const isMounted = useMounted();
 
   useEffect(() => {
@@ -20,6 +21,21 @@ export function HeaderUI({ settings, units }: { settings: Record<string, string>
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  useEffect(() => {
+    if (!isMobileMenuOpen) return;
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setIsMobileMenuOpen(false);
+    };
+    document.addEventListener("keydown", onKeyDown);
+    mobileMenuRef.current?.querySelector<HTMLElement>("a")?.focus();
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [isMobileMenuOpen]);
 
   const navLinks = [
     { name: "Beranda", href: "/" },
@@ -42,7 +58,7 @@ export function HeaderUI({ settings, units }: { settings: Record<string, string>
                
               <img 
                 src={settings.site_logo}  
-                alt="Logo" 
+                alt={`Logo ${settings.site_name || "Yayasan Nuurul Muttaqiin"}`}
                 className="h-10 md:h-12 w-auto object-contain" 
                 loading="eager"
                 decoding="async"
@@ -53,7 +69,7 @@ export function HeaderUI({ settings, units }: { settings: Record<string, string>
               />
             ) : (
                
-              <img src="/uploads/dummy/site_logo.png" alt="Logo" className="h-10 md:h-12 w-auto object-contain" loading="eager" decoding="async" />
+              <img src="/uploads/dummy/site_logo.png" alt={`Logo ${settings.site_name || "Yayasan Nuurul Muttaqiin"}`} className="h-10 md:h-12 w-auto object-contain" loading="eager" decoding="async" />
             )}
             <div className={`font-serif text-xl md:text-2xl font-bold tracking-tight ${isScrolled ? 'text-primary-800' : 'text-white drop-shadow-md'}`}>
               {settings.site_name || "Nuurul Muttaqiin"}
@@ -76,18 +92,22 @@ export function HeaderUI({ settings, units }: { settings: Record<string, string>
 
             {/* Dropdown Unit */}
             <div className="relative group focus-within:z-10">
-              <button aria-expanded="false" aria-haspopup="true" className={`text-sm font-medium transition-colors hover:text-primary-400 flex items-center gap-1 ${
+              <Link href="/#unit" className={`text-sm font-medium transition-colors hover:text-primary-400 flex items-center gap-1 ${
                   isScrolled ? "text-gray-700" : "text-white drop-shadow-md"
                 }`}>
-                Unit Sekolah ▾
-              </button>
-              <div role="menu" className="absolute top-full left-0 mt-2 w-48 bg-white shadow-xl border border-gray-100 rounded-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible focus-within:opacity-100 focus-within:visible transition-all duration-200 py-2 min-w-[200px] w-max max-w-xs">
+                Unit Sekolah <span aria-hidden="true">▾</span>
+              </Link>
+              <div role="menu" className="absolute top-full left-0 mt-2 w-48 bg-white shadow-lg border border-gray-100 rounded-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible focus-within:opacity-100 focus-within:visible transition-all duration-200 py-2 min-w-[200px] w-max max-w-xs">
                 {units.map(u => (
                   <Link key={u.slug} href={`/unit/${u.slug}`} className="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-600">
                     {u.name}
                   </Link>
                 ))}
-                {units.length === 0 && <span className="block px-4 py-2 text-sm text-gray-400">Sedang Dalam Pengembangan 🚧</span>}
+                {units.length === 0 && (
+                  <span className="flex items-center gap-1.5 px-4 py-2 text-sm text-gray-400">
+                    <Construction className="h-4 w-4" aria-hidden="true" /> Sedang Dalam Pengembangan
+                  </span>
+                )}
               </div>
             </div>
 
@@ -124,6 +144,7 @@ export function HeaderUI({ settings, units }: { settings: Record<string, string>
       {/* Mobile Nav */}
       {isMobileMenuOpen && (
         <motion.div
+          ref={mobileMenuRef}
           id="mobile-menu"
           role="navigation"
           aria-label="Navigasi mobile"
@@ -150,7 +171,11 @@ export function HeaderUI({ settings, units }: { settings: Record<string, string>
                     {u.name}
                   </Link>
                 ))}
-               {units.length === 0 && <span className="text-lg text-gray-400">Sedang Dalam Pengembangan 🚧</span>}
+               {units.length === 0 && (
+                 <span className="flex items-center gap-2 text-lg text-gray-400">
+                   <Construction className="h-5 w-5" aria-hidden="true" /> Sedang Dalam Pengembangan
+                 </span>
+               )}
             </div>
           </div>
           <Link

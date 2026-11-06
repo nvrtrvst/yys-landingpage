@@ -116,10 +116,10 @@ export function SettingsForm({ initialData }: { initialData: Record<string, stri
     contact_address: initialData.contact_address || "",
     contact_phone: initialData.contact_phone || "",
     contact_email: initialData.contact_email || "",
-    social_instagram: initialData.social_instagram || "",
-    social_facebook: initialData.social_facebook || "",
-    social_youtube: initialData.social_youtube || "",
-    wa_number: initialData.wa_number || "",
+    social_instagram: initialData.social_instagram || initialData.instagram_url || "",
+    social_facebook: initialData.social_facebook || initialData.facebook_url || "",
+    social_youtube: initialData.social_youtube || initialData.youtube_url || "",
+    wa_number: initialData.wa_number || initialData.whatsapp_number || "",
     wa_message: initialData.wa_message || "",
     recaptcha_site: initialData.recaptcha_site || "",
     recaptcha_secret: initialData.recaptcha_secret || "",
@@ -269,7 +269,7 @@ export function SettingsForm({ initialData }: { initialData: Record<string, stri
             <Field
               id="map_embed_url"
               label="URL Embed Google Maps"
-              hint="Buka Google Maps → Bagikan → Sematkan peta, lalu tempel URL dari atribut src iframe."
+              hint="Tempel URL embed (…/maps/embed…) agar peta tampil. Short link maps.app.goo.gl tetap dipakai untuk tombol buka Maps."
             >
               <textarea
                 id="map_embed_url"

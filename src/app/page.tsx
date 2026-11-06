@@ -9,6 +9,7 @@ import { HeroParallax } from "@/components/parallax/HeroParallax";
 import { ImageParallax } from "@/components/parallax/ImageParallax";
 import { TiltCard } from "@/components/parallax/TiltCard";
 import DOMPurify from "isomorphic-dompurify";
+import { Award } from "lucide-react";
 import { LogoFill } from "@/components/LogoFill";
 
 // Revalidate page every 60 seconds (ISR)
@@ -71,6 +72,32 @@ export default async function Home() {
   const heroBg = settings.hero_background && !settings.hero_background.startsWith('/uploads/dummy/')
     ? settings.hero_background : '/uploads/dummy/hero_bg.png';
 
+  const heroTitle = (settings.hero_title || settings.site_name || "Nuurul Muttaqiin")
+    .replace(/<[^>]*>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim() || "Nuurul Muttaqiin";
+  const tagline = settings.site_tagline?.trim();
+  const taglineAddsInfo =
+    !!tagline &&
+    tagline.toLowerCase() !== heroTitle.toLowerCase() &&
+    !tagline.toLowerCase().includes(heroTitle.toLowerCase());
+  const heroSubtitle =
+    settings.hero_subtitle?.trim() ||
+    (taglineAddsInfo ? tagline! : "Pendidikan Islam Terpadu");
+  const foundedYear = settings.stat_founded || "1995";
+  const studentStat =
+    totalStudents != null
+      ? totalStudents.toLocaleString("id-ID")
+      : settings.stat_students && settings.stat_students !== "0"
+        ? settings.stat_students
+        : "—";
+  const missionLines = settings.profile_mission
+    ? settings.profile_mission
+        .split("\n")
+        .map((line) => line.trim().replace(/^Misi\s*\d+[\.:]?\s*/i, "").trim())
+        .filter(Boolean)
+    : [];
+
   return (
     <>
       <div style={{position:'fixed',inset:0,zIndex:0}}>
@@ -80,15 +107,20 @@ export default async function Home() {
 
       <main className="relative z-10 min-h-screen flex flex-col">
       <Header />
+      <h1 className="sr-only">{heroTitle} — {heroSubtitle}</h1>
       
       {/* HERO SECTION — taller spacer to keep content from entering viewport during fill */}
       <section style={{ minHeight: 'calc(100vh + 400px)' }} className="relative flex items-center justify-center overflow-hidden">
         <HeroParallax />
 
-        <LogoFill logoSrc={
-          settings.site_logo && !settings.site_logo.startsWith('/uploads/dummy/')
-            ? settings.site_logo : '/logo.png'
-        } />
+        <LogoFill
+          logoSrc={
+            settings.site_logo && !settings.site_logo.startsWith('/uploads/dummy/')
+              ? settings.site_logo : '/logo.png'
+          }
+          title={heroTitle}
+          subtitle={heroSubtitle}
+        />
 
         {/* Decorative elements */}
         <div data-hero-wave className="absolute bottom-0 left-0 w-full overflow-hidden leading-[0]">
@@ -146,16 +178,12 @@ export default async function Home() {
                 <div className="mb-2">
                   <h3 className="font-serif text-2xl font-bold text-gray-900 mb-5">Misi</h3>
                   <ul className="relative ml-3 border-l-2 border-primary-200 space-y-6">
-                    {settings.profile_mission.split("\n").map((line, i) => {
-                      const text = line.trim().replace(/^Misi\s*\d+[\.:]?\s*/i, "").trim();
-                      if (!text) return null;
-                      return (
-                        <li key={i} className="relative pl-8">
-                          <span className="absolute -left-[15px] top-0 flex h-7 w-7 items-center justify-center rounded-full bg-primary-500 text-xs font-bold text-white ring-4 ring-gray-50">{i + 1}</span>
-                          <p className="text-gray-600 leading-relaxed">{text}</p>
-                        </li>
-                      );
-                    })}
+                    {missionLines.map((text, i) => (
+                      <li key={text} className="relative pl-8">
+                        <span className="absolute -left-[15px] top-0 flex h-7 w-7 items-center justify-center rounded-full bg-primary-500 text-xs font-bold text-white ring-4 ring-gray-50">{i + 1}</span>
+                        <p className="text-gray-600 leading-relaxed">{text}</p>
+                      </li>
+                    ))}
                   </ul>
                 </div>
               )}
@@ -163,8 +191,8 @@ export default async function Home() {
               <div className="mt-10 pt-8 border-t border-gray-200 grid grid-cols-3 gap-4">
                 {[
                   { v: units.length || 0, l: "Unit Sekolah", c: "text-primary-600" },
-                  { v: totalStudents != null ? totalStudents.toLocaleString("id-ID") : (settings.stat_students || "—"), l: "Siswa Aktif", c: "text-accent-default" },
-                  { v: "1995", l: "Tahun Berdiri", c: "text-primary-600" },
+                  { v: studentStat, l: "Siswa Aktif", c: "text-accent-default" },
+                  { v: foundedYear, l: "Tahun Berdiri", c: "text-primary-600" },
                 ].map((s, i) => (
                   <div key={i}>
                     <div className={`text-3xl md:text-4xl font-bold leading-none ${s.c}`}>{s.v}</div>
@@ -185,7 +213,9 @@ export default async function Home() {
               </div>
               <div className="absolute -bottom-10 -left-10 bg-white p-6 rounded-xl shadow-xl max-w-xs hidden md:block">
                 <div className="flex gap-4 items-center">
-                  <div className="w-12 h-12 bg-accent-default rounded-full flex items-center justify-center text-xl">🏆</div>
+                  <div className="w-12 h-12 bg-accent-default rounded-full flex items-center justify-center text-primary-800">
+                    <Award className="h-6 w-6" aria-hidden="true" />
+                  </div>
                   <div>
                     <h4 className="font-bold text-gray-900">Akreditasi A</h4>
                     <p className="text-sm text-gray-500">Untuk seluruh unit sekolah</p>
@@ -257,7 +287,7 @@ export default async function Home() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {programs.map((prog) => (
-              <TiltCard key={prog.id} className="bg-white/95 backdrop-blur-sm p-8 rounded-2xl shadow-lg border border-white/10 flex flex-col items-center text-center transition-all duration-300 hover:shadow-2xl">
+              <TiltCard key={prog.id} className="bg-white p-8 rounded-2xl shadow-sm border border-white/10 flex flex-col items-center text-center transition-all duration-300 hover:shadow-lg">
                 {prog.image_url ? (
                    <img src={prog.image_url} alt={prog.title} className="w-20 h-20 object-cover rounded-full mb-6 shadow-md" loading="lazy" decoding="async" />
                 ) : (
@@ -333,15 +363,22 @@ export default async function Home() {
             
             <div className="columns-1 sm:columns-2 md:columns-3 gap-6 space-y-6">
               {galleries.map((img) => (
-                <div key={img.id} className="break-inside-avoid relative group rounded-xl overflow-hidden">
+                <a
+                  key={img.id}
+                  href={img.image_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`Buka foto: ${img.title || "Galeri"}`}
+                  className="break-inside-avoid relative group block rounded-xl overflow-hidden"
+                >
                   <img src={img.image_url} alt={img.title || "Galeri"} className="w-full h-auto object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" decoding="async" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-6">
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-6">
                     <h4 className="font-bold text-lg text-white">{img.title}</h4>
                     {img.created_at && (
                       <span className="text-xs text-gray-300">{new Date(img.created_at).toLocaleDateString('id-ID')}</span>
                     )}
                   </div>
-                </div>
+                </a>
               ))}
             </div>
           </div>
