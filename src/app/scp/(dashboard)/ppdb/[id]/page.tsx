@@ -1,11 +1,12 @@
 "use client";
 
 import { getErrorMessage } from "@/lib/get-error-message";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
 import { useParams } from "next/navigation";
-import { Clock, CheckCircle2, XCircle } from "lucide-react";
+import { Clock, CheckCircle2, XCircle, RefreshCw } from "lucide-react";
+import { useSyncPolling } from "@/lib/use-sync-polling";
 
 interface PPDBDetail {
   id: number;
@@ -42,6 +43,19 @@ export default function PPDBDetailPage() {
   const { id } = useParams();
   const [data, setData] = useState<PPDBDetail | null>(null);
   const [loading, setLoading] = useState(true);
+  const initialAttemptsRef = useRef(0);
+
+  const pollSync = async (): Promise<boolean> => {
+    const res = await fetch(`/api/admin/ppdb/${id}`);
+    if (!res.ok) return true;
+    const row: PPDBDetail = await res.json();
+    setData(row);
+    if (row.sync_status === 'success') return true;
+    if (row.sync_status === 'failed' && row.sync_attempts > initialAttemptsRef.current) return true;
+    return false;
+  };
+
+  const { polling: syncing, start: startSyncPolling } = useSyncPolling(pollSync);
 
   const fetchData = async () => {
     try {
@@ -72,6 +86,7 @@ export default function PPDBDetailPage() {
   }, [id]);
 
   const updateStatus = async (status: string) => {
+    const initialAttempts = data?.sync_attempts ?? 0;
     const toastId = toast.loading("Memperbarui status...");
     try {
       const res = await fetch(`/api/admin/ppdb/${id}`, {
@@ -81,7 +96,11 @@ export default function PPDBDetailPage() {
       });
       if (!res.ok) throw new Error("Gagal memperbarui");
       toast.success("Status diperbarui", { id: toastId });
-      fetchData();
+      await fetchData();
+      if (status === 'Diterima') {
+        initialAttemptsRef.current = initialAttempts;
+        startSyncPolling();
+      }
     } catch(err: unknown) {
       toast.error((getErrorMessage(err)), { id: toastId });
     }
@@ -239,6 +258,11 @@ export default function PPDBDetailPage() {
                    data.sync_status === 'failed' ? <><XCircle className="h-4 w-4" /> Gagal Sinkronisasi</> :
                    <><Clock className="h-4 w-4" /> Menunggu Sinkronisasi</>}
                 </p>
+                {syncing && (
+                  <p className="flex items-center gap-1 text-xs text-sky-600 mt-1">
+                    <RefreshCw className="h-3 w-3 animate-spin" /> Menyinkronkan…
+                  </p>
+                )}
                 {data.sync_attempts > 0 && (
                   <p className="text-xs text-gray-500 mt-1">
                     {data.sync_attempts} percobaan{data.synced_at ? ` · terakhir ${new Date(data.synced_at).toLocaleString('id-ID')}` : ''}

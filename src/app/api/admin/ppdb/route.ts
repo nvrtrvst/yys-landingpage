@@ -16,7 +16,7 @@ export async function GET(request: Request) {
     const search = url.searchParams.get('search');
 
     let query = `SELECT 
-      id, registration_number, status, sync_status, sync_warning, unit, grade, major, is_printed,
+      id, registration_number, status, sync_status, sync_warning, sync_attempts, unit, grade, major, is_printed,
       student_name, nisn, birth_place, birth_date, gender, phone, email,
       previous_school, father_name, mother_name, created_at
       FROM ppdb_submissions WHERE 1=1`;

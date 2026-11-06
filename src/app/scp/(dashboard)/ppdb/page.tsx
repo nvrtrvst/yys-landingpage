@@ -1,10 +1,10 @@
 "use client";
 
 import { getErrorMessage } from "@/lib/get-error-message";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
-import { Clock, CheckCircle2, XCircle, RefreshCw, AlertTriangle } from "lucide-react";
+import { Clock, CheckCircle2, XCircle, RefreshCw, AlertTriangle, Loader2 } from "lucide-react";
 
 interface PPDBRow {
   id: number;
@@ -16,6 +16,7 @@ interface PPDBRow {
   status: string;
   sync_status: string;
   sync_warning: string | null;
+  sync_attempts: number;
   created_at: string;
   is_printed: boolean;
   birth_place: string;
@@ -37,6 +38,9 @@ export default function PPDBPage() {
   const [filterPrint, setFilterPrint] = useState("");
   const [filterSync, setFilterSync] = useState("");
   const [search, setSearch] = useState("");
+  const [pollingIds, setPollingIds] = useState<Set<number>>(new Set());
+  const pollTimersRef = useRef<Record<number, ReturnType<typeof setInterval>>>({});
+  const initialAttemptsRef = useRef<Record<number, number>>({});
 
   const fetchData = async () => {
     setLoading(true);
@@ -66,7 +70,63 @@ export default function PPDBPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchData already depends on these filters
   }, [filterUnit, filterStatus, filterPrint, filterSync, search]);
 
+  useEffect(() => {
+    return () => {
+      Object.values(pollTimersRef.current).forEach((timer) => clearInterval(timer));
+      pollTimersRef.current = {};
+    };
+  }, []);
+
+  const stopPolling = (id: number) => {
+    const timer = pollTimersRef.current[id];
+    if (timer) {
+      clearInterval(timer);
+      delete pollTimersRef.current[id];
+    }
+    setPollingIds((prev) => {
+      const next = new Set(prev);
+      next.delete(id);
+      return next;
+    });
+  };
+
+  const startPolling = (id: number) => {
+    if (pollTimersRef.current[id]) return;
+    setPollingIds((prev) => new Set(prev).add(id));
+    const initial = initialAttemptsRef.current[id] ?? 0;
+    let attempts = 0;
+
+    const tick = async () => {
+      attempts += 1;
+      try {
+        const res = await fetch(`/api/admin/ppdb/${id}`);
+        if (!res.ok) {
+          stopPolling(id);
+          return;
+        }
+        const row = await res.json();
+        setData((prev) =>
+          prev.map((item) =>
+            item.id === id
+              ? { ...item, sync_status: row.sync_status, sync_warning: row.sync_warning, sync_attempts: row.sync_attempts }
+              : item
+          )
+        );
+        const done =
+          row.sync_status === 'success' ||
+          (row.sync_status === 'failed' && Number(row.sync_attempts ?? 0) > initial);
+        if (done || attempts >= 8) stopPolling(id);
+      } catch {
+        if (attempts >= 8) stopPolling(id);
+      }
+    };
+
+    void tick();
+    pollTimersRef.current[id] = setInterval(tick, 2000);
+  };
+
   const updateStatus = async (id: number, status: string) => {
+    const initialAttempts = data.find((row) => row.id === id)?.sync_attempts ?? 0;
     const toastId = toast.loading("Memperbarui status...");
     try {
       const res = await fetch(`/api/admin/ppdb/${id}`, {
@@ -76,7 +136,11 @@ export default function PPDBPage() {
       });
       if (!res.ok) throw new Error("Gagal memperbarui");
       toast.success("Status diperbarui", { id: toastId });
-      fetchData();
+      await fetchData();
+      if (status === 'Diterima') {
+        initialAttemptsRef.current[id] = initialAttempts;
+        startPolling(id);
+      }
     } catch(err: unknown) {
       toast.error((getErrorMessage(err)), { id: toastId });
     }
@@ -308,18 +372,24 @@ export default function PPDBPage() {
                     </td>
                     <td className="p-4">
                       <div className="flex items-center gap-1">
-                        <span className={`inline-flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded ${
-                          row.sync_status === 'success' ? 'bg-green-100 text-green-700' :
-                          row.sync_status === 'failed' ? 'bg-red-100 text-red-700' :
-                          'bg-yellow-100 text-yellow-700'
-                        }`}>
-                          {row.sync_status === 'success' ? <CheckCircle2 className="h-3.5 w-3.5" /> :
-                           row.sync_status === 'failed' ? <XCircle className="h-3.5 w-3.5" /> :
-                           <Clock className="h-3.5 w-3.5" />}
-                          {row.sync_status === 'success' ? 'Sinkron' :
-                           row.sync_status === 'failed' ? 'Gagal' : 'Menunggu'}
-                        </span>
-                        {row.sync_warning && (
+                        {pollingIds.has(row.id) ? (
+                          <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded bg-sky-100 text-sky-700">
+                            <Loader2 className="h-3.5 w-3.5 animate-spin" /> Menyinkronkan…
+                          </span>
+                        ) : (
+                          <span className={`inline-flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded ${
+                            row.sync_status === 'success' ? 'bg-green-100 text-green-700' :
+                            row.sync_status === 'failed' ? 'bg-red-100 text-red-700' :
+                            'bg-yellow-100 text-yellow-700'
+                          }`}>
+                            {row.sync_status === 'success' ? <CheckCircle2 className="h-3.5 w-3.5" /> :
+                             row.sync_status === 'failed' ? <XCircle className="h-3.5 w-3.5" /> :
+                             <Clock className="h-3.5 w-3.5" />}
+                            {row.sync_status === 'success' ? 'Sinkron' :
+                             row.sync_status === 'failed' ? 'Gagal' : 'Menunggu'}
+                          </span>
+                        )}
+                        {row.sync_warning && !pollingIds.has(row.id) && (
                           <span title={row.sync_warning} className="inline-flex items-center text-amber-600">
                             <AlertTriangle className="h-3.5 w-3.5" />
                           </span>
