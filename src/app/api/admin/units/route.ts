@@ -26,7 +26,6 @@ export async function GET(request: Request) {
     const [rows] = await pool.execute('SELECT id, name, slug, description, order_index, status FROM units ORDER BY order_index ASC, id DESC');
     return NextResponse.json(rows);
   } catch (error) {
-    console.error(error);
     return handleApiError(error);
   }
 }

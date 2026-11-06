@@ -63,7 +63,6 @@ export async function GET(request: Request) {
     const [rows] = await pool.execute(query, params);
     return NextResponse.json(rows);
   } catch (error) {
-    console.error(error);
     return handleApiError(error);
   }
 }

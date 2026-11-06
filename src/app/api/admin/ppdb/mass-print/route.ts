@@ -26,7 +26,6 @@ export async function POST(request: Request) {
     revalidatePath('/scp/ppdb');
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error(error);
     return handleApiError(error);
   }
 }

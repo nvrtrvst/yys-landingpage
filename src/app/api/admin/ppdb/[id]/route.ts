@@ -68,7 +68,6 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     revalidatePath('/scp/ppdb');
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error(error);
     return handleApiError(error);
   }
 }
@@ -82,7 +81,6 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
 
     return NextResponse.json(rows[0]);
   } catch (error) {
-    console.error(error);
     return handleApiError(error);
   }
 }
