@@ -1,6 +1,8 @@
 "use client";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
+import { CheckCircle2, XCircle } from "lucide-react";
+import { PageHeader } from "@/components/scp/PageHeader";
 
 interface MadingCategory {
   id: number;
@@ -67,10 +69,10 @@ export default function MadingCategoriesPage() {
   };
 
   return (
-    <div>
-      <h2 className="text-2xl font-bold mb-6">Kategori Mading</h2>
+    <div className="max-w-7xl mx-auto pb-12">
+      <PageHeader title="Kategori Mading" description="Kelola kategori tulisan mading." />
 
-      <div className="bg-white p-6 rounded-xl shadow-sm border mb-6">
+      <div className="bg-white p-6 rounded-xl border border-slate-200 mb-6">
         <h3 className="font-semibold mb-4">{editing ? "Edit Kategori" : "Tambah Kategori"}</h3>
         <div className="flex gap-4 items-end">
           <div className="flex-1">
@@ -81,16 +83,16 @@ export default function MadingCategoriesPage() {
             <label className="block text-sm font-medium mb-1">Deskripsi</label>
             <input value={description} onChange={e => setDescription(e.target.value)} className="w-full border rounded p-2" />
           </div>
-          <button onClick={handleSave} className="px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700">
+          <button onClick={handleSave} className="px-4 py-2 bg-primary-600 text-white rounded-lg font-medium hover:bg-primary-700">
             {editing ? "Update" : "Tambah"}
           </button>
-          {editing && <button onClick={() => { setEditing(null); setName(""); setDescription(""); }} className="px-4 py-2 border rounded-lg text-gray-600">Batal</button>}
+          {editing && <button onClick={() => { setEditing(null); setName(""); setDescription(""); }} className="px-4 py-2 border rounded-lg text-slate-600">Batal</button>}
         </div>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
+      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
         <table className="w-full text-left">
-          <thead className="bg-gray-50 text-gray-500 text-sm border-b">
+          <thead className="border-b border-slate-200 bg-slate-50/70 text-xs font-semibold text-slate-500">
             <tr>
               <th className="p-4">Nama</th>
               <th className="p-4">Tipe</th>
@@ -100,15 +102,20 @@ export default function MadingCategoriesPage() {
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={4} className="p-8 text-center text-gray-500">Memuat...</td></tr>
+              <tr><td colSpan={4} className="p-8 text-center text-slate-500">Memuat...</td></tr>
             ) : categories.map((cat) => (
-              <tr key={cat.id} className="border-b hover:bg-gray-50">
+              <tr key={cat.id} className="border-b hover:bg-slate-50">
                 <td className="p-4 font-medium">{cat.name}</td>
                 <td className="p-4 text-sm">{cat.unit_id ? "Khusus Unit" : "Global"}</td>
-                <td className="p-4">{cat.is_active ? "✅" : "❌"}</td>
+                <td className="p-4">
+                  <span className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-xs font-semibold ${cat.is_active ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-500"}`}>
+                    {cat.is_active ? <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" /> : <XCircle className="h-3.5 w-3.5" aria-hidden="true" />}
+                    {cat.is_active ? "Aktif" : "Nonaktif"}
+                  </span>
+                </td>
                 <td className="p-4 text-right">
-                  <button onClick={() => { setEditing(cat); setName(cat.name); setDescription(cat.description || ""); }} className="text-blue-600 hover:text-blue-800 text-sm font-medium mr-2">Edit</button>
-                  <button onClick={() => handleDelete(cat.id)} className="text-red-600 hover:text-red-800 text-sm font-medium">Hapus</button>
+                  <button onClick={() => { setEditing(cat); setName(cat.name); setDescription(cat.description || ""); }} className="text-sky-600 hover:text-sky-700 text-sm font-medium mr-2">Edit</button>
+                  <button onClick={() => handleDelete(cat.id)} className="text-rose-600 hover:text-rose-700 text-sm font-medium">Hapus</button>
                 </td>
               </tr>
             ))}

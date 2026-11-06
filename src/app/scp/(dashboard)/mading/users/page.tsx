@@ -5,6 +5,7 @@ import { getErrorMessage } from "@/lib/get-error-message";
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { toast } from "sonner";
 import { Search, Plus, X, UserCheck, User, Upload } from "lucide-react";
+import { PageHeader } from "@/components/scp/PageHeader";
 
 import { UsersTable } from "./UsersTable";
 import type { UnitUser } from "./types";
@@ -159,66 +160,66 @@ export default function MadingUsersPage() {
   const totalSiswa = users.filter(u => u.role === "siswa").length;
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900">Kelola Pengguna</h2>
-          <p className="text-sm text-gray-500 mt-1">Manajemen akun guru &amp; siswa unit Anda</p>
-        </div>
-        <div className="flex gap-2">
-          <button onClick={() => { setImportFile(null); setImportResult(null); setImportModal(true); }}
-            className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors shadow-sm">
-            <Upload className="h-4 w-4" />
-            Import CSV
-          </button>
-          <button onClick={() => { resetForm(); setShowModal(true); }}
-            className="flex items-center gap-2 px-4 py-2.5 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 transition-colors shadow-sm">
-            <Plus className="h-4 w-4" />
-            Tambah User
-          </button>
-        </div>
-      </div>
+    <div className="max-w-7xl mx-auto pb-12">
+      <PageHeader
+        title="Kelola Pengguna"
+        description="Manajemen akun guru & siswa unit Anda."
+        actions={
+          <div className="flex gap-2">
+            <button onClick={() => { setImportFile(null); setImportResult(null); setImportModal(true); }}
+              className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50">
+              <Upload className="h-4 w-4" aria-hidden="true" />
+              Import CSV
+            </button>
+            <button onClick={() => { resetForm(); setShowModal(true); }}
+              className="flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-700">
+              <Plus className="h-4 w-4" aria-hidden="true" />
+              Tambah User
+            </button>
+          </div>
+        }
+      />
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div className="bg-white border rounded-xl p-5 flex items-center gap-4">
-          <div className="h-12 w-12 bg-blue-100 rounded-xl flex items-center justify-center">
-            <User className="h-6 w-6 text-blue-600" />
+        <div className="bg-white border border-slate-200 rounded-xl p-5 flex items-center gap-4">
+          <div className="h-12 w-12 bg-sky-50 rounded-xl flex items-center justify-center">
+            <User className="h-6 w-6 text-sky-600" />
           </div>
           <div>
-            <p className="text-2xl font-bold text-gray-900">{users.length}</p>
-            <p className="text-sm text-gray-500">Total User</p>
+            <p className="text-2xl font-bold text-slate-900">{users.length}</p>
+            <p className="text-sm text-slate-500">Total User</p>
           </div>
         </div>
-        <div className="bg-white border rounded-xl p-5 flex items-center gap-4">
-          <div className="h-12 w-12 bg-green-100 rounded-xl flex items-center justify-center">
-            <UserCheck className="h-6 w-6 text-green-600" />
+        <div className="bg-white border border-slate-200 rounded-xl p-5 flex items-center gap-4">
+          <div className="h-12 w-12 bg-emerald-50 rounded-xl flex items-center justify-center">
+            <UserCheck className="h-6 w-6 text-emerald-600" />
           </div>
           <div>
-            <p className="text-2xl font-bold text-gray-900">{totalGuru}</p>
-            <p className="text-sm text-gray-500">Guru</p>
+            <p className="text-2xl font-bold text-slate-900">{totalGuru}</p>
+            <p className="text-sm text-slate-500">Guru</p>
           </div>
         </div>
-        <div className="bg-white border rounded-xl p-5 flex items-center gap-4">
-          <div className="h-12 w-12 bg-purple-100 rounded-xl flex items-center justify-center">
-            <User className="h-6 w-6 text-purple-600" />
+        <div className="bg-white border border-slate-200 rounded-xl p-5 flex items-center gap-4">
+          <div className="h-12 w-12 bg-primary-50 rounded-xl flex items-center justify-center">
+            <User className="h-6 w-6 text-primary-600" />
           </div>
           <div>
-            <p className="text-2xl font-bold text-gray-900">{totalSiswa}</p>
-            <p className="text-sm text-gray-500">Siswa</p>
+            <p className="text-2xl font-bold text-slate-900">{totalSiswa}</p>
+            <p className="text-sm text-slate-500">Siswa</p>
           </div>
         </div>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
-        <div className="p-4 border-b border-gray-100 flex flex-col sm:flex-row gap-3">
+      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+        <div className="p-4 border-b border-slate-100 flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
             <input type="text" placeholder="Cari nama atau email..." value={search}
               onChange={e => setSearch(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500" />
+              className="w-full pl-9 pr-4 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-100 focus:border-primary-400" />
           </div>
           <select value={roleFilter} onChange={e => setRoleFilter(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500">
+            className="px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-100">
             <option value="all">Semua Role</option>
             <option value="guru">Guru</option>
             <option value="siswa">Siswa</option>
@@ -227,7 +228,7 @@ export default function MadingUsersPage() {
 
         <UsersTable loading={loading} users={filtered} onEdit={openEdit} onDelete={handleDelete} />
         {!loading && filtered.length > 0 && (
-          <div className="px-4 py-3 border-t border-gray-100 text-sm text-gray-500 bg-gray-50/50">
+          <div className="px-4 py-3 border-t border-slate-100 text-sm text-slate-500 bg-slate-50/50">
             Menampilkan {filtered.length} dari {users.length} user
           </div>
         )}
@@ -236,43 +237,43 @@ export default function MadingUsersPage() {
       {importModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setImportModal(false)} />
-          <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-lg mx-4 p-6">
+          <div className="relative bg-white rounded-xl border border-slate-200 border-slate-200 shadow-lg w-full max-w-lg mx-4 p-6">
             <button onClick={() => setImportModal(false)}
-              className="absolute top-4 right-4 p-1 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors">
+              className="absolute top-4 right-4 p-1 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100 transition-colors">
               <X className="h-5 w-5" />
             </button>
-            <h3 className="text-lg font-semibold text-gray-900 mb-1">Import User dari CSV</h3>
-            <p className="text-sm text-gray-500 mb-4">Format: <code className="bg-gray-100 px-1 rounded">name,email,password,role,nis,class_name</code> (role: guru/siswa; nis wajib untuk siswa)</p>
+            <h3 className="text-lg font-semibold text-slate-900 mb-1">Import User dari CSV</h3>
+            <p className="text-sm text-slate-500 mb-4">Format: <code className="bg-slate-100 px-1 rounded">name,email,password,role,nis,class_name</code> (role: guru/siswa; nis wajib untuk siswa)</p>
 
             {importResult ? (
               <div className="space-y-4">
-                <div className={`p-4 rounded-xl text-sm ${importResult.created > 0 ? "bg-green-50 text-green-700" : "bg-yellow-50 text-yellow-700"}`}>
-                  {importResult.created > 0 ? `✅ ${importResult.created} user berhasil dibuat` : "Tidak ada user yang berhasil diimport"}
+                <div className={`p-4 rounded-xl text-sm ${importResult.created > 0 ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-700"}`}>
+                  {importResult.created > 0 ? `${importResult.created} user berhasil dibuat` : "Tidak ada user yang berhasil diimport"}
                 </div>
                 {importResult.failed > 0 && (
                   <div>
-                    <p className="text-sm font-medium text-red-600 mb-2">{importResult.failed} gagal:</p>
-                    <div className="max-h-40 overflow-y-auto text-xs text-red-600 space-y-1 bg-red-50 p-3 rounded-xl">
+                    <p className="text-sm font-medium text-rose-600 mb-2">{importResult.failed} gagal:</p>
+                    <div className="max-h-40 overflow-y-auto text-xs text-rose-600 space-y-1 bg-rose-50 p-3 rounded-xl">
                       {importResult.errors?.map((e: string, i: number) => <div key={i}>{e}</div>)}
                     </div>
                   </div>
                 )}
                 <button onClick={() => { setImportModal(false); setImportResult(null); }}
-                  className="w-full py-2.5 border border-gray-300 text-gray-700 rounded-xl text-sm font-medium hover:bg-gray-50 transition-colors">
+                  className="w-full py-2.5 border border-slate-300 text-slate-700 rounded-xl text-sm font-medium hover:bg-slate-50 transition-colors">
                   Tutup
                 </button>
               </div>
             ) : (
               <div className="space-y-4">
-                <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-green-400 transition-colors">
-                  <Upload className="h-8 w-8 mx-auto text-gray-300 mb-2" />
-                  <p className="text-sm text-gray-500 mb-2">Pilih file CSV</p>
+                <div className="border-2 border-dashed border-slate-300 rounded-xl p-8 text-center hover:border-green-400 transition-colors">
+                  <Upload className="h-8 w-8 mx-auto text-slate-300 mb-2" />
+                  <p className="text-sm text-slate-500 mb-2">Pilih file CSV</p>
                   <input type="file" accept=".csv" onChange={e => setImportFile(e.target.files?.[0] || null)}
-                    className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-green-50 file:text-green-700 hover:file:bg-green-100" />
-                  {importFile && <p className="text-xs text-gray-400 mt-2">{importFile.name}</p>}
+                    className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-50" />
+                  {importFile && <p className="text-xs text-slate-400 mt-2">{importFile.name}</p>}
                 </div>
                 <button onClick={handleImport} disabled={!importFile || importing}
-                  className="w-full py-2.5 bg-green-600 text-white rounded-xl text-sm font-medium hover:bg-green-700 disabled:opacity-50 transition-colors shadow-sm">
+                  className="w-full py-2.5 bg-primary-600 text-white rounded-xl text-sm font-medium hover:bg-primary-700 disabled:opacity-50 transition-colors">
                   {importing ? "Mengimport..." : "Import"}
                 </button>
               </div>
@@ -284,68 +285,68 @@ export default function MadingUsersPage() {
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowModal(false)} />
-          <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-lg mx-4 p-6">
+          <div className="relative bg-white rounded-xl border border-slate-200 border-slate-200 shadow-lg w-full max-w-lg mx-4 p-6">
             <button onClick={() => setShowModal(false)}
-              className="absolute top-4 right-4 p-1 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors">
+              className="absolute top-4 right-4 p-1 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100 transition-colors">
               <X className="h-5 w-5" />
             </button>
-            <h3 className="text-lg font-semibold text-gray-900 mb-1">
+            <h3 className="text-lg font-semibold text-slate-900 mb-1">
               {editing ? "Edit User" : "Tambah User Baru"}
             </h3>
-            <p className="text-sm text-gray-500 mb-6">
+            <p className="text-sm text-slate-500 mb-6">
               {editing ? "Perbarui informasi user. Kosongkan password jika tidak diubah." : "Buat akun baru untuk guru atau siswa."}
             </p>
             <form onSubmit={handleSave} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Nama Lengkap</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Nama Lengkap</label>
                 <input type="text" required value={form.name} onChange={e => setForm({ ...form, name: e.target.value })}
-                  className="w-full px-3 py-2.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-shadow" />
+                  className="w-full px-3 py-2.5 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-100 focus:border-primary-400 transition-shadow" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Email</label>
                 <input type="email" required value={form.email} onChange={e => setForm({ ...form, email: e.target.value })}
-                  className="w-full px-3 py-2.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-shadow" />
+                  className="w-full px-3 py-2.5 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-100 focus:border-primary-400 transition-shadow" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Password {editing && <span className="text-gray-400 font-normal">(kosongkan jika tidak diubah)</span>}
+                <label className="block text-sm font-medium text-slate-700 mb-1">
+                  Password {editing && <span className="text-slate-400 font-normal">(kosongkan jika tidak diubah)</span>}
                 </label>
                 <input type="text" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })}
                   placeholder={editing ? "Biarkan kosong jika tidak diubah" : "Minimal 6 karakter"}
-                  className="w-full px-3 py-2.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-shadow" />
+                  className="w-full px-3 py-2.5 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-100 focus:border-primary-400 transition-shadow" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Role</label>
                 <select value={form.role} onChange={e => setForm({ ...form, role: e.target.value as "guru" | "siswa" })}
                   disabled={!!editing}
-                  className="w-full px-3 py-2.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 disabled:bg-gray-50 disabled:text-gray-500 transition-shadow">
+                  className="w-full px-3 py-2.5 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-100 focus:border-primary-400 disabled:bg-slate-50 disabled:text-slate-500 transition-shadow">
                   <option value="siswa">Siswa</option>
                   <option value="guru">Guru</option>
                 </select>
-                {editing && <p className="text-xs text-gray-400 mt-1">Role tidak bisa diubah setelah dibuat</p>}
+                {editing && <p className="text-xs text-slate-400 mt-1">Role tidak bisa diubah setelah dibuat</p>}
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  NIS {form.role === "siswa" && <span className="text-red-500">*</span>}
-                  {form.role === "guru" && <span className="text-gray-400 font-normal">(opsional untuk guru)</span>}
+                <label className="block text-sm font-medium text-slate-700 mb-1">
+                  NIS {form.role === "siswa" && <span className="text-rose-500">*</span>}
+                  {form.role === "guru" && <span className="text-slate-400 font-normal">(opsional untuk guru)</span>}
                 </label>
                 <input type="text" value={form.nis} onChange={e => setForm({ ...form, nis: e.target.value })}
                   placeholder={form.role === "siswa" ? "Nomor Induk Siswa" : "Kosongkan jika tidak ada"}
-                  className="w-full px-3 py-2.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-shadow" />
+                  className="w-full px-3 py-2.5 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-100 focus:border-primary-400 transition-shadow" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Kelas</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Kelas</label>
                 <input type="text" value={form.class_name} onChange={e => setForm({ ...form, class_name: e.target.value })}
                   placeholder="Mis. VII-A"
-                  className="w-full px-3 py-2.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-shadow" />
+                  className="w-full px-3 py-2.5 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-100 focus:border-primary-400 transition-shadow" />
               </div>
               <div className="flex gap-3 pt-2">
                 <button type="button" onClick={() => setShowModal(false)}
-                  className="flex-1 px-4 py-2.5 border border-gray-300 text-gray-700 rounded-xl text-sm font-medium hover:bg-gray-50 transition-colors">
+                  className="flex-1 px-4 py-2.5 border border-slate-300 text-slate-700 rounded-xl text-sm font-medium hover:bg-slate-50 transition-colors">
                   Batal
                 </button>
                 <button type="submit" disabled={saving}
-                  className="flex-1 px-4 py-2.5 bg-green-600 text-white rounded-xl text-sm font-medium hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm">
+                  className="flex-1 px-4 py-2.5 bg-primary-600 text-white rounded-xl text-sm font-medium hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
                   {saving ? "Menyimpan..." : editing ? "Simpan Perubahan" : "Buat User"}
                 </button>
               </div>
