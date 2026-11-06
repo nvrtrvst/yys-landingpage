@@ -172,6 +172,10 @@ export default function PrintCardClient({ student, ppdbConfig }: { student: Prin
                 src={`/logo/${student.unit?.toLowerCase() || 'logo'}.png`} 
                 alt={`Logo ${student.unit}`} 
                 className="w-full h-full object-contain"
+                onError={(event) => {
+                  event.currentTarget.onerror = null;
+                  event.currentTarget.src = "/logo.png";
+                }}
               />
             </div>
             <div className="ml-4 text-center flex-grow">
