@@ -2,8 +2,7 @@ import { NextResponse } from 'next/server';
 import { handleApiError } from '@/lib/errors';
 import pool from '@/lib/db';
 import { ResultSetHeader } from 'mysql2';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { requireRole } from '@/lib/api-auth';
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
 import DOMPurify from "isomorphic-dompurify";
@@ -19,10 +18,7 @@ const programSchema = z.object({
 
 export async function GET(request: Request) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    const role = session.user.role;
-    if (role !== 'superadmin' && role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    await requireRole(['superadmin', 'admin']);
 
     const [rows] = await pool.execute('SELECT p.id, p.title, p.description, p.image_url, p.order_index, p.status, u.name as unit_name FROM programs p LEFT JOIN units u ON p.unit_id = u.id ORDER BY p.order_index ASC, p.id DESC');
     return NextResponse.json(rows);
@@ -33,10 +29,7 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    const role = session.user.role;
-    if (role !== 'superadmin' && role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    await requireRole(['superadmin', 'admin']);
 
     const body = await request.json();
     const result = programSchema.safeParse(body);

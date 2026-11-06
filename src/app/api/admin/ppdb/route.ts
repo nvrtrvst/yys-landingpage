@@ -1,16 +1,12 @@
 import { NextResponse } from 'next/server';
 import { handleApiError } from '@/lib/errors';
 import pool from '@/lib/db';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { requireRole } from '@/lib/api-auth';
 import { checkRateLimit, getClientIp } from '@/lib/rate-limit';
 
 export async function GET(request: Request) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    const role = session.user.role;
-    if (role !== 'superadmin' && role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    await requireRole(['superadmin', 'admin']);
 
     const rl = checkRateLimit(`admin:ppdb:${getClientIp(request)}`, 20, 60 * 1000);
     if (!rl.allowed) return NextResponse.json({ error: 'Terlalu banyak permintaan' }, { status: 429 });

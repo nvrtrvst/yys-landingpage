@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { handleApiError } from '@/lib/errors';
+import { requireRole } from '@/lib/api-auth';
 import pool from '@/lib/db';
 import { ResultSetHeader } from 'mysql2';
 import { getServerSession } from 'next-auth';
@@ -35,10 +36,7 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    const role = session.user.role;
-    if (role !== 'superadmin' && role !== 'admin' && role !== 'editor') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    await requireRole(['superadmin', 'admin', 'editor']);
 
     const body = await request.json();
     const result = newsSchema.safeParse(body);

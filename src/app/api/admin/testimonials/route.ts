@@ -2,8 +2,7 @@ import { NextResponse } from 'next/server';
 import { handleApiError } from '@/lib/errors';
 import pool from '@/lib/db';
 import { ResultSetHeader } from 'mysql2';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { requireRole } from '@/lib/api-auth';
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
 import DOMPurify from "isomorphic-dompurify";
@@ -19,10 +18,7 @@ const testimonialSchema = z.object({
 
 export async function GET(request: Request) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    const role = session.user.role;
-    if (role !== 'superadmin' && role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    await requireRole(['superadmin', 'admin']);
 
     const [rows] = await pool.execute('SELECT id, author_name, role, content, image_url, is_active, order_index FROM testimonials ORDER BY order_index ASC, id DESC');
     return NextResponse.json(rows);
@@ -33,10 +29,7 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    const role = session.user.role;
-    if (role !== 'superadmin' && role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    await requireRole(['superadmin', 'admin']);
 
     const body = await request.json();
     const result = testimonialSchema.safeParse(body);

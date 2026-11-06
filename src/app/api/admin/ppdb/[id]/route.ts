@@ -1,8 +1,7 @@
 import { NextResponse } from 'next/server';
 import { handleApiError } from '@/lib/errors';
 import pool from '@/lib/db';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { requireRole } from '@/lib/api-auth';
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
 import { RowDataPacket } from 'mysql2';
@@ -16,10 +15,7 @@ const updateSchema = z.object({
 
 export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    const role = session.user.role;
-    if (role !== 'superadmin' && role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    await requireRole(['superadmin', 'admin']);
 
     const body = await request.json();
     const result = updateSchema.safeParse(body);
@@ -79,10 +75,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    const role = session.user.role;
-    if (role !== 'superadmin' && role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    await requireRole(['superadmin', 'admin']);
 
     const [rows] = await pool.execute<RowDataPacket[]>('SELECT id, registration_number, status, sync_status, unit, grade, major, student_name, nisn, nik, birth_place, birth_date, gender, religion, address, child_order, siblings_count, previous_school, is_pip, father_name, father_job, mother_name, mother_job, guardian_name, guardian_job, phone, email, student_photo, kk_document, birth_cert_document, diploma_document, created_at, is_printed FROM ppdb_submissions WHERE id = ?', [(await params).id]);
     if (rows.length === 0) return NextResponse.json({ error: 'Not Found' }, { status: 404 });

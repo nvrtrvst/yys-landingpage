@@ -1,8 +1,7 @@
 import { NextResponse } from 'next/server';
 import { handleApiError } from '@/lib/errors';
 import pool from '@/lib/db';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { requireRole } from '@/lib/api-auth';
 import bcrypt from 'bcrypt';
 import crypto from 'crypto';
 import { sendNewUserEmail } from '@/lib/mailer';
@@ -19,10 +18,7 @@ const createUserSchema = z.object({
 
 export async function GET(request: Request) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    const role = session.user.role;
-    if (role !== 'superadmin' && role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    await requireRole(['superadmin', 'admin']);
 
     const [rows] = await pool.execute<RowDataPacket[]>(
       'SELECT id, name, email, role, created_at FROM users ORDER BY created_at DESC'
@@ -37,13 +33,7 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    const sessionRole = session.user.role;
-    // Only superadmin and admin can create users
-    if (sessionRole !== 'superadmin' && sessionRole !== 'admin') {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-    }
+    await requireRole(['superadmin', 'admin']);
 
     const rl = checkRateLimit(`admin:users:${getClientIp(request)}`, 10, 60 * 1000);
     if (!rl.allowed) {
