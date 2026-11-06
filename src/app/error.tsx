@@ -1,6 +1,10 @@
 "use client";
 
+import { useStaleActionReload } from "@/lib/use-stale-action-reload";
+
 export default function RootError({ error, reset }: { error: Error; reset: () => void }) {
+  useStaleActionReload(error);
+
   return (
     <main id="main-content" className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
       <div className="text-center max-w-md">
