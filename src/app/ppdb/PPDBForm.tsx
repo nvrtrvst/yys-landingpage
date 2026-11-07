@@ -12,6 +12,15 @@ interface PpdbError {
   message: string;
 }
 
+function gradeForUnit(value: string): string {
+  if (value === "SMK") return "10";
+  if (value === "SMP") return "7";
+  if (value === "SD") return "1";
+  if (value === "TK") return "TK A";
+  if (value === "LPQ") return "Dasar";
+  return "";
+}
+
 const DEFAULT_UNITS: PPDBUnit[] = [
   { id: 0, name: "LPQ Nuurul Muttaqiin", slug: "lpq", image_url: null, logo_url: null, description: "Lembaga Pendidikan Al-Quran untuk usia dini dan anak-anak." },
   { id: 0, name: "TK Nuurul Muttaqiin", slug: "tk", image_url: null, logo_url: null, description: "Taman Kanak-Kanak Islam Terpadu dengan pendekatan bermain sambil belajar." },
@@ -20,7 +29,7 @@ const DEFAULT_UNITS: PPDBUnit[] = [
   { id: 0, name: "SMK Nuurul Muttaqiin", slug: "smk", image_url: null, logo_url: null, description: "Sekolah Menengah Kejuruan berwawasan global berlandaskan Islam." },
 ];
 
-export function PPDBForm({ units }: { units: PPDBUnit[] }) {
+export function PPDBForm({ units, initialUnit = "" }: { units: PPDBUnit[]; initialUnit?: string }) {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [successMsg, setSuccessMsg] = useState("");
@@ -35,7 +44,12 @@ export function PPDBForm({ units }: { units: PPDBUnit[] }) {
   const [loadingMajors, setLoadingMajors] = useState(false);
   const [majorsError, setMajorsError] = useState("");
   const majorsRequest = useRef(0);
+  const initialPresetApplied = useRef(false);
   const availableUnits = units.length > 0 ? units : DEFAULT_UNITS;
+  const requestedCode = initialUnit.toUpperCase();
+  const initialCode = availableUnits.some((unit) => unit.slug.toUpperCase() === requestedCode)
+    ? requestedCode
+    : "";
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- captcha acak tiap mount
@@ -45,8 +59,8 @@ export function PPDBForm({ units }: { units: PPDBUnit[] }) {
   }, []);
 
   const [formData, setFormData] = useState({
-    unit: "",
-    grade: "",
+    unit: initialCode,
+    grade: gradeForUnit(initialCode),
     major: "",
     student_name: "",
     nisn: "",
@@ -67,14 +81,7 @@ export function PPDBForm({ units }: { units: PPDBUnit[] }) {
   const selectedUnit = availableUnits.find((unit) => unit.slug.toUpperCase() === formData.unit) ?? null;
 
   const selectUnit = (value: string) => {
-    let defaultGrade = "";
-    if (value === "SMK") defaultGrade = "10";
-    else if (value === "SMP") defaultGrade = "7";
-    else if (value === "SD") defaultGrade = "1";
-    else if (value === "TK") defaultGrade = "TK A";
-    else if (value === "LPQ") defaultGrade = "Dasar";
-
-    setFormData((prev) => ({ ...prev, unit: value, major: "", grade: defaultGrade }));
+    setFormData((prev) => ({ ...prev, unit: value, major: "", grade: gradeForUnit(value) }));
     const requestId = ++majorsRequest.current;
     setMajors([]);
     setMajorsError("");
@@ -109,6 +116,14 @@ export function PPDBForm({ units }: { units: PPDBUnit[] }) {
         if (requestId === majorsRequest.current) setLoadingMajors(false);
       });
   };
+
+  useEffect(() => {
+    if (!initialCode || initialPresetApplied.current) return;
+    initialPresetApplied.current = true;
+    // Preset from ?unit=SLUG needs the client-side majors fetch.
+    selectUnit(initialCode);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- run once for the URL preset
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;

@@ -9,7 +9,12 @@ import type { PPDBUnit } from "./types";
 
 export const revalidate = 60;
 
-export default async function PPDBPage() {
+export default async function PPDBPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ unit?: string }>;
+}) {
+  const requestedUnit = (await searchParams).unit?.toUpperCase() ?? "";
   let faqs: RowDataPacket[] = [];
   let units: PPDBUnit[] = [];
   try {
@@ -27,6 +32,10 @@ export default async function PPDBPage() {
     console.error("Failed to fetch PPDB page data", error);
   }
 
+  const initialUnit = units.some((unit) => unit.slug.toUpperCase() === requestedUnit)
+    ? requestedUnit
+    : "";
+
   return (
     <main className="min-h-screen flex flex-col bg-gray-50">
       <div className="bg-primary-900 pb-20">
@@ -41,7 +50,7 @@ export default async function PPDBPage() {
       </div>
 
       <div className="flex-1 -mt-16 mb-20 px-4 md:px-0">
-        <PPDBForm units={units} />
+        <PPDBForm units={units} initialUnit={initialUnit} />
       </div>
 
       {/* FAQ Section */}
