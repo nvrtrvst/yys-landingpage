@@ -1,7 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { UnitInformation } from "./UnitInformation";
+import { UnitPreview } from "./UnitPreview";
+import type { PPDBUnit } from "./types";
 
 
 
@@ -9,7 +11,15 @@ interface PpdbError {
   message: string;
 }
 
-export function PPDBForm() {
+const DEFAULT_UNITS: PPDBUnit[] = [
+  { id: 0, name: "LPQ Nuurul Muttaqiin", slug: "lpq", image_url: null, logo_url: null, description: "Lembaga Pendidikan Al-Quran untuk usia dini dan anak-anak." },
+  { id: 0, name: "TK Nuurul Muttaqiin", slug: "tk", image_url: null, logo_url: null, description: "Taman Kanak-Kanak Islam Terpadu dengan pendekatan bermain sambil belajar." },
+  { id: 0, name: "SD Nuurul Muttaqiin", slug: "sd", image_url: null, logo_url: null, description: "Sekolah Dasar Islam Terpadu yang mengedepankan adab dan ilmu." },
+  { id: 0, name: "SMP Nuurul Muttaqiin", slug: "smp", image_url: null, logo_url: null, description: "Sekolah Menengah Pertama dengan program tahfidz unggulan." },
+  { id: 0, name: "SMK Nuurul Muttaqiin", slug: "smk", image_url: null, logo_url: null, description: "Sekolah Menengah Kejuruan berwawasan global berlandaskan Islam." },
+];
+
+export function PPDBForm({ units }: { units: PPDBUnit[] }) {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [successMsg, setSuccessMsg] = useState("");
@@ -22,6 +32,9 @@ export function PPDBForm() {
 
   const [majors, setMajors] = useState<{id: string, name: string, code?: string}[]>([]);
   const [loadingMajors, setLoadingMajors] = useState(false);
+  const [majorsError, setMajorsError] = useState("");
+  const majorsRequest = useRef(0);
+  const availableUnits = units.length > 0 ? units : DEFAULT_UNITS;
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- captcha acak tiap mount
@@ -50,44 +63,59 @@ export function PPDBForm() {
     email: ""
   });
 
+  const selectedUnit = availableUnits.find((unit) => unit.slug.toUpperCase() === formData.unit) ?? null;
+
+  const selectUnit = (value: string) => {
+    let defaultGrade = "";
+    if (value === "SMK") defaultGrade = "10";
+    else if (value === "SMP") defaultGrade = "7";
+    else if (value === "SD") defaultGrade = "1";
+    else if (value === "TK") defaultGrade = "TK A";
+    else if (value === "LPQ") defaultGrade = "Dasar";
+
+    setFormData((prev) => ({ ...prev, unit: value, major: "", grade: defaultGrade }));
+    const requestId = ++majorsRequest.current;
+    setMajors([]);
+    setMajorsError("");
+
+    if (!value) {
+      setLoadingMajors(false);
+      return;
+    }
+
+    setLoadingMajors(true);
+    fetch(`/api/ppdb/majors?unit=${encodeURIComponent(value)}`)
+      .then((res) => {
+        if (!res.ok) throw new Error("Gagal memuat jurusan");
+        return res.json();
+      })
+      .then((data) => {
+        if (requestId !== majorsRequest.current) return;
+        if (data.success) {
+          setMajors(data.data || []);
+        } else {
+          setMajors([]);
+          setMajorsError("Gagal memuat jurusan.");
+        }
+      })
+      .catch((err) => {
+        if (requestId !== majorsRequest.current) return;
+        console.error("Failed to fetch majors:", err);
+        setMajors([]);
+        setMajorsError("Gagal memuat jurusan. Periksa koneksi lalu coba lagi.");
+      })
+      .finally(() => {
+        if (requestId === majorsRequest.current) setLoadingMajors(false);
+      });
+  };
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    
-    // Reset major and fetch if unit changes
     if (name === "unit") {
-      let defaultGrade = "";
-      if (value === "SMK") defaultGrade = "10";
-      else if (value === "SMP") defaultGrade = "7";
-      else if (value === "SD") defaultGrade = "1";
-      else if (value === "TK") defaultGrade = "TK A";
-      else if (value === "LPQ") defaultGrade = "Dasar";
-
-      setFormData({ ...formData, unit: value, major: "", grade: defaultGrade });
-      
-      if (value) {
-        setLoadingMajors(true);
-        fetch(`/api/ppdb/majors?unit=${value}`)
-          .then(res => res.json())
-          .then(data => {
-            if (data.success) {
-              setMajors(data.data || []);
-            } else {
-              setMajors([]);
-            }
-          })
-          .catch(err => {
-            console.error("Failed to fetch majors:", err);
-            setMajors([]);
-          })
-          .finally(() => {
-            setLoadingMajors(false);
-          });
-      } else {
-        setMajors([]);
-      }
-    } else {
-      setFormData({ ...formData, [name]: value });
+      selectUnit(value);
+      return;
     }
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const nextStep = () => setStep(step + 1);
@@ -157,33 +185,99 @@ export function PPDBForm() {
           <div className="space-y-6">
             <h2 className="text-2xl font-bold text-gray-900 mb-6">Pilih Unit & Jenjang</h2>
             
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Unit Sekolah Tujuan <span className="text-red-500">*</span></label>
-              <select required name="unit" value={formData.unit} onChange={handleChange} className="w-full p-3 md:p-2.5 text-[16px] md:text-sm border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500 bg-white">
-                <option className="text-sm" value="">-- Pilih Unit --</option>
-                <option className="text-sm" value="LPQ">LPQ Nuurul Muttaqiin</option>
-                <option className="text-sm" value="TK">TK Nuurul Muttaqiin</option>
-                <option className="text-sm" value="SD">SD Nuurul Muttaqiin</option>
-                <option className="text-sm" value="SMP">SMP Plus Nuurul Muttaqiin</option>
-                <option className="text-sm" value="SMK">SMK Nuurul Muttaqiin</option>
-              </select>
-              <UnitInformation unit={formData.unit} />
-            </div>
+            <fieldset>
+              <legend className="mb-2 block text-sm font-medium text-gray-700">
+                Unit Sekolah Tujuan <span className="text-red-500">*</span>
+              </legend>
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+                {availableUnits.map((unit) => {
+                  const code = unit.slug.toUpperCase();
+                  const selected = formData.unit === code;
+                  const image = unit.image_url && !unit.image_url.startsWith("/uploads/dummy/") ? unit.image_url : null;
+                  return (
+                    <label
+                      key={unit.slug}
+                      className={`group relative cursor-pointer overflow-hidden rounded-xl border bg-white transition-colors focus-within:ring-2 focus-within:ring-primary-100 ${
+                        selected ? "border-primary-500 ring-2 ring-primary-100" : "border-gray-200 hover:border-primary-300"
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="unit"
+                        value={code}
+                        checked={selected}
+                        onChange={() => selectUnit(code)}
+                        className="sr-only"
+                      />
+                      {image ? (
+                        <img
+                          src={image}
+                          alt={`Foto ${unit.name}`}
+                          className="h-20 w-full object-cover sm:h-24"
+                          loading="lazy"
+                          decoding="async"
+                        />
+                      ) : (
+                        <div className="flex h-20 w-full items-center justify-center bg-primary-50 sm:h-24">
+                          <span className="text-2xl font-bold text-primary-700" aria-hidden="true">
+                            {unit.name.charAt(0)}
+                          </span>
+                        </div>
+                      )}
+                      <div className="p-2.5">
+                        <p className="line-clamp-2 text-sm font-semibold text-gray-900">{unit.name}</p>
+                      </div>
+                    </label>
+                  );
+                })}
+              </div>
+            </fieldset>
 
-            {formData.unit && majors.length > 0 && (
+            <UnitPreview unit={selectedUnit} />
+            <UnitInformation unit={formData.unit} />
+
+            {formData.unit && (loadingMajors || majors.length > 0 || majorsError) && (
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Pilih Jurusan <span className="text-red-500">*</span></label>
-                <select required name="major" value={formData.major} onChange={handleChange} disabled={loadingMajors} className="w-full p-3 md:p-2.5 text-[16px] md:text-sm border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500 bg-white">
-                  <option className="text-sm" value="">{loadingMajors ? "Memuat jurusan..." : "-- Pilih Jurusan --"}</option>
-                  {majors.map(m => (
-                    <option className="text-sm" key={m.id} value={m.name}>{m.name}</option>
-                  ))}
-                </select>
+                {majors.length > 0 ? (
+                  <select
+                    required
+                    name="major"
+                    value={formData.major}
+                    onChange={handleChange}
+                    disabled={loadingMajors}
+                    className="w-full p-3 md:p-2.5 text-[16px] md:text-sm border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500 bg-white"
+                  >
+                    <option className="text-sm" value="">-- Pilih Jurusan --</option>
+                    {majors.map((m) => (
+                      <option className="text-sm" key={m.id} value={m.name}>{m.name}</option>
+                    ))}
+                  </select>
+                ) : null}
+                {loadingMajors ? <p className="mt-2 text-sm text-gray-500">Memuat jurusan…</p> : null}
+                {majorsError ? (
+                  <p className="mt-2 text-sm text-rose-600">
+                    {majorsError}{" "}
+                    <button
+                      type="button"
+                      onClick={() => selectUnit(formData.unit)}
+                      className="font-semibold underline"
+                    >
+                      Coba lagi
+                    </button>
+                  </p>
+                ) : null}
               </div>
             )}
 
             <div className="flex justify-end pt-6">
-              <button onClick={nextStep} disabled={!formData.unit || (majors.length > 0 && !formData.major)} className="px-6 py-3 bg-primary-600 text-white rounded-lg font-medium hover:bg-primary-700 disabled:opacity-50">Selanjutnya &rarr;</button>
+              <button
+                onClick={nextStep}
+                disabled={!formData.unit || loadingMajors || !!majorsError || (majors.length > 0 && !formData.major)}
+                className="px-6 py-3 bg-primary-600 text-white rounded-lg font-medium hover:bg-primary-700 disabled:opacity-50"
+              >
+                Selanjutnya &rarr;
+              </button>
             </div>
           </div>
         )}

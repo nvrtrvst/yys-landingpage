@@ -5,18 +5,26 @@ import { FAQSection, type FaqItem } from "@/components/FAQSection";
 import pool from "@/lib/db";
 import { RowDataPacket } from "mysql2";
 import Link from "next/link";
+import type { PPDBUnit } from "./types";
 
 export const revalidate = 60;
 
 export default async function PPDBPage() {
   let faqs: RowDataPacket[] = [];
+  let units: PPDBUnit[] = [];
   try {
-    const [rows] = await pool.execute<RowDataPacket[]>(
-      "SELECT id, question, answer, category FROM faqs ORDER BY order_index ASC, id ASC"
-    );
-    faqs = rows;
+    const [[faqRows], [unitRows]] = await Promise.all([
+      pool.execute<RowDataPacket[]>(
+        "SELECT id, question, answer, category FROM faqs ORDER BY order_index ASC, id ASC"
+      ),
+      pool.execute<RowDataPacket[]>(
+        "SELECT id, name, slug, image_url, logo_url, description FROM units WHERE status = 'active' ORDER BY order_index ASC"
+      ),
+    ]);
+    faqs = faqRows;
+    units = unitRows as PPDBUnit[];
   } catch (error) {
-    console.error("Failed to fetch FAQs", error);
+    console.error("Failed to fetch PPDB page data", error);
   }
 
   return (
@@ -33,7 +41,7 @@ export default async function PPDBPage() {
       </div>
 
       <div className="flex-1 -mt-16 mb-20 px-4 md:px-0">
-        <PPDBForm />
+        <PPDBForm units={units} />
       </div>
 
       {/* FAQ Section */}

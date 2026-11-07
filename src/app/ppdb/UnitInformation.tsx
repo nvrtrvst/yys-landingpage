@@ -1,5 +1,7 @@
 "use client";
 
+import { MapPin, Phone } from "lucide-react";
+
 // Info spesifik per unit; tambahkan cabang baru di sini bila perlu.
 export function UnitInformation({ unit }: { unit: string }) {
   if (unit === 'SMK') {
@@ -30,7 +32,7 @@ export function UnitInformation({ unit }: { unit: string }) {
           <h4 className="font-bold text-emerald-900 mb-2 border-b border-emerald-200 pb-1 text-sm md:text-base">KONTAK PANITIA SPMB:</h4>
 
           <div className="flex items-start gap-2 mb-3">
-            <span className="text-base mt-0.5 flex-shrink-0">📞</span>
+            <Phone className="mt-0.5 h-5 w-5 flex-shrink-0 text-emerald-700" aria-hidden="true" />
             <div className="flex-1 min-w-0">
               <a href="https://wa.me/6289503078501" target="_blank" rel="noopener noreferrer" className="text-emerald-700 hover:text-emerald-900 hover:underline font-medium inline-block">
                 WhatsApp: +62 895-0307-8501
@@ -40,7 +42,7 @@ export function UnitInformation({ unit }: { unit: string }) {
           </div>
 
           <div className="flex items-start gap-2">
-            <span className="text-base mt-0.5 flex-shrink-0">📍</span>
+            <MapPin className="mt-0.5 h-5 w-5 flex-shrink-0 text-emerald-700" aria-hidden="true" />
             <div className="flex-1 min-w-0">
               <a href="https://maps.google.com/?q=Jalur+Kereta+Api+Garut+-+Cikajang+No.160,+Cisurupan,+Kec.+Cisurupan,+Kabupaten+Garut,+Jawa+Barat+44163" target="_blank" rel="noopener noreferrer" className="text-emerald-700 hover:text-emerald-900 hover:underline block leading-relaxed break-words">
                 Alamat: Jalur Kereta Api Garut - Cikajang No.160, Cisurupan, Kec. Cisurupan, Kabupaten Garut, Jawa Barat 44163
