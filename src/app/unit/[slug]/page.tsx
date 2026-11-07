@@ -145,7 +145,7 @@ export default async function UnitDetailPage({ params }: { params: Promise<{ slu
             </nav>
 
             <div className={`grid items-center gap-10 ${heroImage ? "lg:grid-cols-2" : ""}`}>
-              <div className={heroImage ? "" : "max-w-3xl"}>
+              <div className={heroImage ? "" : "mx-auto max-w-3xl text-center"}>
                 <p className="text-xs font-semibold uppercase tracking-[0.2em] text-accent-default">
                   Unit Pendidikan
                 </p>
@@ -153,12 +153,12 @@ export default async function UnitDetailPage({ params }: { params: Promise<{ slu
                   {unit.name}
                 </h1>
                 {unit.description ? (
-                  <p className="mt-5 max-w-2xl text-lg leading-relaxed text-primary-100">
+                  <p className={`mt-5 text-lg leading-relaxed text-primary-100 ${heroImage ? "max-w-2xl" : "mx-auto max-w-2xl"}`}>
                     {unit.description}
                   </p>
                 ) : null}
 
-                <div className="mt-8 flex flex-wrap items-center gap-3">
+                <div className={`mt-8 flex flex-wrap items-center gap-3 ${heroImage ? "" : "justify-center"}`}>
                   <Link
                     href={ppdbHref}
                     className="inline-flex min-h-11 items-center rounded-lg bg-accent-default px-5 py-3 text-sm font-semibold text-primary-900 transition-colors hover:bg-accent-light"
@@ -174,7 +174,7 @@ export default async function UnitDetailPage({ params }: { params: Promise<{ slu
                 </div>
 
                 {(address || phone) && (
-                  <div className="mt-8 flex flex-wrap gap-x-6 gap-y-2 text-sm text-primary-100">
+                  <div className={`mt-8 flex flex-wrap gap-x-6 gap-y-2 text-sm text-primary-100 ${heroImage ? "" : "justify-center"}`}>
                     {address ? (
                       <span className="inline-flex items-start gap-2">
                         <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-accent-default" aria-hidden="true" />
@@ -192,11 +192,11 @@ export default async function UnitDetailPage({ params }: { params: Promise<{ slu
               </div>
 
               {heroImage ? (
-                <div className="overflow-hidden rounded-2xl border border-white/10">
+                <div className="overflow-hidden rounded-2xl border border-white/10 bg-white p-3">
                   <img
                     src={heroImage}
                     alt={`Foto ${unit.name}`}
-                    className="aspect-[4/3] w-full object-cover"
+                    className="mx-auto max-h-[360px] w-full object-contain md:max-h-[420px]"
                     loading="eager"
                     decoding="async"
                   />
