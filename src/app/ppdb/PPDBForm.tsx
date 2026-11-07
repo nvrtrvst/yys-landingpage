@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { UnitInformation } from "./UnitInformation";
 import { UnitPreview } from "./UnitPreview";
+import { UnitBanner } from "./UnitBanner";
 import type { PPDBUnit } from "./types";
 
 
@@ -120,6 +121,10 @@ export function PPDBForm({ units }: { units: PPDBUnit[] }) {
 
   const nextStep = () => setStep(step + 1);
   const prevStep = () => setStep(step - 1);
+  const backToUnit = () => {
+    setStep(1);
+    document.getElementById("ppdb-form")?.scrollIntoView({ block: "start" });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -166,7 +171,7 @@ export function PPDBForm({ units }: { units: PPDBUnit[] }) {
   };
 
   return (
-    <div className="max-w-3xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden">
+    <div id="ppdb-form" className="max-w-3xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden">
       {/* Progress Bar */}
       {step < 6 && (
         <div className="bg-gray-50 px-8 py-4 border-b border-gray-100 flex justify-between">
@@ -181,57 +186,34 @@ export function PPDBForm({ units }: { units: PPDBUnit[] }) {
       )}
 
       <div className="p-8">
+        {step > 1 && selectedUnit ? (
+          <UnitBanner unit={selectedUnit} onChangeUnit={backToUnit} />
+        ) : null}
+
         {step === 1 && (
           <div className="space-y-6">
             <h2 className="text-2xl font-bold text-gray-900 mb-6">Pilih Unit & Jenjang</h2>
             
-            <fieldset>
-              <legend className="mb-2 block text-sm font-medium text-gray-700">
+            <div>
+              <label htmlFor="unit" className="mb-2 block text-sm font-medium text-gray-700">
                 Unit Sekolah Tujuan <span className="text-red-500">*</span>
-              </legend>
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-                {availableUnits.map((unit) => {
-                  const code = unit.slug.toUpperCase();
-                  const selected = formData.unit === code;
-                  const image = unit.image_url && !unit.image_url.startsWith("/uploads/dummy/") ? unit.image_url : null;
-                  return (
-                    <label
-                      key={unit.slug}
-                      className={`group relative cursor-pointer overflow-hidden rounded-xl border bg-white transition-colors focus-within:ring-2 focus-within:ring-primary-100 ${
-                        selected ? "border-primary-500 ring-2 ring-primary-100" : "border-gray-200 hover:border-primary-300"
-                      }`}
-                    >
-                      <input
-                        type="radio"
-                        name="unit"
-                        value={code}
-                        checked={selected}
-                        onChange={() => selectUnit(code)}
-                        className="sr-only"
-                      />
-                      {image ? (
-                        <img
-                          src={image}
-                          alt={`Foto ${unit.name}`}
-                          className="h-20 w-full object-cover sm:h-24"
-                          loading="lazy"
-                          decoding="async"
-                        />
-                      ) : (
-                        <div className="flex h-20 w-full items-center justify-center bg-primary-50 sm:h-24">
-                          <span className="text-2xl font-bold text-primary-700" aria-hidden="true">
-                            {unit.name.charAt(0)}
-                          </span>
-                        </div>
-                      )}
-                      <div className="p-2.5">
-                        <p className="line-clamp-2 text-sm font-semibold text-gray-900">{unit.name}</p>
-                      </div>
-                    </label>
-                  );
-                })}
-              </div>
-            </fieldset>
+              </label>
+              <select
+                id="unit"
+                required
+                name="unit"
+                value={formData.unit}
+                onChange={handleChange}
+                className="w-full rounded-lg border border-gray-300 bg-white p-3 text-[16px] focus:border-primary-500 focus:ring-primary-500 md:p-2.5 md:text-sm"
+              >
+                <option value="">-- Pilih Unit --</option>
+                {availableUnits.map((unit) => (
+                  <option key={unit.slug} value={unit.slug.toUpperCase()}>
+                    {unit.name}
+                  </option>
+                ))}
+              </select>
+            </div>
 
             <UnitPreview unit={selectedUnit} />
             <UnitInformation unit={formData.unit} />
