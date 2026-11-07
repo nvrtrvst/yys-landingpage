@@ -140,6 +140,8 @@ CREATE TABLE IF NOT EXISTS ppdb_submissions (
     synced_at DATETIME,
     sync_attempts INT NOT NULL DEFAULT 0,
     sync_external_id VARCHAR(64),
+    sync_class_id VARCHAR(64),
+    sync_class_name VARCHAR(100),
     updated_at DATETIME NULL,
     updated_by_name VARCHAR(255) NULL,
     last_action VARCHAR(50) NULL,

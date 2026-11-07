@@ -30,6 +30,7 @@ const activityLabels: Record<string, string> = {
   sync_manual: "Sinkronisasi manual",
   sync_failed: "Sinkronisasi gagal",
   deactivated: "Nonaktifkan di SIM",
+  class_synced: "Kelas dari SIM Keuangan",
 };
 
 interface PPDBDetail {
@@ -65,6 +66,8 @@ interface PPDBDetail {
   sync_error: string | null;
   synced_at: string | null;
   sync_attempts: number;
+  sync_class_id: string | null;
+  sync_class_name: string | null;
   is_printed?: boolean;
 }
 
@@ -249,6 +252,11 @@ export default function PPDBDetailPage() {
           <div>
             <label className="text-xs text-slate-500 uppercase tracking-wider">Unit Sekolah & Kelas</label>
             <p className="font-semibold text-slate-900">{data.unit} - {data.grade} {data.major ? `(${data.major})` : ''}</p>
+            <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-semibold ${
+              data.sync_class_name ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-700"
+            }`}>
+              {data.sync_class_name || "Belum ada kelas"}
+            </span>
           </div>
           <div>
             <label className="text-xs text-slate-500 uppercase tracking-wider">NISN</label>
@@ -336,12 +344,20 @@ export default function PPDBDetailPage() {
                     {data.sync_attempts} percobaan{data.synced_at ? ` · terakhir ${new Date(data.synced_at).toLocaleString('id-ID')}` : ''}
                   </p>
                 )}
+                <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
+                  <span className="text-slate-500">Kelas</span>
+                  <span className={`inline-flex items-center rounded-md px-2 py-0.5 font-semibold ${
+                    data.sync_class_name ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-700"
+                  }`}>
+                    {data.sync_class_name || "Belum ada kelas"}
+                  </span>
+                </div>
               </div>
-              {data.sync_status !== 'success' && (
+              {(data.sync_status !== 'success' || !!data.sync_warning || !data.sync_class_name) ? (
                 <button onClick={retrySync} className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-700">
-                  {data.sync_status === 'failed' ? 'Coba Lagi' : 'Sinkronkan'}
+                  {data.sync_status !== 'success' ? (data.sync_status === 'failed' ? 'Coba Lagi' : 'Sinkronkan') : 'Sinkronkan ulang'}
                 </button>
-              )}
+              ) : null}
             </div>
             {data.sync_warning && (
               <p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded p-3">{data.sync_warning}</p>

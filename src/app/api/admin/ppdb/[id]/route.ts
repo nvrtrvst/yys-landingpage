@@ -116,7 +116,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
   try {
     await requireModuleOrRoles('ppdb_data', ['superadmin', 'admin']);
 
-    const [rows] = await pool.execute<RowDataPacket[]>('SELECT id, registration_number, status, sync_status, unit, grade, major, student_name, nisn, nik, birth_place, birth_date, gender, religion, address, child_order, siblings_count, previous_school, is_pip, father_name, father_job, mother_name, mother_job, guardian_name, guardian_job, phone, email, student_photo, kk_document, birth_cert_document, diploma_document, created_at, is_printed, updated_at, updated_by_name, last_action, sync_warning, sync_error, synced_at, sync_attempts, sync_external_id FROM ppdb_submissions WHERE id = ?', [(await params).id]);
+    const [rows] = await pool.execute<RowDataPacket[]>('SELECT id, registration_number, status, sync_status, unit, grade, major, student_name, nisn, nik, birth_place, birth_date, gender, religion, address, child_order, siblings_count, previous_school, is_pip, father_name, father_job, mother_name, mother_job, guardian_name, guardian_job, phone, email, student_photo, kk_document, birth_cert_document, diploma_document, created_at, is_printed, updated_at, updated_by_name, last_action, sync_warning, sync_error, synced_at, sync_attempts, sync_external_id, sync_class_id, sync_class_name FROM ppdb_submissions WHERE id = ?', [(await params).id]);
     if (rows.length === 0) return NextResponse.json({ error: 'Not Found' }, { status: 404 });
 
     return NextResponse.json(rows[0]);

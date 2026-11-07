@@ -7,15 +7,17 @@ const KEU_URL = process.env.KEUANGAN_API_URL || "http://localhost:3000";
 const KEU_KEY = process.env.KEUANGAN_INTEGRATION_KEY;
 const KEU_TIMEOUT_MS = Number(process.env.KEU_SYNC_TIMEOUT_MS || 8000);
 
-type SyncResult = {
-  ok: boolean;
-  skipped?: boolean;
-  alreadyExists?: boolean;
-  updated?: boolean;
-  warnings?: string[];
-  externalId?: string | null;
-  error?: string;
-};
+ type SyncResult = {
+   ok: boolean;
+   skipped?: boolean;
+   alreadyExists?: boolean;
+   updated?: boolean;
+   warnings?: string[];
+   externalId?: string | null;
+   classId?: string | null;
+   className?: string | null;
+   error?: string;
+ };
 
 function mapGender(gender: string): "L" | "P" {
   return gender === "Perempuan" ? "P" : "L";
@@ -106,12 +108,15 @@ export async function syncPpdbSubmission(
 
     const warnings: string[] = Array.isArray(data?.data?.warnings) ? data.data.warnings : [];
     const externalId: string | null = data?.data?.id ?? null;
+    const classId: string | null = typeof data?.data?.classId === "string" && data.data.classId ? data.data.classId : null;
+    const className: string | null = typeof data?.data?.className === "string" && data.data.className ? data.data.className : null;
     await pool.execute(
       `UPDATE ppdb_submissions
        SET sync_status = 'success', sync_warning = ?, sync_error = NULL, synced_at = NOW(),
-           sync_attempts = sync_attempts + 1, sync_external_id = ?
+           sync_attempts = sync_attempts + 1, sync_external_id = ?,
+           sync_class_id = ?, sync_class_name = ?
        WHERE id = ?`,
-      [warnings.length > 0 ? warnings.join(" ") : null, externalId, id]
+      [warnings.length > 0 ? warnings.join(" ") : null, externalId, classId, className, id]
     );
     await logSync(
       id,
@@ -132,6 +137,8 @@ export async function syncPpdbSubmission(
       updated: !!data?.updated,
       warnings,
       externalId,
+      classId,
+      className,
     };
   } catch (error) {
     logError(error, "SIM sync");

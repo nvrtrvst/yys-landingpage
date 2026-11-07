@@ -21,6 +21,8 @@ interface PPDBRow {
   updated_at: string | null;
   updated_by_name: string | null;
   last_action: string | null;
+  sync_class_id: string | null;
+  sync_class_name: string | null;
   is_printed: boolean;
   birth_place: string;
   birth_date: string;
@@ -458,6 +460,11 @@ export default function PPDBPage() {
                       <span className="ml-2 text-xs text-slate-500">
                         {row.grade}{row.major ? ` · ${row.major}` : ""}
                       </span>
+                      {row.sync_class_name ? (
+                        <p className="mt-1 text-xs font-medium text-emerald-700">{row.sync_class_name}</p>
+                      ) : (
+                        <p className="mt-1 text-xs font-medium text-amber-700">Belum ada kelas</p>
+                      )}
                     </td>
                     <td className="px-4 py-3 text-xs text-slate-500">
                       {new Date(row.created_at).toLocaleDateString("id-ID", {
