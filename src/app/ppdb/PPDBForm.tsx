@@ -1,10 +1,32 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { getErrorMessage } from "@/lib/get-error-message";
 import { UnitInformation } from "./UnitInformation";
 import { UnitPreview } from "./UnitPreview";
 import { UnitBanner } from "./UnitBanner";
+import { DocumentField, type UploadStatus, type UploadedDocument } from "./DocumentField";
 import type { PPDBUnit } from "./types";
+
+type DocKey = "photo" | "kk" | "akta" | "ijazah";
+
+const fieldClass =
+  "w-full rounded-lg border border-gray-300 p-3 text-[16px] focus:border-primary-500 focus:ring-primary-500 md:text-sm";
+
+function Hint({ id, children }: { id: string; children: React.ReactNode }) {
+  return (
+    <p id={id} className="mt-1 text-xs text-gray-500">
+      {children}
+    </p>
+  );
+}
+
+const emptyDocStatus = (): Record<DocKey, { status: UploadStatus; error?: string }> => ({
+  photo: { status: "idle" },
+  kk: { status: "idle" },
+  akta: { status: "idle" },
+  ijazah: { status: "idle" },
+});
 
 
 
@@ -52,7 +74,6 @@ export function PPDBForm({ units, initialUnit = "" }: { units: PPDBUnit[]; initi
     : "";
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- captcha acak tiap mount
     setCaptchaA(Math.floor(Math.random() * 10) + 1);
      
     setCaptchaB(Math.floor(Math.random() * 10) + 1);
@@ -80,7 +101,18 @@ export function PPDBForm({ units, initialUnit = "" }: { units: PPDBUnit[]; initi
 
   const selectedUnit = availableUnits.find((unit) => unit.slug.toUpperCase() === formData.unit) ?? null;
 
+  const [documents, setDocuments] = useState<Partial<Record<DocKey, UploadedDocument>>>({});
+  const [docStatus, setDocStatus] = useState(emptyDocStatus);
+  const [draft, setDraft] = useState<{ draftId: string; token: string } | null>(null);
+  const [docResetNotice, setDocResetNotice] = useState("");
+
   const selectUnit = (value: string) => {
+    if (Object.keys(documents).length > 0) {
+      setDocResetNotice("Dokumen direset karena unit berubah. Silakan unggah ulang.");
+    }
+    setDocuments({});
+    setDocStatus(emptyDocStatus());
+    setDraft(null);
     setFormData((prev) => ({ ...prev, unit: value, major: "", grade: gradeForUnit(value) }));
     const requestId = ++majorsRequest.current;
     setMajors([]);
@@ -134,6 +166,59 @@ export function PPDBForm({ units, initialUnit = "" }: { units: PPDBUnit[]; initi
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  const uploadDocument = async (type: DocKey, file: File) => {
+    const unit = formData.unit.toLowerCase();
+    if (!unit) return;
+
+    setDocResetNotice("");
+    setDocStatus((prev) => ({ ...prev, [type]: { status: "uploading" } }));
+
+    try {
+      const body = new FormData();
+      body.append("file", file);
+      body.append("unit", unit);
+      body.append("type", type);
+      if (draft) {
+        body.append("draftId", draft.draftId);
+        body.append("token", draft.token);
+      }
+
+      const res = await fetch("/api/ppdb/documents", { method: "POST", body });
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        if (res.status === 403) {
+          setDraft(null);
+          setDocuments({});
+          setDocStatus(emptyDocStatus());
+          setDocResetNotice("Sesi upload kedaluwarsa. Silakan unggah ulang dokumen.");
+        }
+        throw new Error(data.error || "Gagal mengunggah dokumen.");
+      }
+
+      setDraft({ draftId: data.draftId, token: data.token });
+      setDocuments((prev) => ({
+        ...prev,
+        [type]: { key: data.key, url: data.url, name: file.name, size: file.size },
+      }));
+      setDocStatus((prev) => ({ ...prev, [type]: { status: "success" } }));
+    } catch (error: unknown) {
+      setDocStatus((prev) => ({
+        ...prev,
+        [type]: { status: "error", error: getErrorMessage(error, "Gagal mengunggah dokumen.") },
+      }));
+    }
+  };
+
+  const removeDocument = (type: DocKey) => {
+    setDocuments((prev) => {
+      const next = { ...prev };
+      delete next[type];
+      return next;
+    });
+    setDocStatus((prev) => ({ ...prev, [type]: { status: "idle" } }));
+  };
+
   const nextStep = () => setStep(step + 1);
   const prevStep = () => setStep(step - 1);
   const backToUnit = () => {
@@ -152,7 +237,13 @@ export function PPDBForm({ units, initialUnit = "" }: { units: PPDBUnit[]; initi
         body: JSON.stringify({
           ...formData,
           child_order: 1,
-          siblings_count: 0
+          siblings_count: 0,
+          student_photo: documents.photo?.url,
+          kk_document: documents.kk?.key,
+          birth_cert_document: documents.akta?.key,
+          diploma_document: documents.ijazah?.key,
+          draftId: draft?.draftId,
+          uploadToken: draft?.token,
         }),
       });
       
@@ -177,12 +268,28 @@ export function PPDBForm({ units, initialUnit = "" }: { units: PPDBUnit[]; initi
     }
   };
 
-  const isStep2Valid = () => {
-    if (formData.student_name.length < 3 || formData.birth_place.length < 3 || !formData.birth_date || formData.address.length < 10) return false;
-    if (formData.unit === 'SMK') {
-      if (!formData.nisn || !formData.nik || !formData.religion || !formData.previous_school) return false;
+  const step2Missing = (): string[] => {
+    const missing: string[] = [];
+    if (formData.student_name.trim().length < 3) missing.push("Nama Lengkap");
+    if (formData.birth_place.trim().length < 3) missing.push("Tempat Lahir");
+    if (!formData.birth_date) missing.push("Tanggal Lahir");
+    if (formData.address.trim().length < 10) missing.push("Alamat Tempat Tinggal");
+    if (formData.unit === "SMK") {
+      if (!formData.nisn.trim()) missing.push("NISN");
+      if (!formData.nik.trim()) missing.push("NIK");
+      if (!formData.religion) missing.push("Agama");
+      if (!formData.previous_school.trim()) missing.push("Asal Sekolah");
     }
-    return true;
+    return missing;
+  };
+
+  const step3Missing = (): string[] => {
+    const missing: string[] = [];
+    if (formData.father_name.trim().length < 3) missing.push("Nama Ayah");
+    if (formData.mother_name.trim().length < 3) missing.push("Nama Ibu");
+    if (!/^(08|62)\d{8,13}$/.test(formData.phone.trim())) missing.push("No. HP/WhatsApp");
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim())) missing.push("Email");
+    return missing;
   };
 
   return (
@@ -228,6 +335,12 @@ export function PPDBForm({ units, initialUnit = "" }: { units: PPDBUnit[]; initi
                   </option>
                 ))}
               </select>
+              <p className="mt-1 text-xs text-gray-500">
+                Kelas awal diisi otomatis sesuai unit yang dipilih.
+              </p>
+              {docResetNotice ? (
+                <p className="mt-1 text-xs text-amber-700" role="status">{docResetNotice}</p>
+              ) : null}
             </div>
 
             <UnitPreview unit={selectedUnit} />
@@ -284,39 +397,45 @@ export function PPDBForm({ units, initialUnit = "" }: { units: PPDBUnit[]; initi
             <h2 className="text-2xl font-bold text-gray-900 mb-6">Data Calon Siswa</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Nama Lengkap <span className="text-red-500">*</span></label>
-                <input type="text" required name="student_name" value={formData.student_name} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded-lg" />
+                <label htmlFor="student_name" className="mb-1 block text-sm font-medium text-gray-700">Nama Lengkap <span className="text-red-500">*</span></label>
+                <input id="student_name" type="text" required maxLength={150} autoComplete="name" name="student_name" value={formData.student_name} onChange={handleChange} placeholder="Sesuai akta kelahiran/ijazah" aria-describedby="student_name-hint" className={fieldClass} />
+                <Hint id="student_name-hint">3–150 karakter. Tulis sesuai dokumen resmi.</Hint>
               </div>
-              
+
               {formData.unit === 'SMK' ? (
                 <>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">NISN <span className="text-red-500">*</span></label>
-                    <input type="text" required name="nisn" value={formData.nisn} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded-lg" />
+                    <label htmlFor="nisn" className="mb-1 block text-sm font-medium text-gray-700">NISN <span className="text-red-500">*</span></label>
+                    <input id="nisn" type="text" required maxLength={20} inputMode="numeric" name="nisn" value={formData.nisn} onChange={handleChange} placeholder="Nomor Induk Siswa Nasional" aria-describedby="nisn-hint" className={fieldClass} />
+                    <Hint id="nisn-hint">Wajib untuk SMK. Umumnya 10 digit.</Hint>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">No. Induk Kependudukan (NIK) <span className="text-red-500">*</span></label>
-                    <input type="text" required name="nik" value={formData.nik} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded-lg" />
+                    <label htmlFor="nik" className="mb-1 block text-sm font-medium text-gray-700">No. Induk Kependudukan (NIK) <span className="text-red-500">*</span></label>
+                    <input id="nik" type="text" required maxLength={16} inputMode="numeric" name="nik" value={formData.nik} onChange={handleChange} placeholder="16 digit sesuai KK" aria-describedby="nik-hint" className={fieldClass} />
+                    <Hint id="nik-hint">Wajib untuk SMK. 16 digit sesuai Kartu Keluarga.</Hint>
                   </div>
                 </>
               ) : (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">NISN (Opsional)</label>
-                  <input type="text" name="nisn" value={formData.nisn} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded-lg" />
+                  <label htmlFor="nisn-opsional" className="mb-1 block text-sm font-medium text-gray-700">NISN (Opsional)</label>
+                  <input id="nisn-opsional" type="text" maxLength={20} inputMode="numeric" name="nisn" value={formData.nisn} onChange={handleChange} placeholder="Nomor Induk Siswa Nasional" aria-describedby="nisn-opsional-hint" className={fieldClass} />
+                  <Hint id="nisn-opsional-hint">Isi bila sudah memiliki NISN.</Hint>
                 </div>
               )}
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Tempat Lahir <span className="text-red-500">*</span></label>
-                <input type="text" required name="birth_place" value={formData.birth_place} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded-lg" />
+                <label htmlFor="birth_place" className="mb-1 block text-sm font-medium text-gray-700">Tempat Lahir <span className="text-red-500">*</span></label>
+                <input id="birth_place" type="text" required maxLength={100} name="birth_place" value={formData.birth_place} onChange={handleChange} placeholder="Contoh: Garut" aria-describedby="birth_place-hint" className={fieldClass} />
+                <Hint id="birth_place-hint">3–100 karakter.</Hint>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Tanggal Lahir <span className="text-red-500">*</span></label>
-                <input type="date" required name="birth_date" value={formData.birth_date} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded-lg" />
+                <label htmlFor="birth_date" className="mb-1 block text-sm font-medium text-gray-700">Tanggal Lahir <span className="text-red-500">*</span></label>
+                <input id="birth_date" type="date" required name="birth_date" max={new Date().toISOString().slice(0, 10)} value={formData.birth_date} onChange={handleChange} aria-describedby="birth_date-hint" className={fieldClass} />
+                <Hint id="birth_date-hint">Sesuai akta kelahiran/KK.</Hint>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Jenis Kelamin <span className="text-red-500">*</span></label>
-                <select name="gender" value={formData.gender} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded-lg bg-white">
+                <label htmlFor="gender" className="mb-1 block text-sm font-medium text-gray-700">Jenis Kelamin <span className="text-red-500">*</span></label>
+                <select id="gender" name="gender" value={formData.gender} onChange={handleChange} className={fieldClass}>
                   <option value="Laki-laki">Laki-Laki</option>
                   <option value="Perempuan">Perempuan</option>
                 </select>
@@ -324,8 +443,8 @@ export function PPDBForm({ units, initialUnit = "" }: { units: PPDBUnit[]; initi
 
               {formData.unit === 'SMK' && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Agama <span className="text-red-500">*</span></label>
-                  <select required name="religion" value={formData.religion} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded-lg bg-white">
+                  <label htmlFor="religion" className="mb-1 block text-sm font-medium text-gray-700">Agama <span className="text-red-500">*</span></label>
+                  <select required id="religion" name="religion" value={formData.religion} onChange={handleChange} aria-describedby="religion-hint" className={fieldClass}>
                     <option value="">-- Pilih Agama --</option>
                     <option value="Islam">Islam</option>
                     <option value="Kristen">Kristen</option>
@@ -334,34 +453,47 @@ export function PPDBForm({ units, initialUnit = "" }: { units: PPDBUnit[]; initi
                     <option value="Buddha">Buddha</option>
                     <option value="Konghucu">Konghucu</option>
                   </select>
+                  <Hint id="religion-hint">Wajib untuk pendaftar SMK.</Hint>
                 </div>
               )}
 
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Alamat Tempat Tinggal <span className="text-red-500">*</span></label>
-                <textarea required name="address" value={formData.address} onChange={handleChange} rows={3} className="w-full p-3 border border-gray-300 rounded-lg"></textarea>
+                <div className="mb-1 flex items-baseline justify-between gap-2">
+                  <label htmlFor="address" className="block text-sm font-medium text-gray-700">Alamat Tempat Tinggal <span className="text-red-500">*</span></label>
+                  <span className="text-xs text-gray-400">{formData.address.length}/500</span>
+                </div>
+                <textarea id="address" required name="address" maxLength={500} value={formData.address} onChange={handleChange} rows={3} placeholder="Jalan, RT/RW, desa/kelurahan, kecamatan, kabupaten" aria-describedby="address-hint" className={fieldClass}></textarea>
+                <Hint id="address-hint">Minimal 10 dan maksimal 500 karakter. Sertakan jalan, RT/RW, desa/kelurahan, kecamatan, dan kabupaten.</Hint>
               </div>
 
               {formData.unit === 'SMK' && (
                 <>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Asal Sekolah (SMP/MTs) <span className="text-red-500">*</span></label>
-                    <input type="text" required name="previous_school" value={formData.previous_school} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded-lg" />
+                    <label htmlFor="previous_school" className="mb-1 block text-sm font-medium text-gray-700">Asal Sekolah (SMP/MTs) <span className="text-red-500">*</span></label>
+                    <input id="previous_school" type="text" required maxLength={200} name="previous_school" value={formData.previous_school} onChange={handleChange} placeholder="Nama SMP/MTs" aria-describedby="previous_school-hint" className={fieldClass} />
+                    <Hint id="previous_school-hint">Wajib untuk SMK. Tulis nama sekolah asal.</Hint>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Apakah Penerima KPS/PKH/KIP/PIP <span className="text-red-500">*</span></label>
-                    <select required name="is_pip" value={formData.is_pip} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded-lg bg-white">
+                    <label htmlFor="is_pip" className="mb-1 block text-sm font-medium text-gray-700">Apakah Penerima KPS/PKH/KIP/PIP <span className="text-red-500">*</span></label>
+                    <select required id="is_pip" name="is_pip" value={formData.is_pip} onChange={handleChange} aria-describedby="is_pip-hint" className={fieldClass}>
                       <option value="TIDAK">TIDAK</option>
                       <option value="YA">YA</option>
                     </select>
+                    <Hint id="is_pip-hint">Pilih YA bila memiliki KPS/PKH/KIP/PIP.</Hint>
                   </div>
                 </>
               )}
             </div>
-            
+
+            {step2Missing().length > 0 ? (
+              <p className="text-xs text-gray-500">
+                Lengkap dulu: {step2Missing().join(", ")}.
+              </p>
+            ) : null}
+
             <div className="flex justify-between pt-6 border-t border-gray-100">
               <button onClick={prevStep} className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50">&larr; Kembali</button>
-              <button onClick={nextStep} disabled={!isStep2Valid()} className="px-6 py-3 bg-primary-600 text-white rounded-lg font-medium hover:bg-primary-700 disabled:opacity-50">Selanjutnya &rarr;</button>
+              <button onClick={nextStep} disabled={step2Missing().length > 0} className="px-6 py-3 bg-primary-600 text-white rounded-lg font-medium hover:bg-primary-700 disabled:opacity-50">Selanjutnya &rarr;</button>
             </div>
           </div>
         )}
@@ -371,63 +503,122 @@ export function PPDBForm({ units, initialUnit = "" }: { units: PPDBUnit[]; initi
             <h2 className="text-2xl font-bold text-gray-900 mb-6">Data Orang Tua / Wali</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Nama Ayah <span className="text-red-500">*</span></label>
-                <input type="text" required name="father_name" value={formData.father_name} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded-lg" />
+                <label htmlFor="father_name" className="mb-1 block text-sm font-medium text-gray-700">Nama Ayah <span className="text-red-500">*</span></label>
+                <input id="father_name" type="text" required maxLength={150} autoComplete="name" name="father_name" value={formData.father_name} onChange={handleChange} placeholder="Sesuai KK/KTP" aria-describedby="father_name-hint" className={fieldClass} />
+                <Hint id="father_name-hint">3–150 karakter, sesuai Kartu Keluarga/KTP.</Hint>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Nama Ibu <span className="text-red-500">*</span></label>
-                <input type="text" required name="mother_name" value={formData.mother_name} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded-lg" />
+                <label htmlFor="mother_name" className="mb-1 block text-sm font-medium text-gray-700">Nama Ibu <span className="text-red-500">*</span></label>
+                <input id="mother_name" type="text" required maxLength={150} autoComplete="name" name="mother_name" value={formData.mother_name} onChange={handleChange} placeholder="Sesuai KK/KTP" aria-describedby="mother_name-hint" className={fieldClass} />
+                <Hint id="mother_name-hint">3–150 karakter, sesuai Kartu Keluarga/KTP.</Hint>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">No. HP / WhatsApp Aktif <span className="text-red-500">*</span></label>
-                <input type="text" required name="phone" value={formData.phone} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded-lg" />
+                <label htmlFor="phone" className="mb-1 block text-sm font-medium text-gray-700">No. HP / WhatsApp Aktif <span className="text-red-500">*</span></label>
+                <input id="phone" type="text" required maxLength={20} inputMode="tel" autoComplete="tel" name="phone" value={formData.phone} onChange={handleChange} placeholder="081234567890" aria-describedby="phone-hint" className={fieldClass} />
+                <Hint id="phone-hint">10–20 digit, diawali 08 atau 62. Pastikan WhatsApp aktif untuk notifikasi panitia.</Hint>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Email <span className="text-red-500">*</span></label>
-                <input type="email" required name="email" value={formData.email} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded-lg" />
+                <label htmlFor="email" className="mb-1 block text-sm font-medium text-gray-700">Email <span className="text-red-500">*</span></label>
+                <input id="email" type="email" required maxLength={255} autoComplete="email" name="email" value={formData.email} onChange={handleChange} placeholder="nama@email.com" aria-describedby="email-hint" className={fieldClass} />
+                <Hint id="email-hint">Dipakai untuk mengirim informasi pendaftaran ke alamat ini.</Hint>
               </div>
             </div>
-            
+
+            {step3Missing().length > 0 ? (
+              <p className="text-xs text-gray-500">
+                Lengkap dulu: {step3Missing().join(", ")}.
+              </p>
+            ) : null}
+
             <div className="flex justify-between pt-6 border-t border-gray-100">
               <button onClick={prevStep} className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50">&larr; Kembali</button>
-              <button onClick={nextStep} disabled={formData.father_name.length < 3 || formData.mother_name.length < 3 || !/^(08|62)\d{8,13}$/.test(formData.phone) || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)} className="px-6 py-3 bg-primary-600 text-white rounded-lg font-medium hover:bg-primary-700 disabled:opacity-50">Selanjutnya &rarr;</button>
+              <button onClick={nextStep} disabled={step3Missing().length > 0} className="px-6 py-3 bg-primary-600 text-white rounded-lg font-medium hover:bg-primary-700 disabled:opacity-50">Selanjutnya &rarr;</button>
             </div>
           </div>
         )}
 
         {step === 4 && (
           <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Upload Dokumen (Opsional)</h2>
-            <div className="bg-blue-50 p-4 rounded-lg text-blue-800 text-sm mb-6 border border-blue-200">
-              <p>Anda dapat mengunggah dokumen pendukung sekarang atau nanti saat daftar ulang. Kosongkan jika belum ada.</p>
-            </div>
-            
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Upload Dokumen (Opsional)</h2>
+            <p className="text-sm text-gray-600">
+              Anda dapat mengunggah dokumen pendukung sekarang atau menyusul saat daftar ulang.
+              Kosongkan bila belum tersedia.
+            </p>
+            {docResetNotice ? (
+              <p className="text-xs text-amber-700" role="status">{docResetNotice}</p>
+            ) : null}
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Kartu Keluarga (KK)</label>
-                <input type="file" accept=".pdf,.jpg,.jpeg,.png" className="w-full p-3 border border-gray-300 rounded-lg bg-white" />
-                <span className="text-xs text-gray-500 mt-1 block">Format: PDF, JPG, PNG (Maks 2MB)</span>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Akta Kelahiran</label>
-                <input type="file" accept=".pdf,.jpg,.jpeg,.png" className="w-full p-3 border border-gray-300 rounded-lg bg-white" />
-                <span className="text-xs text-gray-500 mt-1 block">Format: PDF, JPG, PNG (Maks 2MB)</span>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Ijazah / SKL</label>
-                <input type="file" accept=".pdf,.jpg,.jpeg,.png" className="w-full p-3 border border-gray-300 rounded-lg bg-white" />
-                <span className="text-xs text-gray-500 mt-1 block">Format: PDF, JPG, PNG (Maks 2MB)</span>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Pas Foto (3x4)</label>
-                <input type="file" accept=".jpg,.jpeg,.png" className="w-full p-3 border border-gray-300 rounded-lg bg-white" />
-                <span className="text-xs text-gray-500 mt-1 block">Format: JPG, PNG (Maks 1MB)</span>
-              </div>
+              <DocumentField
+                id="doc-photo"
+                label="Pas Foto (3x4)"
+                hint="JPG/PNG/WebP, maks 1MB. Wajah jelas tanpa tutup kepala."
+                accept=".jpg,.jpeg,.png"
+                preview
+                status={docStatus.photo.status}
+                error={docStatus.photo.error}
+                file={documents.photo}
+                onSelect={(file) => uploadDocument("photo", file)}
+                onRemove={() => removeDocument("photo")}
+              />
+              <DocumentField
+                id="doc-kk"
+                label="Kartu Keluarga (KK)"
+                hint="PDF/JPG/PNG, maks 2MB. Pastikan tulisan terbaca jelas."
+                accept=".pdf,.jpg,.jpeg,.png"
+                status={docStatus.kk.status}
+                error={docStatus.kk.error}
+                file={documents.kk}
+                onSelect={(file) => uploadDocument("kk", file)}
+                onRemove={() => removeDocument("kk")}
+              />
+              <DocumentField
+                id="doc-akta"
+                label="Akta Kelahiran"
+                hint="PDF/JPG/PNG, maks 2MB. Sertakan halaman berisi nama dan tanggal lahir."
+                accept=".pdf,.jpg,.jpeg,.png"
+                status={docStatus.akta.status}
+                error={docStatus.akta.error}
+                file={documents.akta}
+                onSelect={(file) => uploadDocument("akta", file)}
+                onRemove={() => removeDocument("akta")}
+              />
+              <DocumentField
+                id="doc-ijazah"
+                label="Ijazah / SKL"
+                hint="PDF/JPG/PNG, maks 2MB. Untuk SMK gunakan ijazah SMP/MTs atau SKL."
+                accept=".pdf,.jpg,.jpeg,.png"
+                status={docStatus.ijazah.status}
+                error={docStatus.ijazah.error}
+                file={documents.ijazah}
+                onSelect={(file) => uploadDocument("ijazah", file)}
+                onRemove={() => removeDocument("ijazah")}
+              />
             </div>
-            
+
+            <p className="text-xs text-gray-500">
+              Dokumen hanya dapat diakses panitia PPDB.
+            </p>
+
+            {Object.values(docStatus).some((state) => state.status === "uploading") ? (
+              <p className="text-xs text-gray-500">Menunggu unggahan selesai sebelum melanjutkan.</p>
+            ) : null}
+
             <div className="flex justify-between pt-6 border-t border-gray-100">
-              <button onClick={prevStep} className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50">&larr; Kembali</button>
-              <button onClick={nextStep} className="px-6 py-3 bg-primary-600 text-white rounded-lg font-medium hover:bg-primary-700">Selanjutnya &rarr;</button>
+              <button
+                onClick={prevStep}
+                disabled={Object.values(docStatus).some((state) => state.status === "uploading")}
+                className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 disabled:opacity-50"
+              >
+                &larr; Kembali
+              </button>
+              <button
+                onClick={nextStep}
+                disabled={Object.values(docStatus).some((state) => state.status === "uploading")}
+                className="px-6 py-3 bg-primary-600 text-white rounded-lg font-medium hover:bg-primary-700 disabled:opacity-50"
+              >
+                Selanjutnya &rarr;
+              </button>
             </div>
           </div>
         )}
@@ -451,6 +642,10 @@ export function PPDBForm({ units, initialUnit = "" }: { units: PPDBUnit[]; initi
               <div className="grid grid-cols-3">
                 <span className="text-gray-500">No WhatsApp</span>
                 <span className="col-span-2 font-medium text-gray-900">{formData.phone}</span>
+              </div>
+              <div className="grid grid-cols-3">
+                <span className="text-gray-500">Dokumen diunggah</span>
+                <span className="col-span-2 font-medium text-gray-900">{Object.keys(documents).length} dari 4</span>
               </div>
             </div>
 

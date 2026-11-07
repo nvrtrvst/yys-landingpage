@@ -56,6 +56,10 @@ interface PPDBDetail {
   guardian_job: string | null;
   phone: string;
   email: string | null;
+  student_photo?: string | null;
+  kk_document?: string | null;
+  birth_cert_document?: string | null;
+  diploma_document?: string | null;
   sync_status: string;
   sync_warning: string | null;
   sync_error: string | null;
@@ -347,6 +351,42 @@ export default function PPDBDetailPage() {
             )}
           </div>
         </div>
+      </div>
+
+      <div className="mt-6 bg-white rounded-xl border border-slate-200 p-6">
+        <h3 className="text-lg font-semibold text-slate-900">Dokumen Pendaftar</h3>
+        <p className="mt-1 text-sm text-slate-500">Kartu Keluarga, Akta, dan Ijazah hanya dapat dibuka oleh admin/petugas berwenang.</p>
+        <ul className="mt-4 space-y-3">
+          {[
+            { key: 'photo', field: 'student_photo', label: 'Foto Siswa' },
+            { key: 'kk', field: 'kk_document', label: 'Kartu Keluarga' },
+            { key: 'akta', field: 'birth_cert_document', label: 'Akta Kelahiran' },
+            { key: 'ijazah', field: 'diploma_document', label: 'Ijazah / SKL' },
+          ].map((item) => {
+            const value = data[item.field as 'student_photo' | 'kk_document' | 'birth_cert_document' | 'diploma_document'];
+            const href =
+              item.key === 'photo' && value
+                ? value
+                : `/api/admin/ppdb/${id}/documents/${item.key}`;
+            return (
+              <li key={item.key} className="flex items-center justify-between gap-4 border-b border-slate-100 pb-3 last:border-0 last:pb-0">
+                <span className="text-sm text-slate-700">{item.label}</span>
+                {value ? (
+                  <a
+                    href={href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm font-medium text-primary-700 hover:text-primary-800"
+                  >
+                    Buka
+                  </a>
+                ) : (
+                  <span className="text-sm text-slate-400">Belum ada</span>
+                )}
+              </li>
+            );
+          })}
+        </ul>
       </div>
 
       <div className="mt-6 bg-white rounded-xl border border-slate-200 p-6">

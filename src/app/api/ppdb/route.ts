@@ -5,6 +5,7 @@ import pool from "@/lib/db";
 import { sendPPDBSingleEmail } from "@/lib/mailer";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 import { logPpdbActivity, PUBLIC_ACTOR } from "@/lib/ppdb-activity";
+import { verifyDraftToken } from "@/lib/ppdb-draft";
 
 // Validation Schema
 const ppdbSchema = z.object({
@@ -31,6 +32,12 @@ const ppdbSchema = z.object({
   guardian_job: z.string().max(100).optional(),
   phone: z.string().min(10, "Nomor HP tidak valid").max(20),
   email: z.string().min(1, "Email wajib diisi").email("Format email tidak valid").max(255),
+  student_photo: z.string().max(255).optional(),
+  kk_document: z.string().max(255).optional(),
+  birth_cert_document: z.string().max(255).optional(),
+  diploma_document: z.string().max(255).optional(),
+  draftId: z.string().optional(),
+  uploadToken: z.string().max(512).optional(),
 });
 
 export async function POST(req: Request) {
@@ -43,6 +50,33 @@ export async function POST(req: Request) {
     const body = await req.json();
     
     const parsed = ppdbSchema.parse(body);
+
+    const unitSlug = parsed.unit.toLowerCase();
+    const privateDocuments = [parsed.kk_document, parsed.birth_cert_document, parsed.diploma_document].filter(Boolean);
+    const hasDocuments = !!parsed.student_photo || privateDocuments.length > 0;
+
+    if (hasDocuments) {
+      if (
+        !parsed.draftId ||
+        !parsed.uploadToken ||
+        !verifyDraftToken(parsed.uploadToken, parsed.draftId, unitSlug)
+      ) {
+        return NextResponse.json(
+          { success: false, message: "Sesi upload dokumen tidak valid. Silakan unggah ulang." },
+          { status: 403 }
+        );
+      }
+
+      const privatePrefix = `ppdb/${unitSlug}/${parsed.draftId}/`;
+      const photoPrefix = `/uploads/ppdb/${unitSlug}/${parsed.draftId}/`;
+
+      if (parsed.student_photo && !parsed.student_photo.startsWith(photoPrefix)) {
+        return NextResponse.json({ success: false, message: "Dokumen tidak valid." }, { status: 400 });
+      }
+      if (privateDocuments.some((document) => !document!.startsWith(privatePrefix))) {
+        return NextResponse.json({ success: false, message: "Dokumen tidak valid." }, { status: 400 });
+      }
+    }
 
     const year = new Date().getFullYear();
     const prefix = `PPDB-${year}-${parsed.unit}-`;
@@ -74,8 +108,9 @@ export async function POST(req: Request) {
           birth_place, birth_date, gender, religion, address, child_order, siblings_count, 
           previous_school, is_pip, father_name, father_job, mother_name, mother_job, 
           guardian_name, guardian_job, phone, email,
+          student_photo, kk_document, birth_cert_document, diploma_document,
           updated_at, updated_by_name, last_action
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?, 'created')`,
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?, 'created')`,
         [
           registration_number, parsed.unit, parsed.grade, parsed.major || null, 
           parsed.student_name, parsed.nisn || null, parsed.nik || null, parsed.birth_place, parsed.birth_date, 
@@ -83,6 +118,8 @@ export async function POST(req: Request) {
           parsed.previous_school || null, parsed.is_pip || 'TIDAK', parsed.father_name, parsed.father_job || null, 
           parsed.mother_name, parsed.mother_job || null, parsed.guardian_name || null, 
           parsed.guardian_job || null, parsed.phone, parsed.email || null,
+          parsed.student_photo || null, parsed.kk_document || null,
+          parsed.birth_cert_document || null, parsed.diploma_document || null,
           PUBLIC_ACTOR.name
         ]
       );

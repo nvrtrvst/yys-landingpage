@@ -49,3 +49,6 @@ dev.err
 dev2.log
 dev2.err
 detail.html
+
+# PPDB documents (data sensitif)
+/storage/
