@@ -7,6 +7,7 @@ import { ForbiddenError } from '@/lib/errors';
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
 import { rateLimitOrThrow, getClientIp } from "@/lib/rate-limit";
+import { revalidateUnitSites } from '@/lib/revalidate-unit-sites';
 
 const gallerySchema = z.object({
   title: z.string().optional().nullable(),
@@ -57,7 +58,8 @@ export async function POST(request: Request) {
 
     revalidatePath('/');
     revalidatePath('/galeri');
-    
+    await revalidateUnitSites();
+
     return NextResponse.json({ success: true, id: insertResult.insertId });
   } catch (error) {
     return handleApiError(error);

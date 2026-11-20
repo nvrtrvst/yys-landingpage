@@ -9,6 +9,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import { revalidatePath } from 'next/cache';
 import { rateLimitOrThrow, getClientIp } from "@/lib/rate-limit";
+import { revalidateUnitSites } from '@/lib/revalidate-unit-sites';
 
 export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -35,6 +36,7 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
 
     revalidatePath('/');
     revalidatePath('/galeri');
+    await revalidateUnitSites();
     return NextResponse.json({ success: true });
   } catch (error) {
     return handleApiError(error);
@@ -61,6 +63,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 
     revalidatePath('/');
     revalidatePath('/galeri');
+    await revalidateUnitSites();
     return NextResponse.json({ success: true });
   } catch (error) {
     return handleApiError(error);

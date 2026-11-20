@@ -5,6 +5,7 @@ import { RowDataPacket } from 'mysql2';
 import { requireModuleOrRoles } from '@/lib/api-auth';
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
+import { revalidateUnitSites } from '@/lib/revalidate-unit-sites';
 
 const testimonialSchema = z.object({
   author_name: z.string().min(1),
@@ -40,6 +41,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     );
 
     revalidatePath('/');
+    await revalidateUnitSites();
     return NextResponse.json({ success: true });
   } catch (error) {
     return handleApiError(error);
@@ -56,6 +58,7 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
 
     await pool.execute('DELETE FROM testimonials WHERE id = ?', [(await params).id]);
     revalidatePath('/');
+    await revalidateUnitSites();
     return NextResponse.json({ success: true });
   } catch (error) {
     return handleApiError(error);

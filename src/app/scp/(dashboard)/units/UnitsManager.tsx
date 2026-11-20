@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback } from "react";
 import { UnitsTab } from "./UnitsTab";
 import { ProgramsTab } from "./ProgramsTab";
 
-export type Unit = { id: number, name: string, slug: string, description: string, content: string, image_url: string, order_index: number, address: string, phone: string, map_coordinates: string, status: string };
+export type Unit = { id: number, name: string, slug: string, description: string, content: string, image_url: string, logo_url: string, primary_color: string, secondary_color: string, tagline: string, order_index: number, address: string, phone: string, map_coordinates: string, status: string };
 export type Program = { id: number, title: string, description: string, image_url: string, unit_id: number | null, order_index: number, status: string, unit_name?: string };
 
 export function UnitsManager() {

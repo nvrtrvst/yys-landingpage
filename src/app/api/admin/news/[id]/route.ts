@@ -7,6 +7,7 @@ import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
 import { RowDataPacket } from 'mysql2';
 import DOMPurify from "isomorphic-dompurify";
+import { revalidateUnitSites } from '@/lib/revalidate-unit-sites';
 
 const newsSchema = z.object({
   title: z.string().min(1),
@@ -74,7 +75,8 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     revalidatePath('/');
     revalidatePath('/berita');
     revalidatePath(`/berita/${data.slug}`);
-    
+    await revalidateUnitSites();
+
     return NextResponse.json({ success: true });
   } catch(error: unknown) {
     console.error('Error updating news:', error);
@@ -95,7 +97,8 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
     
     revalidatePath('/');
     revalidatePath('/berita');
-    
+    await revalidateUnitSites();
+
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Error deleting news:', error);

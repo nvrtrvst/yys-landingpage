@@ -6,11 +6,11 @@
 USE yayasan_db;
 
 -- 1. Update branding units (logo_url = NULL → auto-fallback ke /{slug}.png atau /logo.png)
-UPDATE units SET logo_url = NULL, primary_color = '#16a34a', secondary_color = '#fef08a', tagline = 'Mencetak Generasi Qurani Sejak Dini' WHERE slug = 'lpq';
-UPDATE units SET logo_url = NULL, primary_color = '#eab308', secondary_color = '#fef9c3', tagline = 'Belajar, Bermain, Tumbuh dalam Islam' WHERE slug = 'tk';
-UPDATE units SET logo_url = NULL, primary_color = '#2563eb', secondary_color = '#dbeafe', tagline = 'Dasar Kokoh untuk Masa Depan Gemilang' WHERE slug = 'sd';
-UPDATE units SET logo_url = NULL, primary_color = '#7c3aed', secondary_color = '#ede9fe', tagline = 'Muda, Berprestasi, Berkarakter Islami' WHERE slug = 'smp';
-UPDATE units SET logo_url = NULL, primary_color = '#dc2626', secondary_color = '#fee2e2', tagline = 'Siap Kerja, Siap Kuliah, Berakhlak Mulia' WHERE slug = 'smk';
+UPDATE units SET logo_url = NULL, primary_color = '#14532d', secondary_color = '#fef08a', tagline = 'Mencetak Generasi Qurani Sejak Dini' WHERE slug = 'lpq';
+UPDATE units SET logo_url = NULL, primary_color = '#a16207', secondary_color = '#fef9c3', tagline = 'Belajar, Bermain, Tumbuh dalam Islam' WHERE slug = 'tk';
+UPDATE units SET logo_url = NULL, primary_color = '#1f6b3a', secondary_color = '#f7b500', tagline = 'Dasar Kokoh untuk Masa Depan Gemilang' WHERE slug = 'sd';
+UPDATE units SET logo_url = NULL, primary_color = '#0f766e', secondary_color = '#ccfbf1', tagline = 'Muda, Berprestasi, Berkarakter Islami' WHERE slug = 'smp';
+UPDATE units SET logo_url = NULL, primary_color = '#991b1b', secondary_color = '#fee2e2', tagline = 'Siap Kerja, Siap Kuliah, Berakhlak Mulia' WHERE slug = 'smk';
 
 -- 2. User demo (password semua: 'rahasia123')
 -- nis & class_name: wajib untuk siswa (1 NIS = 1 akun), guru/admin boleh NULL.

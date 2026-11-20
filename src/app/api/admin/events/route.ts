@@ -7,6 +7,7 @@ import { ForbiddenError } from '@/lib/errors';
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
 import DOMPurify from "isomorphic-dompurify";
+import { revalidateUnitSites } from '@/lib/revalidate-unit-sites';
 
 const eventSchema = z.object({
   title: z.string().min(1),
@@ -59,6 +60,7 @@ export async function POST(request: Request) {
 
     revalidatePath('/');
     revalidatePath('/events');
+    await revalidateUnitSites();
     return NextResponse.json({ success: true, id: insertResult.insertId });
   } catch (error) {
     return handleApiError(error);

@@ -90,6 +90,11 @@ export function UnitsTab({ units, refresh }: { units: Unit[], refresh: () => voi
             <label className="block text-sm font-medium mb-1">Deskripsi Singkat</label>
             <textarea value={editingUnit.description || ""} onChange={e => setEditingUnit({...editingUnit, description: e.target.value})} rows={2} className="w-full border rounded p-2 focus:ring-2 focus:ring-primary-500"></textarea>
           </div>
+
+          <div className="md:col-span-2">
+            <label className="block text-sm font-medium mb-1">Tagline / Judul Hero</label>
+            <input type="text" value={editingUnit.tagline || ""} onChange={e => setEditingUnit({...editingUnit, tagline: e.target.value})} className="w-full border rounded p-2 focus:ring-2 focus:ring-primary-500" />
+          </div>
           
           <div className="md:col-span-2">
             <label className="block text-sm font-medium mb-1">Deskripsi Lengkap (HTML/Teks)</label>
@@ -104,6 +109,24 @@ export function UnitsTab({ units, refresh }: { units: Unit[], refresh: () => voi
             </div>
             <p className="text-xs text-slate-500 mt-1">Optimal: 1200 x 800 px (Rasio 3:2)</p>
             {editingUnit.image_url && <img src={editingUnit.image_url} alt="Preview" className="mt-2 h-20 object-contain" />}
+          </div>
+
+          <div className="md:col-span-2">
+            <label className="block text-sm font-medium mb-1">Logo Unit</label>
+            <div className="flex gap-2 items-center">
+              <input type="text" value={editingUnit.logo_url || ""} readOnly className="w-full border rounded p-2 bg-slate-50" />
+              <input type="file" accept="image/*" onChange={(e) => handleUpload(e, "logo_url")} className="text-sm" />
+            </div>
+            {editingUnit.logo_url && <img src={editingUnit.logo_url} alt="Preview logo" className="mt-2 h-14 object-contain" />}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-1">Warna Utama</label>
+            <input type="color" value={editingUnit.primary_color || "#14532d"} onChange={e => setEditingUnit({...editingUnit, primary_color: e.target.value.toLowerCase()})} className="h-10 w-full border rounded p-1" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Warna Aksen</label>
+            <input type="color" value={editingUnit.secondary_color || "#fef08a"} onChange={e => setEditingUnit({...editingUnit, secondary_color: e.target.value.toLowerCase()})} className="h-10 w-full border rounded p-1" />
           </div>
 
           <div>

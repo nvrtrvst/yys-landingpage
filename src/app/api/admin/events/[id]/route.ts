@@ -6,6 +6,7 @@ import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
 import { RowDataPacket } from 'mysql2';
 import { handleApiError, logError } from '@/lib/errors';
+import { revalidateUnitSites } from '@/lib/revalidate-unit-sites';
 
 const eventSchema = z.object({
   title: z.string().min(1),
@@ -42,6 +43,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 
     revalidatePath('/');
     revalidatePath('/events');
+    await revalidateUnitSites();
     return NextResponse.json({ success: true });
   } catch (error) {
     logError(error, 'Event Update');
@@ -60,6 +62,7 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
     await pool.execute('DELETE FROM events WHERE id = ?', [(await params).id]);
     revalidatePath('/');
     revalidatePath('/events');
+    await revalidateUnitSites();
     return NextResponse.json({ success: true });
   } catch (error) {
     logError(error, 'Event Delete');
