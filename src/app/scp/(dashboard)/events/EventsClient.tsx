@@ -15,10 +15,12 @@ const localizer = dateFnsLocalizer({
   locales,
 });
 
-type EventItem = { id: number, title: string, description: string, start_date: string, end_date: string, location: string, image_url: string };
+type EventItem = { id: number, title: string, description: string, start_date: string, end_date: string, location: string, image_url: string, unit_id: number | null };
+type Unit = { id: number, name: string, slug: string };
 
 export function EventsClient() {
   const [data, setData] = useState<EventItem[]>([]);
+  const [units, setUnits] = useState<Unit[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingItem, setEditingItem] = useState<Partial<EventItem> | null>(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -26,9 +28,12 @@ export function EventsClient() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/admin/events');
-      if (!res.ok) throw new Error();
-      setData(await res.json());
+      const [evRes, unitsRes] = await Promise.all([
+        fetch('/api/admin/events'),
+        fetch('/api/admin/units')
+      ]);
+      if (evRes.ok) setData(await evRes.json());
+      if (unitsRes.ok) setUnits(await unitsRes.json());
     } catch (err) {
       toast.error("Gagal memuat agenda");
     } finally {
@@ -41,9 +46,14 @@ export function EventsClient() {
     (async () => {
       setLoading(true);
       try {
-        const res = await fetch('/api/admin/events');
-        if (!res.ok) throw new Error();
-        if (!cancelled) setData(await res.json());
+        const [evRes, unitsRes] = await Promise.all([
+          fetch('/api/admin/events'),
+          fetch('/api/admin/units')
+        ]);
+        if (!cancelled) {
+          if (evRes.ok) setData(await evRes.json());
+          if (unitsRes.ok) setUnits(await unitsRes.json());
+        }
       } catch (err) {
         toast.error("Gagal memuat agenda");
       } finally {
@@ -173,6 +183,13 @@ export function EventsClient() {
             <div>
               <label className="block text-sm font-medium mb-1">Deskripsi Singkat</label>
               <textarea value={editingItem.description || ""} onChange={e => setEditingItem({...editingItem, description: e.target.value})} rows={3} className="w-full border rounded p-2 focus:ring-2 focus:ring-primary-100"></textarea>
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Target (Unit / Yayasan)</label>
+              <select value={editingItem.unit_id ?? ""} onChange={e => setEditingItem({...editingItem, unit_id: e.target.value ? parseInt(e.target.value) : null})} className="w-full border rounded p-2 focus:ring-2 focus:ring-primary-100">
+                <option value="">Yayasan (Global)</option>
+                {units.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
+              </select>
             </div>
             <div className="flex justify-end gap-2 pt-4">
               {editingItem.id && <button type="button" onClick={() => handleDelete(editingItem.id!)} className="px-4 py-2 border border-red-500 text-rose-500 rounded hover:bg-rose-50">Hapus</button>}

@@ -14,14 +14,15 @@ const newsSchema = z.object({
   image_url: z.string().nullable().optional(),
   category: z.string().nullable().optional(),
   status: z.enum(['draft', 'published']).default('draft'),
-  published_at: z.string().nullable().optional()
+  published_at: z.string().nullable().optional(),
+  unit_id: z.number().int().nullable().optional()
 });
 
 export async function GET(request: Request) {
   try {
     await requireModuleOrRoles('news', ['superadmin', 'admin', 'editor']);
 
-    const [rows] = await pool.execute('SELECT id, title, slug, image_url, category, status, published_at, created_at FROM news ORDER BY created_at DESC');
+    const [rows] = await pool.execute('SELECT id, title, slug, image_url, category, status, published_at, created_at, unit_id FROM news ORDER BY created_at DESC');
     return NextResponse.json(rows);
   } catch (error) {
     return handleApiError(error);
@@ -49,13 +50,13 @@ export async function POST(request: Request) {
       } catch (e) {}
     }
     if (data.status === 'published' && !publishedAt) {
-      publishedAt = new Date().toISOString().slice(0, 19).replace('T', ' '); // format for MySQL
+      publishedAt = new Date().toISOString().slice(0, 19).replace('T', ' ');
     }
 
     const sanitizedContent = data.content ? DOMPurify.sanitize(data.content) : null;
     const [insertResult] = await pool.execute<ResultSetHeader>(
-      `INSERT INTO news (title, slug, content, image_url, category, status, published_at) VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [data.title, data.slug, sanitizedContent, data.image_url || null, data.category || null, data.status, publishedAt]
+      `INSERT INTO news (title, slug, content, image_url, category, status, published_at, unit_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      [data.title, data.slug, sanitizedContent, data.image_url || null, data.category || null, data.status, publishedAt, data.unit_id ?? null]
     );
 
     revalidatePath('/');

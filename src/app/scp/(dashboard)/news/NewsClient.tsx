@@ -5,10 +5,12 @@ import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { RichTextEditor } from "@/components/admin/RichTextEditor";
 
-type News = { id: number, title: string, slug: string, content: string, image_url: string, category: string, status: string, published_at: string, created_at: string };
+type News = { id: number, title: string, slug: string, content: string, image_url: string, category: string, status: string, published_at: string, created_at: string, unit_id: number | null };
+type Unit = { id: number, name: string, slug: string };
 
 export function NewsClient() {
   const [data, setData] = useState<News[]>([]);
+  const [units, setUnits] = useState<Unit[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingItem, setEditingItem] = useState<Partial<News> | null>(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -18,9 +20,12 @@ export function NewsClient() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/admin/news');
-      if (!res.ok) throw new Error("Gagal memuat");
-      setData(await res.json());
+      const [newsRes, unitsRes] = await Promise.all([
+        fetch('/api/admin/news'),
+        fetch('/api/admin/units')
+      ]);
+      if (newsRes.ok) setData(await newsRes.json());
+      if (unitsRes.ok) setUnits(await unitsRes.json());
     } catch (err) {
       toast.error("Gagal memuat berita");
     } finally {
@@ -33,9 +38,14 @@ export function NewsClient() {
     (async () => {
       setLoading(true);
       try {
-        const res = await fetch('/api/admin/news');
-        if (!res.ok) throw new Error("Gagal memuat");
-        if (!cancelled) setData(await res.json());
+        const [newsRes, unitsRes] = await Promise.all([
+          fetch('/api/admin/news'),
+          fetch('/api/admin/units')
+        ]);
+        if (!cancelled) {
+          if (newsRes.ok) setData(await newsRes.json());
+          if (unitsRes.ok) setUnits(await unitsRes.json());
+        }
       } catch (err) {
         toast.error("Gagal memuat berita");
       } finally {
@@ -145,6 +155,15 @@ export function NewsClient() {
             <div className="md:col-span-2">
               <label className="block text-sm font-medium mb-1">Konten Berita</label>
               <RichTextEditor value={editingItem.content || ""} onChange={content => setEditingItem({...editingItem, content})} />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-1">Target (Unit / Yayasan)</label>
+              <select value={editingItem.unit_id ?? ""} onChange={e => setEditingItem({...editingItem, unit_id: e.target.value ? parseInt(e.target.value) : null})} className="w-full border rounded p-2 focus:ring-2 focus:ring-primary-100">
+                <option value="">Yayasan (Global)</option>
+                {units.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
+              </select>
+              <p className="text-xs text-slate-500 mt-1">Pilih unit agar berita tampil di website unit tersebut; kosongkan untuk website Yayasan.</p>
             </div>
 
             <div>

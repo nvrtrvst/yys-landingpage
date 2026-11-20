@@ -13,14 +13,15 @@ const eventSchema = z.object({
   start_date: z.string().min(1),
   end_date: z.string().min(1),
   location: z.string().nullable().optional(),
-  image_url: z.string().nullable().optional()
+  image_url: z.string().nullable().optional(),
+  unit_id: z.number().int().nullable().optional()
 });
 
 export async function GET(request: Request) {
   try {
     await requireModuleOrRoles('events', ['superadmin', 'admin', 'editor']);
 
-    const [rows] = await pool.execute('SELECT id, title, description, start_date, end_date, location, image_url FROM events ORDER BY start_date ASC');
+    const [rows] = await pool.execute('SELECT id, title, description, start_date, end_date, location, image_url, unit_id FROM events ORDER BY start_date ASC');
     return NextResponse.json(rows);
   } catch (error) {
     return handleApiError(error);
@@ -38,8 +39,8 @@ export async function POST(request: Request) {
     const data = result.data;
     const sanitizedDesc = data.description ? DOMPurify.sanitize(data.description) : null;
     const [insertResult] = await pool.execute<ResultSetHeader>(
-      `INSERT INTO events (title, description, start_date, end_date, location, image_url) VALUES (?, ?, ?, ?, ?, ?)`,
-      [data.title, sanitizedDesc, data.start_date, data.end_date, data.location || null, data.image_url || null]
+      `INSERT INTO events (title, description, start_date, end_date, location, image_url, unit_id) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [data.title, sanitizedDesc, data.start_date, data.end_date, data.location || null, data.image_url || null, data.unit_id ?? null]
     );
 
     revalidatePath('/');

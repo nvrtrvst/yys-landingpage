@@ -4,12 +4,14 @@ import { getErrorMessage } from "@/lib/get-error-message";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 
-type Testimonial = { id: number, author_name: string, role: string, content: string, image_url: string, order_index: number, is_active: number };
+type Testimonial = { id: number, author_name: string, role: string, content: string, image_url: string, order_index: number, is_active: number, unit_id: number | null };
+type Unit = { id: number, name: string, slug: string };
 type Faq = { id: number, question: string, answer: string, category: string, order_index: number, is_active: number };
 
 export function TestimonialsFaqManager() {
   const [activeTab, setActiveTab] = useState<'testimonials' | 'faqs'>('testimonials');
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
+  const [units, setUnits] = useState<Unit[]>([]);
   const [faqs, setFaqs] = useState<Faq[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -20,12 +22,14 @@ export function TestimonialsFaqManager() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [tRes, fRes] = await Promise.all([
+      const [tRes, fRes, uRes] = await Promise.all([
         fetch('/api/admin/testimonials'),
-        fetch('/api/admin/faqs')
+        fetch('/api/admin/faqs'),
+        fetch('/api/admin/units')
       ]);
       if (tRes.ok) setTestimonials(await tRes.json());
       if (fRes.ok) setFaqs(await fRes.json());
+      if (uRes.ok) setUnits(await uRes.json());
     } catch (err) {
       toast.error("Gagal memuat data");
     } finally {
@@ -38,13 +42,15 @@ export function TestimonialsFaqManager() {
     (async () => {
       setLoading(true);
       try {
-        const [tRes, fRes] = await Promise.all([
+        const [tRes, fRes, uRes] = await Promise.all([
           fetch('/api/admin/testimonials'),
-          fetch('/api/admin/faqs')
+          fetch('/api/admin/faqs'),
+          fetch('/api/admin/units')
         ]);
         if (!cancelled) {
           if (tRes.ok) setTestimonials(await tRes.json());
           if (fRes.ok) setFaqs(await fRes.json());
+          if (uRes.ok) setUnits(await uRes.json());
         }
       } catch (err) {
         toast.error("Gagal memuat data");
@@ -161,7 +167,6 @@ export function TestimonialsFaqManager() {
           <div className="text-center py-12 text-slate-500">Memuat data...</div>
         ) : (
           <>
-            {/* TAB TESTIMONIALS */}
             {activeTab === 'testimonials' && (
               editingTesti !== null ? (
                 <form onSubmit={saveTestimonial} className="space-y-6">
@@ -193,6 +198,13 @@ export function TestimonialsFaqManager() {
                     <div>
                       <label className="block text-sm font-medium mb-1">Urutan</label>
                       <input type="number" value={editingTesti.order_index || 0} onChange={e => setEditingTesti({...editingTesti, order_index: parseInt(e.target.value)||0})} className="w-full border rounded p-2" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Target (Unit / Yayasan)</label>
+                      <select value={editingTesti.unit_id ?? ""} onChange={e => setEditingTesti({...editingTesti, unit_id: e.target.value ? parseInt(e.target.value) : null})} className="w-full border rounded p-2">
+                        <option value="">Yayasan (Global)</option>
+                        {units.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
+                      </select>
                     </div>
                     <div>
                       <label className="block text-sm font-medium mb-1">Status</label>
@@ -230,7 +242,6 @@ export function TestimonialsFaqManager() {
               )
             )}
 
-            {/* TAB FAQS */}
             {activeTab === 'faqs' && (
               editingFaq !== null ? (
                 <form onSubmit={saveFaq} className="space-y-6">

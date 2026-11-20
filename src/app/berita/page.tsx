@@ -19,11 +19,11 @@ export default async function BeritaPage({
   let total = 0;
   try {
     const [rows] = await pool.execute<RowDataPacket[]>(
-      `SELECT id, title, slug, content, image_url, published_at, created_at FROM news WHERE status = 'published' ORDER BY published_at DESC LIMIT ${PAGE_SIZE} OFFSET ${offset}`
+      `SELECT id, title, slug, content, image_url, published_at, created_at FROM news WHERE status = 'published' AND unit_id IS NULL ORDER BY published_at DESC LIMIT ${PAGE_SIZE} OFFSET ${offset}`
     );
     newsList = rows;
     const [count] = await pool.execute<RowDataPacket[]>(
-      "SELECT COUNT(*) AS total FROM news WHERE status = 'published'"
+      "SELECT COUNT(*) AS total FROM news WHERE status = 'published' AND unit_id IS NULL"
     );
     total = Number((count[0] as { total: number }).total);
   } catch (error) {

@@ -11,7 +11,8 @@ const eventSchema = z.object({
   start_date: z.string().min(1),
   end_date: z.string().min(1),
   location: z.string().nullable().optional(),
-  image_url: z.string().nullable().optional()
+  image_url: z.string().nullable().optional(),
+  unit_id: z.number().int().nullable().optional()
 });
 
 export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -24,8 +25,8 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 
     const data = result.data;
     await pool.execute(
-      `UPDATE events SET title=?, description=?, start_date=?, end_date=?, location=?, image_url=? WHERE id=?`,
-      [data.title, data.description || null, data.start_date, data.end_date, data.location || null, data.image_url || null, (await params).id]
+      `UPDATE events SET title=?, description=?, start_date=?, end_date=?, location=?, image_url=?, unit_id=? WHERE id=?`,
+      [data.title, data.description || null, data.start_date, data.end_date, data.location || null, data.image_url || null, data.unit_id ?? null, (await params).id]
     );
 
     revalidatePath('/');

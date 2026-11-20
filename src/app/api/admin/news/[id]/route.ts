@@ -14,14 +14,15 @@ const newsSchema = z.object({
   image_url: z.string().nullable().optional(),
   category: z.string().nullable().optional(),
   status: z.enum(['draft', 'published']).default('draft'),
-  published_at: z.string().nullable().optional()
+  published_at: z.string().nullable().optional(),
+  unit_id: z.number().int().nullable().optional()
 });
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     await requireModuleOrRoles('news', ['superadmin', 'admin', 'editor']);
 
-    const [rows] = await pool.execute<RowDataPacket[]>('SELECT id, title, slug, content, image_url, category, status, published_at, created_at FROM news WHERE id = ?', [(await params).id]);
+    const [rows] = await pool.execute<RowDataPacket[]>('SELECT id, title, slug, content, image_url, category, status, published_at, created_at, unit_id FROM news WHERE id = ?', [(await params).id]);
     if (rows.length === 0) return NextResponse.json({ error: 'Not Found' }, { status: 404 });
     return NextResponse.json(rows[0]);
   } catch (error) {
@@ -55,8 +56,8 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 
     const sanitizedContent = data.content ? DOMPurify.sanitize(data.content) : null;
     await pool.execute(
-      `UPDATE news SET title=?, slug=?, content=?, image_url=?, category=?, status=?, published_at=? WHERE id=?`,
-      [data.title, data.slug, sanitizedContent, data.image_url || null, data.category || null, data.status, publishedAt, (await params).id]
+      `UPDATE news SET title=?, slug=?, content=?, image_url=?, category=?, status=?, published_at=?, unit_id=? WHERE id=?`,
+      [data.title, data.slug, sanitizedContent, data.image_url || null, data.category || null, data.status, publishedAt, data.unit_id ?? null, (await params).id]
     );
 
     revalidatePath('/');
