@@ -34,7 +34,7 @@ export const dashboardItem: NavItem = {
   name: "Dashboard",
   href: "/scp",
   icon: Home,
-  roles: ["superadmin", "admin", "editor"],
+  roles: ["superadmin", "admin", "admin_unit", "editor"],
   module: "dashboard",
 };
 
@@ -50,10 +50,10 @@ export const navSections: NavSection[] = [
     label: "Konten",
     items: [
       { name: "Units & Program", href: "/scp/units", icon: Users, roles: ["superadmin", "admin"], module: "units" },
-      { name: "Berita & Artikel", href: "/scp/news", icon: FileText, roles: ["superadmin", "admin", "editor"], module: "news" },
-      { name: "Galeri", href: "/scp/gallery", icon: ImageIcon, roles: ["superadmin", "admin", "editor"], module: "gallery" },
-      { name: "Testimoni & FAQ", href: "/scp/testimonials", icon: MessageSquare, roles: ["superadmin", "admin"], module: "testimonials" },
-      { name: "Agenda", href: "/scp/events", icon: Calendar, roles: ["superadmin", "admin", "editor"], module: "events" },
+      { name: "Berita & Artikel", href: "/scp/news", icon: FileText, roles: ["superadmin", "admin", "admin_unit", "editor"], module: "news" },
+      { name: "Galeri", href: "/scp/gallery", icon: ImageIcon, roles: ["superadmin", "admin", "admin_unit", "editor"], module: "gallery" },
+      { name: "Testimoni & FAQ", href: "/scp/testimonials", icon: MessageSquare, roles: ["superadmin", "admin", "admin_unit"], module: "testimonials" },
+      { name: "Agenda", href: "/scp/events", icon: Calendar, roles: ["superadmin", "admin", "admin_unit", "editor"], module: "events" },
     ],
   },
   {
@@ -74,7 +74,7 @@ export const navSections: NavSection[] = [
       { name: "Manajemen Pengguna", href: "/scp/users", icon: UserCog, roles: ["superadmin", "admin"], module: "users" },
       { name: "Pengaturan Global", href: "/scp/settings", icon: SettingsIcon, roles: ["superadmin", "admin"], module: "settings" },
       { name: "Backup Database", href: "/scp/backup", icon: Database, roles: ["superadmin", "admin"], module: "backup" },
-      { name: "Profil Saya", href: "/scp/profile", icon: UserCircle, roles: ["superadmin", "admin", "editor"], module: "profile" },
+      { name: "Profil Saya", href: "/scp/profile", icon: UserCircle, roles: ["superadmin", "admin", "admin_unit", "editor"], module: "profile" },
     ],
   },
 ];

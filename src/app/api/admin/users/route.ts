@@ -16,6 +16,7 @@ const createUserSchema = z.object({
   password: z.string().min(8).max(128),
   role: z.enum(['superadmin', 'admin', 'editor', 'admin_unit', 'guru', 'siswa', 'petugas']),
   permissions: z.array(z.string()).optional(),
+  unit_id: z.number().int().nullable().optional(),
 });
 
 export async function GET(request: Request) {
@@ -23,7 +24,7 @@ export async function GET(request: Request) {
     await requireRole(['superadmin', 'admin']);
 
     const [rows] = await pool.execute<RowDataPacket[]>(
-      'SELECT id, name, email, role, permissions, created_at FROM users ORDER BY created_at DESC'
+      'SELECT id, name, email, role, permissions, unit_id, created_at FROM users ORDER BY created_at DESC'
     );
     
     return NextResponse.json(rows);
@@ -48,6 +49,14 @@ export async function POST(request: Request) {
     const permissions =
       role === 'petugas' ? JSON.stringify(sanitizePetugasPermissions(valid.data.permissions)) : null;
 
+    let targetUnitId: number | null = null;
+    if (role === 'admin_unit') {
+      targetUnitId = valid.data.unit_id ?? null;
+      if (!targetUnitId) {
+        return NextResponse.json({ error: 'Unit wajib dipilih untuk Admin Unit' }, { status: 400 });
+      }
+    }
+
     if (role === 'superadmin' && session.user.role !== 'superadmin') {
       return NextResponse.json({ error: 'Dilarang' }, { status: 403 });
     }
@@ -65,8 +74,8 @@ export async function POST(request: Request) {
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
     await pool.execute(
-      'INSERT INTO users (name, email, password, role, permissions) VALUES (?, ?, ?, ?, ?)',
-      [name, email, hashedPassword, role, permissions]
+      'INSERT INTO users (name, email, password, role, permissions, unit_id) VALUES (?, ?, ?, ?, ?, ?)',
+      [name, email, hashedPassword, role, permissions, targetUnitId]
     );
 
     // Generate a one-time setup token and email a "set password" link

@@ -2,22 +2,24 @@ import { NextResponse } from 'next/server';
 import { handleApiError } from '@/lib/errors';
 import pool from '@/lib/db';
 import { requireModuleOrRoles } from '@/lib/api-auth';
+import { ForbiddenError } from '@/lib/errors';
+import { RowDataPacket } from 'mysql2';
 import { z } from 'zod';
 import fs from 'fs/promises';
 import path from 'path';
 import { revalidatePath } from 'next/cache';
-import { RowDataPacket } from 'mysql2';
 import { rateLimitOrThrow, getClientIp } from "@/lib/rate-limit";
 
 export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    await requireModuleOrRoles('gallery', ['superadmin', 'admin', 'admin_unit', 'editor']);
+    const session = await requireModuleOrRoles('gallery', ['superadmin', 'admin', 'admin_unit', 'editor']);
 
     rateLimitOrThrow(`gallery-write:${getClientIp(request)}`, 20, 60_000);
 
-    const [rows] = await pool.execute<RowDataPacket[]>('SELECT image_url FROM galleries WHERE id = ?', [(await params).id]);
+    const [rows] = await pool.execute<RowDataPacket[]>('SELECT image_url, unit_id FROM galleries WHERE id = ?', [(await params).id]);
     if (rows.length === 0) return NextResponse.json({ error: 'Not Found' }, { status: 404 });
-    
+    if (session.user.role === 'admin_unit' && rows[0].unit_id !== session.user.unit_id) throw new ForbiddenError('Dilarang');
+
     const imageUrl = rows[0].image_url;
     
     await pool.execute('DELETE FROM galleries WHERE id = ?', [(await params).id]);
@@ -41,9 +43,13 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
 
 export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    await requireModuleOrRoles('gallery', ['superadmin', 'admin', 'admin_unit', 'editor']);
+    const session = await requireModuleOrRoles('gallery', ['superadmin', 'admin', 'admin_unit', 'editor']);
 
     rateLimitOrThrow(`gallery-write:${getClientIp(request)}`, 20, 60_000);
+
+    const [existingRows] = await pool.execute<RowDataPacket[]>('SELECT unit_id FROM galleries WHERE id = ?', [(await params).id]);
+    if (existingRows.length === 0) return NextResponse.json({ error: 'Not Found' }, { status: 404 });
+    if (session.user.role === 'admin_unit' && existingRows[0].unit_id !== session.user.unit_id) throw new ForbiddenError('Dilarang');
 
     const body = await request.json();
     // Validate title — prevent arbitrary data injection

@@ -32,9 +32,10 @@ function parsePermissions(value: AdminUser["permissions"]): string[] {
 
 export default function UsersPage() {
   const [users, setUsers] = useState<AdminUser[]>([]);
+  const [units, setUnits] = useState<{ id: number; name: string }[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
-  const [formData, setFormData] = useState<{ id: number | string; name: string; email: string; password: string; role: string; permissions: string[] }>({ id: "", name: "", email: "", password: "", role: "editor", permissions: [] });
+  const [formData, setFormData] = useState<{ id: number | string; name: string; email: string; password: string; role: string; permissions: string[]; unit_id: number | null }>({ id: "", name: "", email: "", password: "", role: "editor", permissions: [], unit_id: null });
   const [isEditing, setIsEditing] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -55,10 +56,17 @@ export default function UsersPage() {
     let cancelled = false;
     (async () => {
       try {
-        const res = await fetch("/api/admin/users");
-        if (!res.ok) throw new Error("Gagal memuat daftar pengguna");
-        const data = await res.json();
-        if (!cancelled) setUsers(data);
+        const [usersRes, unitsRes] = await Promise.all([
+          fetch("/api/admin/users"),
+          fetch("/api/admin/units")
+        ]);
+        if (!usersRes.ok) throw new Error("Gagal memuat daftar pengguna");
+        const usersData = await usersRes.json();
+        if (!cancelled) setUsers(usersData);
+        if (unitsRes.ok) {
+          const unitsData = await unitsRes.json();
+          if (!cancelled) setUnits(unitsData);
+        }
       } catch (error: unknown) {
         if (!cancelled) toast.error(getErrorMessage(error));
       } finally {
@@ -113,13 +121,13 @@ export default function UsersPage() {
   };
 
   const openModalForAdd = () => {
-    setFormData({ id: "", name: "", email: "", password: "", role: "editor", permissions: [] });
+    setFormData({ id: "", name: "", email: "", password: "", role: "editor", permissions: [], unit_id: null });
     setIsEditing(false);
     setShowModal(true);
   };
 
   const openModalForEdit = (user: AdminUser) => {
-    setFormData({ id: user.id, name: user.name, email: user.email, password: "", role: user.role, permissions: parsePermissions(user.permissions) });
+    setFormData({ id: user.id, name: user.name, email: user.email, password: "", role: user.role, permissions: parsePermissions(user.permissions), unit_id: user.unit_id ?? null });
     setIsEditing(true);
     setShowModal(true);
   };
@@ -194,15 +202,33 @@ export default function UsersPage() {
                 <select
                   required
                   value={formData.role}
-                  onChange={e => setFormData({ ...formData, role: e.target.value, permissions: e.target.value === "petugas" ? formData.permissions : [] })}
+                  onChange={e => setFormData({ ...formData, role: e.target.value, permissions: e.target.value === "petugas" ? formData.permissions : [], unit_id: e.target.value === "admin_unit" ? formData.unit_id : null })}
                   className={selectClass}
                 >
                   <option value="editor">Editor (Hanya update Berita/Mading)</option>
                   <option value="petugas">Petugas (Modul dipilih)</option>
+                  <option value="admin_unit">Admin Unit (Kelola konten unit)</option>
                   <option value="admin">Admin (Akses Penuh)</option>
                   <option value="superadmin">Superadmin (Akses Penuh + Sistem)</option>
                 </select>
               </div>
+
+              {formData.role === "admin_unit" && (
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Unit</label>
+                  <select
+                    required
+                    value={formData.unit_id ?? ""}
+                    onChange={e => setFormData({ ...formData, unit_id: e.target.value ? Number(e.target.value) : null })}
+                    className={selectClass}
+                  >
+                    <option value="">Pilih Unit</option>
+                    {units.map((unit) => (
+                      <option key={unit.id} value={unit.id}>{unit.name}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
 
               {formData.role === "petugas" && (
                 <div className="rounded-lg border border-slate-200 p-4">

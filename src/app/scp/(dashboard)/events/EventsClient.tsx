@@ -18,7 +18,8 @@ const localizer = dateFnsLocalizer({
 type EventItem = { id: number, title: string, description: string, start_date: string, end_date: string, location: string, image_url: string, unit_id: number | null };
 type Unit = { id: number, name: string, slug: string };
 
-export function EventsClient() {
+export function EventsClient({ userRole, userUnitId }: { userRole?: string; userUnitId?: number | null }) {
+  const isUnitAdmin = userRole === 'admin_unit';
   const [data, setData] = useState<EventItem[]>([]);
   const [units, setUnits] = useState<Unit[]>([]);
   const [loading, setLoading] = useState(true);
@@ -66,7 +67,8 @@ export function EventsClient() {
   const handleSelectSlot = ({ start, end }: { start: Date, end: Date }) => {
     setEditingItem({
       start_date: format(start, "yyyy-MM-dd'T'HH:mm"),
-      end_date: format(start, "yyyy-MM-dd'T'HH:mm") // default end same as start
+      end_date: format(start, "yyyy-MM-dd'T'HH:mm"), // default end same as start
+      unit_id: isUnitAdmin ? (userUnitId ?? null) : null
     });
   };
 
@@ -157,7 +159,7 @@ export function EventsClient() {
       <div className="bg-white p-6 rounded-xl border border-slate-200 h-fit">
         <div className="flex justify-between items-center mb-6">
           <h3 className="text-xl font-bold">{editingItem ? (editingItem.id ? "Edit Agenda" : "Tambah Agenda Baru") : "Form Agenda"}</h3>
-          {!editingItem && <button onClick={() => setEditingItem({})} className="text-sm bg-emerald-50 text-emerald-700 px-3 py-1 rounded hover:bg-emerald-100 font-semibold">+ Baru</button>}
+          {!editingItem && <button onClick={() => setEditingItem({ unit_id: isUnitAdmin ? (userUnitId ?? null) : null })} className="text-sm bg-emerald-50 text-emerald-700 px-3 py-1 rounded hover:bg-emerald-100 font-semibold">+ Baru</button>}
         </div>
 
         {editingItem ? (
@@ -184,13 +186,20 @@ export function EventsClient() {
               <label className="block text-sm font-medium mb-1">Deskripsi Singkat</label>
               <textarea value={editingItem.description || ""} onChange={e => setEditingItem({...editingItem, description: e.target.value})} rows={3} className="w-full border rounded p-2 focus:ring-2 focus:ring-primary-100"></textarea>
             </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">Target (Unit / Yayasan)</label>
-              <select value={editingItem.unit_id ?? ""} onChange={e => setEditingItem({...editingItem, unit_id: e.target.value ? parseInt(e.target.value) : null})} className="w-full border rounded p-2 focus:ring-2 focus:ring-primary-100">
-                <option value="">Yayasan (Global)</option>
-                {units.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
-              </select>
-            </div>
+            {isUnitAdmin ? (
+              <div>
+                <label className="block text-sm font-medium mb-1">Target</label>
+                <input type="text" value="Unit ini" readOnly className="w-full border rounded p-2 bg-slate-50" />
+              </div>
+            ) : (
+              <div>
+                <label className="block text-sm font-medium mb-1">Target (Unit / Yayasan)</label>
+                <select value={editingItem.unit_id ?? ""} onChange={e => setEditingItem({...editingItem, unit_id: e.target.value ? parseInt(e.target.value) : null})} className="w-full border rounded p-2 focus:ring-2 focus:ring-primary-100">
+                  <option value="">Yayasan (Global)</option>
+                  {units.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
+                </select>
+              </div>
+            )}
             <div className="flex justify-end gap-2 pt-4">
               {editingItem.id && <button type="button" onClick={() => handleDelete(editingItem.id!)} className="px-4 py-2 border border-red-500 text-rose-500 rounded hover:bg-rose-50">Hapus</button>}
               <button type="button" onClick={() => setEditingItem(null)} className="px-4 py-2 border rounded hover:bg-slate-50">Batal</button>

@@ -8,7 +8,8 @@ import { RichTextEditor } from "@/components/admin/RichTextEditor";
 type News = { id: number, title: string, slug: string, content: string, image_url: string, category: string, status: string, published_at: string, created_at: string, unit_id: number | null };
 type Unit = { id: number, name: string, slug: string };
 
-export function NewsClient() {
+export function NewsClient({ userRole, userUnitId }: { userRole?: string; userUnitId?: number | null }) {
+  const isUnitAdmin = userRole === 'admin_unit';
   const [data, setData] = useState<News[]>([]);
   const [units, setUnits] = useState<Unit[]>([]);
   const [loading, setLoading] = useState(true);
@@ -157,14 +158,22 @@ export function NewsClient() {
               <RichTextEditor value={editingItem.content || ""} onChange={content => setEditingItem({...editingItem, content})} />
             </div>
 
-            <div>
-              <label className="block text-sm font-medium mb-1">Target (Unit / Yayasan)</label>
-              <select value={editingItem.unit_id ?? ""} onChange={e => setEditingItem({...editingItem, unit_id: e.target.value ? parseInt(e.target.value) : null})} className="w-full border rounded p-2 focus:ring-2 focus:ring-primary-100">
-                <option value="">Yayasan (Global)</option>
-                {units.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
-              </select>
-              <p className="text-xs text-slate-500 mt-1">Pilih unit agar berita tampil di website unit tersebut; kosongkan untuk website Yayasan.</p>
-            </div>
+            {isUnitAdmin ? (
+              <div>
+                <label className="block text-sm font-medium mb-1">Target</label>
+                <input type="text" value="Unit ini" readOnly className="w-full border rounded p-2 bg-slate-50" />
+                <p className="text-xs text-slate-500 mt-1">Berita akan tampil di website unit Anda.</p>
+              </div>
+            ) : (
+              <div>
+                <label className="block text-sm font-medium mb-1">Target (Unit / Yayasan)</label>
+                <select value={editingItem.unit_id ?? ""} onChange={e => setEditingItem({...editingItem, unit_id: e.target.value ? parseInt(e.target.value) : null})} className="w-full border rounded p-2 focus:ring-2 focus:ring-primary-100">
+                  <option value="">Yayasan (Global)</option>
+                  {units.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
+                </select>
+                <p className="text-xs text-slate-500 mt-1">Pilih unit agar berita tampil di website unit tersebut; kosongkan untuk website Yayasan.</p>
+              </div>
+            )}
 
             <div>
               <label className="block text-sm font-medium mb-1">Status Publikasi</label>
@@ -209,7 +218,7 @@ export function NewsClient() {
             </select>
           </div>
         </div>
-        <button onClick={() => setEditingItem({ status: 'draft' })} className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-700">
+        <button onClick={() => setEditingItem({ status: 'draft', unit_id: isUnitAdmin ? (userUnitId ?? null) : null })} className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-700">
           + Tulis Berita
         </button>
       </div>

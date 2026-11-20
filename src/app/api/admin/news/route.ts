@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { handleApiError } from '@/lib/errors';
 import { requireModuleOrRoles } from '@/lib/api-auth';
+import { ForbiddenError } from '@/lib/errors';
 import pool from '@/lib/db';
 import { ResultSetHeader } from 'mysql2';
 import { z } from 'zod';
@@ -20,9 +21,17 @@ const newsSchema = z.object({
 
 export async function GET(request: Request) {
   try {
-    await requireModuleOrRoles('news', ['superadmin', 'admin', 'editor']);
+    const session = await requireModuleOrRoles('news', ['superadmin', 'admin', 'admin_unit', 'editor']);
 
-    const [rows] = await pool.execute('SELECT id, title, slug, image_url, category, status, published_at, created_at, unit_id FROM news ORDER BY created_at DESC');
+    let sql = 'SELECT id, title, slug, image_url, category, status, published_at, created_at, unit_id FROM news';
+    const params: (number)[] = [];
+    if (session.user.role === 'admin_unit') {
+      if (!session.user.unit_id) throw new ForbiddenError('Akun unit belum terhubung ke unit');
+      sql += ' WHERE unit_id = ?';
+      params.push(session.user.unit_id);
+    }
+    sql += ' ORDER BY created_at DESC';
+    const [rows] = await pool.execute(sql, params);
     return NextResponse.json(rows);
   } catch (error) {
     return handleApiError(error);
@@ -31,14 +40,20 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    await requireModuleOrRoles('news', ['superadmin', 'admin', 'editor']);
+    const session = await requireModuleOrRoles('news', ['superadmin', 'admin', 'admin_unit', 'editor']);
 
     const body = await request.json();
     const result = newsSchema.safeParse(body);
     if (!result.success) return NextResponse.json({ error: 'Invalid data', details: result.error.issues }, { status: 400 });
 
     const data = result.data;
-    
+
+    let targetUnitId = data.unit_id ?? null;
+    if (session.user.role === 'admin_unit') {
+      if (!session.user.unit_id) throw new ForbiddenError('Akun unit belum terhubung ke unit');
+      targetUnitId = session.user.unit_id;
+    }
+
     let publishedAt = data.published_at || null;
     if (publishedAt) {
       // If it's a valid date string, format it for MySQL
@@ -56,7 +71,7 @@ export async function POST(request: Request) {
     const sanitizedContent = data.content ? DOMPurify.sanitize(data.content) : null;
     const [insertResult] = await pool.execute<ResultSetHeader>(
       `INSERT INTO news (title, slug, content, image_url, category, status, published_at, unit_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      [data.title, data.slug, sanitizedContent, data.image_url || null, data.category || null, data.status, publishedAt, data.unit_id ?? null]
+      [data.title, data.slug, sanitizedContent, data.image_url || null, data.category || null, data.status, publishedAt, targetUnitId]
     );
 
     revalidatePath('/');

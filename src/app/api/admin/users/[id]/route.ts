@@ -14,7 +14,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     rateLimitOrThrow(`admin:user-edit:${getClientIp(request)}`, 20, 60 * 1000);
 
     const { id } = await params;
-    const { name, email, password, role, permissions: rawPermissions } = await request.json();
+    const { name, email, password, role, permissions: rawPermissions, unit_id: rawUnitId } = await request.json();
 
     if (!name || !email || !role) {
       return NextResponse.json({ error: 'Nama, Email, dan Role wajib diisi' }, { status: 400 });
@@ -40,6 +40,14 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     const permissions =
       role === 'petugas' ? JSON.stringify(sanitizePetugasPermissions(rawPermissions)) : null;
 
+    let targetUnitId: number | null = null;
+    if (role === 'admin_unit') {
+      targetUnitId = rawUnitId ? Number(rawUnitId) : null;
+      if (!targetUnitId) {
+        return NextResponse.json({ error: 'Unit wajib dipilih untuk Admin Unit' }, { status: 400 });
+      }
+    }
+
     const [existing] = await pool.execute<RowDataPacket[]>(
       'SELECT id FROM users WHERE email = ? AND id != ?',
       [email, id]
@@ -53,13 +61,13 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
       const saltRounds = 10;
       const hashedPassword = await bcrypt.hash(password, saltRounds);
       await pool.execute(
-        'UPDATE users SET name = ?, email = ?, password = ?, role = ?, permissions = ? WHERE id = ?',
-        [name, email, hashedPassword, role, permissions, id]
+        'UPDATE users SET name = ?, email = ?, password = ?, role = ?, permissions = ?, unit_id = ? WHERE id = ?',
+        [name, email, hashedPassword, role, permissions, targetUnitId, id]
       );
     } else {
       await pool.execute(
-        'UPDATE users SET name = ?, email = ?, role = ?, permissions = ? WHERE id = ?',
-        [name, email, role, permissions, id]
+        'UPDATE users SET name = ?, email = ?, role = ?, permissions = ?, unit_id = ? WHERE id = ?',
+        [name, email, role, permissions, targetUnitId, id]
       );
     }
 

@@ -8,7 +8,8 @@ type Testimonial = { id: number, author_name: string, role: string, content: str
 type Unit = { id: number, name: string, slug: string };
 type Faq = { id: number, question: string, answer: string, category: string, order_index: number, is_active: number };
 
-export function TestimonialsFaqManager() {
+export function TestimonialsFaqManager({ userRole, userUnitId }: { userRole?: string; userUnitId?: number | null }) {
+  const isUnitAdmin = userRole === 'admin_unit';
   const [activeTab, setActiveTab] = useState<'testimonials' | 'faqs'>('testimonials');
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [units, setUnits] = useState<Unit[]>([]);
@@ -199,13 +200,20 @@ export function TestimonialsFaqManager() {
                       <label className="block text-sm font-medium mb-1">Urutan</label>
                       <input type="number" value={editingTesti.order_index || 0} onChange={e => setEditingTesti({...editingTesti, order_index: parseInt(e.target.value)||0})} className="w-full border rounded p-2" />
                     </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-1">Target (Unit / Yayasan)</label>
-                      <select value={editingTesti.unit_id ?? ""} onChange={e => setEditingTesti({...editingTesti, unit_id: e.target.value ? parseInt(e.target.value) : null})} className="w-full border rounded p-2">
-                        <option value="">Yayasan (Global)</option>
-                        {units.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
-                      </select>
-                    </div>
+                    {isUnitAdmin ? (
+                      <div>
+                        <label className="block text-sm font-medium mb-1">Target</label>
+                        <input type="text" value="Unit ini" readOnly className="w-full border rounded p-2 bg-slate-50" />
+                      </div>
+                    ) : (
+                      <div>
+                        <label className="block text-sm font-medium mb-1">Target (Unit / Yayasan)</label>
+                        <select value={editingTesti.unit_id ?? ""} onChange={e => setEditingTesti({...editingTesti, unit_id: e.target.value ? parseInt(e.target.value) : null})} className="w-full border rounded p-2">
+                          <option value="">Yayasan (Global)</option>
+                          {units.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
+                        </select>
+                      </div>
+                    )}
                     <div>
                       <label className="block text-sm font-medium mb-1">Status</label>
                       <select value={editingTesti.is_active === 0 ? "0" : "1"} onChange={e => setEditingTesti({...editingTesti, is_active: parseInt(e.target.value)})} className="w-full border rounded p-2">
@@ -218,7 +226,7 @@ export function TestimonialsFaqManager() {
                 </form>
               ) : (
                 <div className="overflow-x-auto">
-                  <button onClick={() => setEditingTesti({})} className="bg-primary-600 text-white px-4 py-2 rounded mb-4">+ Tambah Testimoni</button>
+                  <button onClick={() => setEditingTesti({ unit_id: isUnitAdmin ? (userUnitId ?? null) : null })} className="bg-primary-600 text-white px-4 py-2 rounded mb-4">+ Tambah Testimoni</button>
                   <table className="w-full text-left border-collapse">
                     <thead>
                       <tr className="bg-slate-50 border-b"><th className="p-3">Urutan</th><th className="p-3">Nama</th><th className="p-3">Peran</th><th className="p-3">Status</th><th className="p-3 text-right">Aksi</th></tr>
