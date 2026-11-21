@@ -2,35 +2,16 @@ import { NextResponse } from 'next/server';
 import { handleApiError } from '@/lib/errors';
 import pool from '@/lib/db';
 import { requireModuleOrRoles } from '@/lib/api-auth';
-import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
 import { RowDataPacket } from 'mysql2';
 import { isReservedUnitSlug, revalidateUnitSites } from '@/lib/revalidate-unit-sites';
-
-const hexColor = z.string().regex(/^#[0-9a-fA-F]{6}$/, 'Warna tidak valid');
-
-const unitSchema = z.object({
-  name: z.string().min(1),
-  slug: z.string().min(1),
-  description: z.string().nullable().optional(),
-  content: z.string().nullable().optional(),
-  image_url: z.string().nullable().optional(),
-  logo_url: z.string().nullable().optional(),
-  primary_color: hexColor.nullable().optional(),
-  secondary_color: hexColor.nullable().optional(),
-  tagline: z.string().nullable().optional(),
-  order_index: z.number().int().default(0),
-  address: z.string().nullable().optional(),
-  phone: z.string().nullable().optional(),
-  map_coordinates: z.string().nullable().optional(),
-  status: z.enum(['active', 'inactive']).default('active')
-});
+import { UNIT_SELECT, UNIT_UPDATE_SQL, unitParams, unitSchema } from '@/lib/unit-admin';
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     await requireModuleOrRoles('units', ['superadmin', 'admin']);
 
-    const [rows] = await pool.execute<RowDataPacket[]>('SELECT id, name, slug, description, content, image_url, logo_url, primary_color, secondary_color, order_index, address, phone, tagline, map_coordinates, status, mading_enabled, created_at FROM units WHERE id = ?', [(await params).id]);
+    const [rows] = await pool.execute<RowDataPacket[]>(`SELECT id, ${UNIT_SELECT}, mading_enabled, created_at FROM units WHERE id = ?`, [(await params).id]);
     if (rows.length === 0) return NextResponse.json({ error: 'Not Found' }, { status: 404 });
     return NextResponse.json(rows[0]);
   } catch (error) {
@@ -53,10 +34,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     const id = (await params).id;
     const [existing] = await pool.execute<RowDataPacket[]>('SELECT slug FROM units WHERE id = ?', [id]);
     const oldSlug = existing[0]?.slug as string | undefined;
-    await pool.execute(
-      `UPDATE units SET name=?, slug=?, description=?, content=?, image_url=?, logo_url=?, primary_color=?, secondary_color=?, tagline=?, order_index=?, address=?, phone=?, map_coordinates=?, status=? WHERE id=?`,
-      [data.name, data.slug, data.description || null, data.content || null, data.image_url || null, data.logo_url || null, data.primary_color || null, data.secondary_color || null, data.tagline || null, data.order_index, data.address || null, data.phone || null, data.map_coordinates || null, data.status, id]
-    );
+    await pool.execute(UNIT_UPDATE_SQL, [...unitParams(data), id]);
 
     revalidatePath('/');
     revalidatePath(`/unit/${data.slug}`);

@@ -95,7 +95,36 @@ export function UnitsTab({ units, refresh }: { units: Unit[], refresh: () => voi
             <label className="block text-sm font-medium mb-1">Tagline / Judul Hero</label>
             <input type="text" value={editingUnit.tagline || ""} onChange={e => setEditingUnit({...editingUnit, tagline: e.target.value})} className="w-full border rounded p-2 focus:ring-2 focus:ring-primary-500" />
           </div>
-          
+
+          <div className="md:col-span-2">
+            <label className="block text-sm font-medium mb-1">Sejarah Unit (HTML)</label>
+            <textarea value={editingUnit.history_html || ""} onChange={e => setEditingUnit({...editingUnit, history_html: e.target.value})} rows={4} className="w-full border rounded p-2 focus:ring-2 focus:ring-primary-500" />
+          </div>
+          <div className="md:col-span-2">
+            <label className="block text-sm font-medium mb-1">Visi</label>
+            <input type="text" value={editingUnit.vision || ""} onChange={e => setEditingUnit({...editingUnit, vision: e.target.value})} className="w-full border rounded p-2 focus:ring-2 focus:ring-primary-500" />
+          </div>
+          <div className="md:col-span-2">
+            <label className="block text-sm font-medium mb-1">Misi (satu per baris)</label>
+            <textarea value={editingUnit.mission || ""} onChange={e => setEditingUnit({...editingUnit, mission: e.target.value})} rows={4} className="w-full border rounded p-2 focus:ring-2 focus:ring-primary-500" />
+          </div>
+          <div className="md:col-span-2">
+            <label className="block text-sm font-medium mb-1">Foto Profil Unit</label>
+            <div className="flex gap-2 items-center">
+              <input type="text" value={editingUnit.profile_image || ""} readOnly className="w-full border rounded p-2 bg-slate-50" />
+              <input type="file" accept="image/*" onChange={(e) => handleUpload(e, "profile_image")} className="text-sm" />
+            </div>
+            {editingUnit.profile_image && <img src={editingUnit.profile_image} alt="Preview profil" className="mt-2 h-20 object-contain" />}
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Jumlah Siswa</label>
+            <input type="text" value={editingUnit.stat_students || ""} onChange={e => setEditingUnit({...editingUnit, stat_students: e.target.value})} className="w-full border rounded p-2" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Tahun Berdiri</label>
+            <input type="text" value={editingUnit.stat_founded || ""} onChange={e => setEditingUnit({...editingUnit, stat_founded: e.target.value})} className="w-full border rounded p-2" />
+          </div>
+
           <div className="md:col-span-2">
             <label className="block text-sm font-medium mb-1">Deskripsi Lengkap (HTML/Teks)</label>
             <textarea value={editingUnit.content || ""} onChange={e => setEditingUnit({...editingUnit, content: e.target.value})} rows={5} className="w-full border rounded p-2 focus:ring-2 focus:ring-primary-500"></textarea>
@@ -129,6 +158,21 @@ export function UnitsTab({ units, refresh }: { units: Unit[], refresh: () => voi
             <input type="color" value={editingUnit.secondary_color || "#fef08a"} onChange={e => setEditingUnit({...editingUnit, secondary_color: e.target.value.toLowerCase()})} className="h-10 w-full border rounded p-1" />
           </div>
 
+          <div className="md:col-span-2">
+            <label className="block text-sm font-medium mb-1">Background Hero</label>
+            <div className="flex gap-2 items-center">
+              <input type="text" value={editingUnit.hero_background || ""} readOnly className="w-full border rounded p-2 bg-slate-50" />
+              <input type="file" accept="image/*" onChange={(e) => handleUpload(e, "hero_background")} className="text-sm" />
+            </div>
+          </div>
+          <div className="md:col-span-2">
+            <label className="block text-sm font-medium mb-1">Background Program</label>
+            <div className="flex gap-2 items-center">
+              <input type="text" value={editingUnit.programs_background || ""} readOnly className="w-full border rounded p-2 bg-slate-50" />
+              <input type="file" accept="image/*" onChange={(e) => handleUpload(e, "programs_background")} className="text-sm" />
+            </div>
+          </div>
+
           <div>
             <label className="block text-sm font-medium mb-1">Alamat Unit</label>
             <input type="text" value={editingUnit.address || ""} onChange={e => setEditingUnit({...editingUnit, address: e.target.value})} className="w-full border rounded p-2 focus:ring-2 focus:ring-primary-500" />
@@ -136,6 +180,34 @@ export function UnitsTab({ units, refresh }: { units: Unit[], refresh: () => voi
           <div>
             <label className="block text-sm font-medium mb-1">Telepon Unit</label>
             <input type="text" value={editingUnit.phone || ""} onChange={e => setEditingUnit({...editingUnit, phone: e.target.value})} className="w-full border rounded p-2 focus:ring-2 focus:ring-primary-500" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Email Unit</label>
+            <input type="email" value={editingUnit.contact_email || ""} onChange={e => setEditingUnit({...editingUnit, contact_email: e.target.value})} className="w-full border rounded p-2" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Nomor WhatsApp</label>
+            <input type="text" value={editingUnit.wa_number || ""} onChange={e => setEditingUnit({...editingUnit, wa_number: e.target.value})} className="w-full border rounded p-2" />
+          </div>
+          <div className="md:col-span-2">
+            <label className="block text-sm font-medium mb-1">Pesan WhatsApp</label>
+            <input type="text" value={editingUnit.wa_message || ""} onChange={e => setEditingUnit({...editingUnit, wa_message: e.target.value})} className="w-full border rounded p-2" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Instagram</label>
+            <input type="text" value={editingUnit.social_instagram || ""} onChange={e => setEditingUnit({...editingUnit, social_instagram: e.target.value})} className="w-full border rounded p-2" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Facebook</label>
+            <input type="text" value={editingUnit.social_facebook || ""} onChange={e => setEditingUnit({...editingUnit, social_facebook: e.target.value})} className="w-full border rounded p-2" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">YouTube</label>
+            <input type="text" value={editingUnit.social_youtube || ""} onChange={e => setEditingUnit({...editingUnit, social_youtube: e.target.value})} className="w-full border rounded p-2" />
+          </div>
+          <div className="md:col-span-2">
+            <label className="block text-sm font-medium mb-1">Link Peta</label>
+            <input type="text" value={editingUnit.map_embed_url || ""} onChange={e => setEditingUnit({...editingUnit, map_embed_url: e.target.value})} className="w-full border rounded p-2" />
           </div>
 
           <div>

@@ -3,34 +3,15 @@ import { handleApiError } from '@/lib/errors';
 import pool from '@/lib/db';
 import { ResultSetHeader } from 'mysql2';
 import { requireModuleOrRoles } from '@/lib/api-auth';
-import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
 import { isReservedUnitSlug, revalidateUnitSites } from '@/lib/revalidate-unit-sites';
-
-const hexColor = z.string().regex(/^#[0-9a-fA-F]{6}$/, 'Warna tidak valid');
-
-const unitSchema = z.object({
-  name: z.string().min(1),
-  slug: z.string().min(1),
-  description: z.string().nullable().optional(),
-  content: z.string().nullable().optional(),
-  image_url: z.string().nullable().optional(),
-  logo_url: z.string().nullable().optional(),
-  primary_color: hexColor.nullable().optional(),
-  secondary_color: hexColor.nullable().optional(),
-  tagline: z.string().nullable().optional(),
-  order_index: z.number().int().default(0),
-  address: z.string().nullable().optional(),
-  phone: z.string().nullable().optional(),
-  map_coordinates: z.string().nullable().optional(),
-  status: z.enum(['active', 'inactive']).default('active')
-});
+import { UNIT_INSERT_SQL, UNIT_SELECT, unitParams, unitSchema } from '@/lib/unit-admin';
 
 export async function GET(request: Request) {
   try {
     await requireModuleOrRoles('units', ['superadmin', 'admin']);
 
-    const [rows] = await pool.execute('SELECT id, name, slug, description, tagline, logo_url, primary_color, secondary_color, order_index, status FROM units ORDER BY order_index ASC, id DESC');
+    const [rows] = await pool.execute(`SELECT id, ${UNIT_SELECT} FROM units ORDER BY order_index ASC, id DESC`);
     return NextResponse.json(rows);
   } catch (error) {
     return handleApiError(error);
@@ -49,11 +30,7 @@ export async function POST(request: Request) {
     if (isReservedUnitSlug(data.slug)) {
       return NextResponse.json({ error: 'Slug tidak tersedia.' }, { status: 400 });
     }
-    const [insertResult] = await pool.execute<ResultSetHeader>(
-      `INSERT INTO units (name, slug, description, content, image_url, logo_url, primary_color, secondary_color, tagline, order_index, address, phone, map_coordinates, status)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [data.name, data.slug, data.description || null, data.content || null, data.image_url || null, data.logo_url || null, data.primary_color || null, data.secondary_color || null, data.tagline || null, data.order_index, data.address || null, data.phone || null, data.map_coordinates || null, data.status]
-    );
+    const [insertResult] = await pool.execute<ResultSetHeader>(UNIT_INSERT_SQL, unitParams(data));
 
     revalidatePath('/');
     revalidatePath('/unit/[slug]', 'page');

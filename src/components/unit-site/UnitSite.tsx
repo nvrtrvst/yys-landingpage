@@ -19,7 +19,7 @@ function formatDate(value: string | null): string {
   }
 }
 
-function eventDateBadge(value: string): string {
+function dateBadge(value: string): string {
   if (!value) return "";
   try {
     return new Date(value).toLocaleDateString("id-ID", { day: "2-digit", month: "short" }).toUpperCase();
@@ -28,187 +28,293 @@ function eventDateBadge(value: string): string {
   }
 }
 
-export function UnitSite({ unit, news, events, testimonials, galleries }: UnitSiteData) {
+function plainText(html: string | null): string {
+  return (html || "").replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+}
+
+function waHref(number: string | null, message: string | null): string | null {
+  if (!number) return null;
+  let phone = number.replace(/\D/g, "");
+  if (!phone) return null;
+  if (phone.startsWith("0")) phone = `62${phone.slice(1)}`;
+  const text = encodeURIComponent(message || "Halo, saya ingin bertanya.");
+  return `https://wa.me/${phone}?text=${text}`;
+}
+
+export function UnitSite({ unit, news, events, testimonials, galleries, programs, faqs }: UnitSiteData) {
   const primary = safeUnitColor(unit.primary_color, "#14532d");
   const secondary = safeUnitColor(unit.secondary_color, "#fef08a");
   const heroImage = isRealImage(unit.image_url) ? unit.image_url : null;
+  const heroBackground = isRealImage(unit.hero_background) ? unit.hero_background : null;
+  const programBackground = isRealImage(unit.programs_background) ? unit.programs_background : null;
   const logo = isRealImage(unit.logo_url) ? unit.logo_url : null;
-  const contentHtml = unit.content && !/lorem ipsum/i.test(unit.content)
-    ? DOMPurify.sanitize(unit.content)
-    : "";
+  const profileImage = isRealImage(unit.profile_image) ? unit.profile_image : null;
+  const historyHtml = unit.history_html ? DOMPurify.sanitize(unit.history_html) : "";
+  const contentHtml = unit.content && !/lorem ipsum/i.test(unit.content) ? DOMPurify.sanitize(unit.content) : "";
+  const missionLines = (unit.mission || "").split("\n").map((line) => line.trim()).filter(Boolean);
+  const stats = [
+    { value: unit.stat_students, label: "Siswa Aktif" },
+    { value: unit.stat_founded, label: "Tahun Berdiri" },
+  ].filter((item) => item.value && item.value !== "0");
+  const hasProfile = !!(historyHtml || unit.vision || missionLines.length || profileImage || stats.length || contentHtml);
   const realGalleries = galleries.filter((item) => isRealImage(item.image_url));
+  const socials = [
+    { label: "Instagram", url: unit.social_instagram },
+    { label: "Facebook", url: unit.social_facebook },
+    { label: "YouTube", url: unit.social_youtube },
+  ].filter((item) => item.url && /^https?:\/\//.test(item.url));
+  const whatsapp = waHref(unit.wa_number, unit.wa_message);
   const ppdbHref = `/ppdb?unit=${unit.slug}`;
+  const newsHref = `/${unit.slug}/berita`;
+  const agendaHref = `/${unit.slug}/agenda`;
   const foundation = foundationUrl();
   const navItems = [
     { label: "Beranda", href: "#beranda" },
-    ...(contentHtml ? [{ label: "Profil", href: "#profil" }] : []),
-    ...(news.length ? [{ label: "Berita", href: "#berita" }] : []),
-    ...(events.length ? [{ label: "Agenda", href: "#agenda" }] : []),
+    ...(hasProfile ? [{ label: "Profil", href: "#profil" }] : []),
+    ...(programs.length ? [{ label: "Program", href: "#program" }] : []),
+    { label: "Berita", href: "#berita" },
+    { label: "Agenda", href: "#agenda" },
     ...(realGalleries.length ? [{ label: "Galeri", href: "#galeri" }] : []),
+    ...(faqs.length ? [{ label: "Tanya Jawab", href: "#tanya-jawab" }] : []),
   ];
   const rootStyle = {
     "--unit-primary": primary,
     "--unit-secondary": secondary,
     fontFamily: "var(--font-nunito), sans-serif",
-    color: "#24392c",
-    background: "#fffdf8",
-    width: "100%",
   } as CSSProperties;
 
   return (
     <div className={`unit-site ${unitSiteFontClass}`} style={rootStyle}>
-      <header className="unit-site-header" style={{ position: "sticky", top: 0, zIndex: 20, background: "var(--unit-primary)", color: "#fff" }}>
+      <header className="unit-site-header">
         <div className="unit-site-header-inner">
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             {logo ? <img src={logo} alt="" style={{ width: 42, height: 42, objectFit: "contain" }} /> : null}
             <div>
-              <div style={{ fontFamily: "var(--font-baloo), sans-serif", fontWeight: 700, fontSize: 19, lineHeight: 1.1 }}>{unit.name}</div>
-              <div style={{ fontSize: 12, opacity: 0.85 }}>Di bawah naungan Yayasan Nuurul Muttaqiin</div>
+              <div style={{ fontFamily: "var(--font-baloo), sans-serif", fontWeight: 700, fontSize: 18, lineHeight: 1.1 }}>{unit.name}</div>
+              <div style={{ fontSize: 12, opacity: 0.85 }}>Yayasan Nuurul Muttaqiin</div>
             </div>
           </div>
-          <nav className="unit-site-nav" style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 20, fontWeight: 600, fontSize: 14 }}>
-            {navItems.map((item) => (
-              <a key={item.href} href={item.href} style={{ color: "#fff" }}>{item.label}</a>
-            ))}
-            <Link href={ppdbHref} style={{ background: "var(--unit-secondary)", color: "#1b2b1f", padding: "10px 18px", borderRadius: 10, fontWeight: 700 }}>
-              Daftar PPDB
-            </Link>
+          <nav className="unit-site-nav">
+            {navItems.map((item) => <a key={item.href} href={item.href}>{item.label}</a>)}
+            <Link href={ppdbHref} className="unit-site-cta">Daftar PPDB</Link>
           </nav>
-          <details className="unit-site-nav-mobile" style={{ position: "relative" }}>
-            <summary style={{ background: "var(--unit-secondary)", color: "#1b2b1f", padding: "10px 16px", borderRadius: 10, fontWeight: 700, cursor: "pointer", listStyle: "none" }}>
-              Menu
-            </summary>
-            <div style={{ position: "absolute", right: 0, top: "100%", background: "var(--unit-primary)", padding: 16, display: "flex", flexDirection: "column", gap: 6, minWidth: 180 }}>
-              {navItems.map((item) => (
-                <a key={item.href} href={item.href} style={{ color: "#fff", padding: "8px 0" }}>{item.label}</a>
-              ))}
-              <Link href={ppdbHref} style={{ color: "#fff", padding: "8px 0" }}>Daftar PPDB</Link>
+          <details className="unit-site-nav-mobile">
+            <summary className="unit-site-menu-button">Menu</summary>
+            <div className="unit-site-menu">
+              {navItems.map((item) => <a key={item.href} href={item.href}>{item.label}</a>)}
+              <Link href={ppdbHref} className="unit-site-cta">Daftar PPDB</Link>
             </div>
           </details>
         </div>
       </header>
 
-      <section id="beranda" style={{ maxWidth: 1200, margin: "0 auto", padding: heroImage ? "64px 48px" : "88px 48px" }}>
-        <div style={heroImage
-          ? { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 56, alignItems: "center" }
-          : { maxWidth: 760, margin: "0 auto", textAlign: "center" }}>
-          <div>
-            <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", opacity: 0.7 }}>Unit Pendidikan Yayasan Nuurul Muttaqiin</div>
-            <h1 style={{ fontFamily: "var(--font-baloo), sans-serif", fontSize: "clamp(2rem, 5vw, 3.25rem)", lineHeight: 1.1, margin: "16px 0", color: "var(--unit-primary)" }}>
-              {unit.tagline || unit.name}
-            </h1>
-            {unit.description ? <p style={{ fontSize: 17, lineHeight: 1.6, color: "#4a5a4f", margin: "0 0 28px" }}>{unit.description}</p> : null}
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 12, justifyContent: heroImage ? "flex-start" : "center" }}>
-              <Link href={ppdbHref} style={{ background: "var(--unit-secondary)", color: "#1b2b1f", padding: "13px 24px", borderRadius: 10, fontWeight: 700 }}>
-                Daftar PPDB
-              </Link>
-              {contentHtml ? <a href="#profil" style={{ border: "1px solid var(--unit-primary)", color: "var(--unit-primary)", padding: "13px 24px", borderRadius: 10, fontWeight: 700 }}>Profil Unit</a> : null}
-            </div>
-          </div>
-          {heroImage ? (
+      <section id="beranda" className="unit-site-hero">
+        {heroBackground ? <img src={heroBackground} alt="" className="unit-site-hero-bg" /> : null}
+        <div className="unit-site-hero-inner">
+          <div className={heroImage ? "unit-site-hero-grid" : ""}>
             <div>
-              <img src={heroImage} alt={unit.name} style={{ width: "100%", maxHeight: 420, objectFit: "cover", borderRadius: 16 }} loading="eager" decoding="async" />
+              <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", opacity: 0.85 }}>Unit Pendidikan</div>
+              <h1 style={{ fontFamily: "var(--font-baloo), sans-serif", fontSize: "clamp(2rem, 6vw, 3.25rem)", lineHeight: 1.1, margin: "16px 0" }}>
+                {unit.tagline || unit.name}
+              </h1>
+              {unit.description ? <p style={{ fontSize: "clamp(1rem, 2.5vw, 1.125rem)", lineHeight: 1.6, margin: "0 0 28px", color: "rgba(255,255,255,0.9)" }}>{unit.description}</p> : null}
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
+                <Link href={ppdbHref} className="unit-site-cta">Daftar PPDB</Link>
+                {hasProfile ? <a href="#profil" className="unit-site-cta-outline" style={{ color: "#fff", borderColor: "rgba(255,255,255,0.6)" }}>Profil Unit</a> : null}
+              </div>
             </div>
-          ) : null}
+            {heroImage ? (
+              <div>
+                <img src={heroImage} alt={unit.name} style={{ width: "100%", maxHeight: 420, objectFit: "cover", borderRadius: 16 }} loading="eager" decoding="async" />
+              </div>
+            ) : null}
+          </div>
         </div>
       </section>
 
-      {contentHtml ? (
-        <section id="profil" style={{ background: "#f3f7f2", padding: "56px 48px" }}>
-          <div className="unit-site-profil" style={{ maxWidth: 900, margin: "0 auto" }} dangerouslySetInnerHTML={{ __html: contentHtml }} />
+      {hasProfile ? (
+        <section id="profil" className="unit-site-section" style={{ background: "#f3f7f2" }}>
+          <div className="unit-site-container">
+            <div className="unit-site-grid" style={{ alignItems: "start" }}>
+              <div className="unit-site-profil">
+                <h2>Profil {unit.name}</h2>
+                {profileImage ? <img src={profileImage} alt={unit.name} style={{ width: "100%", borderRadius: 14, marginBottom: 24 }} loading="lazy" decoding="async" /> : null}
+                {historyHtml ? <div dangerouslySetInnerHTML={{ __html: historyHtml }} /> : null}
+                {contentHtml ? <div dangerouslySetInnerHTML={{ __html: contentHtml }} /> : null}
+                {unit.vision ? (
+                  <figure style={{ margin: "28px 0", paddingLeft: 20, borderLeft: `3px solid ${primary}` }}>
+                    <blockquote style={{ margin: 0, fontFamily: "var(--font-baloo), sans-serif", fontSize: "1.15rem", lineHeight: 1.5 }}>{unit.vision}</blockquote>
+                    <figcaption style={{ marginTop: 8, fontSize: 12, fontWeight: 700, color: primary }}>Visi</figcaption>
+                  </figure>
+                ) : null}
+                {missionLines.length ? (
+                  <div style={{ marginTop: 28 }}>
+                    <h3>Misi</h3>
+                    <ol className="unit-site-profil" style={{ paddingLeft: 20 }}>
+                      {missionLines.map((line) => <li key={line}>{line}</li>)}
+                    </ol>
+                  </div>
+                ) : null}
+              </div>
+              {stats.length ? (
+                <div className="unit-site-grid" style={{ gap: 16 }}>
+                  {stats.map((item) => (
+                    <div key={item.label} className="unit-site-card">
+                      <div style={{ fontFamily: "var(--font-baloo), sans-serif", fontSize: 28, color: primary }}>{item.value}</div>
+                      <div style={{ fontSize: 12, color: "#66756b", marginTop: 6 }}>{item.label}</div>
+                    </div>
+                  ))}
+                </div>
+              ) : null}
+            </div>
+          </div>
+        </section>
+      ) : null}
+
+      {programs.length ? (
+        <section id="program" className="unit-site-section" style={{ position: "relative", overflow: "hidden", background: primary, color: "#fff" }}>
+          {programBackground ? <img src={programBackground} alt="" className="unit-site-hero-bg" /> : null}
+          <div className="unit-site-container" style={{ position: "relative" }}>
+            <h2 className="unit-site-h2" style={{ color: "#fff" }}>Program Unggulan</h2>
+            <div className="unit-site-grid">
+              {programs.map((item) => (
+                <div key={item.id} className="unit-site-card">
+                  {isRealImage(item.image_url) ? <img src={item.image_url} alt="" style={{ width: "100%", height: 140, objectFit: "cover", borderRadius: 10, marginBottom: 14 }} loading="lazy" decoding="async" /> : null}
+                  <h3 style={{ fontFamily: "var(--font-baloo), sans-serif", fontSize: 18, margin: "0 0 8px" }}>{item.title}</h3>
+                  {item.description ? <p style={{ margin: 0, lineHeight: 1.6, color: "#4a5a4f" }}>{plainText(item.description)}</p> : null}
+                </div>
+              ))}
+            </div>
+          </div>
         </section>
       ) : null}
 
       {realGalleries.length ? (
-        <section id="galeri" style={{ maxWidth: 1200, margin: "0 auto", padding: "56px 48px" }}>
-          <h2 style={{ fontFamily: "var(--font-baloo), sans-serif", fontSize: 28, color: "var(--unit-primary)", margin: "0 0 20px" }}>Galeri Kegiatan</h2>
-          <div className="unit-site-gallery-grid">
-            {realGalleries.map((item) => (
-              <div key={item.id} style={{ height: 180, borderRadius: 14, overflow: "hidden", background: "#e8efe8" }}>
-                <img src={item.image_url ?? undefined} alt={item.title || "Kegiatan"} style={{ width: "100%", height: "100%", objectFit: "cover" }} loading="lazy" decoding="async" />
+        <section id="galeri" className="unit-site-section">
+          <div className="unit-site-container">
+            <h2 className="unit-site-h2">Galeri Kegiatan</h2>
+            <div className="unit-site-gallery-grid">
+              {realGalleries.map((item) => (
+                <a key={item.id} href={item.image_url || ""} target="_blank" rel="noopener noreferrer" style={{ borderRadius: 14, overflow: "hidden", background: "#e8efe8", display: "block" }}>
+                  <img src={item.image_url || undefined} alt={item.title || "Kegiatan"} style={{ width: "100%", height: 180, objectFit: "cover" }} loading="lazy" decoding="async" />
+                  {item.title || item.created_at ? (
+                    <div style={{ padding: 12, fontSize: 13 }}>
+                      <div style={{ fontWeight: 700 }}>{item.title || "Kegiatan"}</div>
+                      {item.created_at ? <div style={{ color: "#66756b" }}>{formatDate(item.created_at)}</div> : null}
+                    </div>
+                  ) : null}
+                </a>
+              ))}
+            </div>
+          </div>
+        </section>
+      ) : null}
+
+      <section className="unit-site-section">
+        <div className="unit-site-container unit-site-grid unit-site-grid-2">
+          <div id="berita">
+            <h2 className="unit-site-h2">Berita Terbaru</h2>
+            {news.length ? (
+              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                {news.map((item) => (
+                  <Link key={item.id} href={`/${unit.slug}/berita/${item.slug}`} className="unit-site-card" style={{ color: "inherit" }}>
+                    <div style={{ display: "flex", gap: 14, alignItems: "center" }}>
+                      {isRealImage(item.image_url) ? <img src={item.image_url} alt="" style={{ width: 72, height: 72, objectFit: "cover", borderRadius: 10 }} loading="lazy" decoding="async" /> : null}
+                      <div>
+                        <div style={{ fontSize: 12, color: primary, fontWeight: 700 }}>{item.category || "Berita"}</div>
+                        <div style={{ fontWeight: 700, marginTop: 2 }}>{item.title}</div>
+                        <div style={{ fontSize: 12, color: "#66756b", marginTop: 4 }}>{formatDate(item.published_at || item.created_at)}</div>
+                      </div>
+                    </div>
+                    {plainText(item.content) ? <p style={{ margin: "12px 0 0", color: "#4a5a4f", lineHeight: 1.5, fontSize: 14 }}>{plainText(item.content).slice(0, 160)}</p> : null}
+                  </Link>
+                ))}
+                <Link href={newsHref} style={{ color: primary, fontWeight: 700 }}>Lihat semua berita</Link>
               </div>
+            ) : (
+              <p style={{ color: "#66756b", margin: 0 }}>Belum ada berita untuk unit ini.</p>
+            )}
+          </div>
+          <div id="agenda">
+            <h2 className="unit-site-h2">Agenda</h2>
+            {events.length ? (
+              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                {events.map((item) => (
+                  <div key={item.id} className="unit-site-card" style={{ display: "flex", gap: 14, alignItems: "center" }}>
+                    <span style={{ minWidth: 54, textAlign: "center", background: "#f3f7f2", color: primary, padding: "8px 4px", borderRadius: 10, fontSize: 12, fontWeight: 700 }}>
+                      {dateBadge(item.start_date)}
+                    </span>
+                    <div>
+                      <div style={{ fontWeight: 700 }}>{item.title}</div>
+                      {item.location ? <div style={{ fontSize: 12, color: "#66756b" }}>{item.location}</div> : null}
+                    </div>
+                  </div>
+                ))}
+                <Link href={agendaHref} style={{ color: primary, fontWeight: 700 }}>Lihat agenda lengkap</Link>
+              </div>
+            ) : (
+              <p style={{ color: "#66756b", margin: 0 }}>Belum ada agenda mendatang untuk unit ini.</p>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {testimonials.length ? (
+        <section className="unit-site-section" style={{ background: "#f3f7f2" }}>
+          <div className="unit-site-container">
+            <h2 className="unit-site-h2">Testimoni</h2>
+            <div className="unit-site-grid">
+              {testimonials.map((item) => (
+                <div key={item.id} className="unit-site-card">
+                  {isRealImage(item.image_url) ? <img src={item.image_url} alt="" style={{ width: 56, height: 56, borderRadius: "50%", objectFit: "cover", marginBottom: 12 }} loading="lazy" decoding="async" /> : null}
+                  <p style={{ margin: "0 0 12px", lineHeight: 1.6 }}>{`"${item.content}"`}</p>
+                  <div style={{ fontWeight: 700, color: primary }}>{item.author_name}{item.role ? `, ${item.role}` : ""}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      ) : null}
+
+      {faqs.length ? (
+        <section id="tanya-jawab" className="unit-site-section unit-site-faq">
+          <div className="unit-site-container">
+            <h2 className="unit-site-h2">Tanya Jawab</h2>
+            {faqs.map((item) => (
+              <details key={item.id}>
+                <summary>{item.question}</summary>
+                <div className="unit-site-faq-answer" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(item.answer) }} />
+              </details>
             ))}
           </div>
         </section>
       ) : null}
 
-      <section style={{ maxWidth: 1200, margin: "0 auto", padding: "24px 48px 56px", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 48 }}>
-        <div id="berita">
-          <h2 style={{ fontFamily: "var(--font-baloo), sans-serif", fontSize: 26, color: "var(--unit-primary)", margin: "0 0 18px" }}>Berita Terbaru</h2>
-          {news.length ? (
-            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-              {news.map((item) => (
-                <Link key={item.id} href={`/${unit.slug}/berita/${item.slug}`} style={{ display: "flex", gap: 14, alignItems: "center", background: "#fff", border: "1px solid #e2e8e2", borderRadius: 14, padding: 14, color: "inherit" }}>
-                  {isRealImage(item.image_url) ? (
-                    <img src={item.image_url} alt="" style={{ width: 72, height: 72, objectFit: "cover", borderRadius: 10 }} loading="lazy" decoding="async" />
-                  ) : null}
-                  <div>
-                    <div style={{ fontSize: 12, color: "#66756b" }}>{formatDate(item.published_at || item.created_at)}</div>
-                    <div style={{ fontWeight: 700 }}>{item.title}</div>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          ) : (
-            <p style={{ color: "#66756b", margin: 0 }}>Belum ada berita untuk unit ini.</p>
-          )}
-        </div>
-        <div id="agenda">
-          <h2 style={{ fontFamily: "var(--font-baloo), sans-serif", fontSize: 26, color: "var(--unit-primary)", margin: "0 0 18px" }}>Agenda</h2>
-          {events.length ? (
-            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-              {events.map((item) => (
-                <div key={item.id} style={{ display: "flex", gap: 14, alignItems: "center", background: "#fff", border: "1px solid #e2e8e2", borderRadius: 14, padding: 14 }}>
-                  <span style={{ minWidth: 54, textAlign: "center", background: "#f3f7f2", color: "var(--unit-primary)", padding: "8px 4px", borderRadius: 10, fontSize: 12, fontWeight: 700 }}>
-                    {eventDateBadge(item.start_date)}
-                  </span>
-                  <span style={{ fontWeight: 700 }}>{item.title}</span>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p style={{ color: "#66756b", margin: 0 }}>Belum ada agenda mendatang untuk unit ini.</p>
-          )}
+      <section className="unit-site-section">
+        <div className="unit-site-container" style={{ background: primary, color: "#fff", borderRadius: 18, padding: "28px 20px" }}>
+          <h2 style={{ fontFamily: "var(--font-baloo), sans-serif", fontSize: "clamp(1.4rem,4vw,1.9rem)", margin: "0 0 8px" }}>Penerimaan Peserta Didik Baru</h2>
+          <p style={{ margin: "0 0 20px" }}>Daftarkan putra-putri Anda dan bergabung bersama kami.</p>
+          <Link href={ppdbHref} className="unit-site-cta">Daftar PPDB</Link>
         </div>
       </section>
 
-      {testimonials[0] ? (
-        <section style={{ maxWidth: 1200, margin: "0 auto", padding: "0 48px 56px" }}>
-          <div style={{ background: "#f3f7f2", borderRadius: 16, padding: 28 }}>
-            <p style={{ margin: "0 0 12px", fontSize: 17, lineHeight: 1.6 }}>{`"${testimonials[0].content}"`}</p>
-            <div style={{ fontWeight: 700, color: "var(--unit-primary)" }}>
-              {testimonials[0].author_name}{testimonials[0].role ? `, ${testimonials[0].role}` : ""}
-            </div>
-          </div>
-        </section>
-      ) : null}
-
-      <section style={{ padding: "0 48px 56px" }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto", background: "var(--unit-primary)", color: "#fff", borderRadius: 18, padding: "36px 40px", display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 20 }}>
+      <footer className="unit-site-footer">
+        <div className="unit-site-container" style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr)", gap: 20 }}>
           <div>
-            <h2 style={{ fontFamily: "var(--font-baloo), sans-serif", fontSize: 28, margin: "0 0 6px" }}>Penerimaan Peserta Didik Baru</h2>
-            <p style={{ margin: 0 }}>Daftarkan putra-putri Anda dan bergabung bersama kami.</p>
-          </div>
-          <Link href={ppdbHref} style={{ background: "var(--unit-secondary)", color: "#1b2b1f", padding: "13px 26px", borderRadius: 10, fontWeight: 700 }}>
-            Daftar PPDB
-          </Link>
-        </div>
-      </section>
-
-      <footer style={{ background: "#173d27", color: "#e4f3e7", padding: "36px 48px" }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto", display: "flex", flexWrap: "wrap", justifyContent: "space-between", gap: 24 }}>
-          <div>
-            <div style={{ fontFamily: "var(--font-baloo), sans-serif", fontWeight: 700, fontSize: 20 }}>{unit.name}</div>
-            {unit.address ? <div style={{ fontSize: 14, marginTop: 6, lineHeight: 1.6 }}>{unit.address}</div> : null}
+            <div style={{ fontFamily: "var(--font-baloo), sans-serif", fontWeight: 700, fontSize: 18 }}>{unit.name}</div>
+            {unit.address ? <div style={{ fontSize: 14, marginTop: 8, lineHeight: 1.6 }}>{unit.address}</div> : null}
             {unit.phone ? <div style={{ fontSize: 14 }}>{unit.phone}</div> : null}
+            {unit.contact_email ? <div style={{ fontSize: 14 }}>{unit.contact_email}</div> : null}
           </div>
-          <div style={{ fontSize: 14 }}>
-            <a href={foundation} style={{ color: "var(--unit-secondary)", fontWeight: 700 }}>Kembali ke Yayasan Nuurul Muttaqiin</a>
-            <div style={{ marginTop: 8 }}>© 2026 Yayasan Nuurul Muttaqiin</div>
+          <div style={{ fontSize: 14, display: "flex", flexWrap: "wrap", gap: 16 }}>
+            {socials.map((item) => <a key={item.label} href={item.url || ""} target="_blank" rel="noopener noreferrer" style={{ color: secondary, fontWeight: 700 }}>{item.label}</a>)}
+            {unit.map_embed_url ? <a href={unit.map_embed_url} target="_blank" rel="noopener noreferrer" style={{ color: secondary, fontWeight: 700 }}>Lokasi</a> : null}
+            <a href={foundation} style={{ color: secondary, fontWeight: 700 }}>Yayasan Nuurul Muttaqiin</a>
           </div>
         </div>
       </footer>
 
+      {whatsapp ? <a href={whatsapp} target="_blank" rel="noopener noreferrer" className="unit-site-wa" aria-label="Hubungi via WhatsApp">WA</a> : null}
       <style>{unitSiteStyles}</style>
     </div>
   );

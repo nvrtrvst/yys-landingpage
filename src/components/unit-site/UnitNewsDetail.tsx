@@ -19,59 +19,58 @@ function formatDate(value: string | null): string {
   }
 }
 
+function waHref(number: string | null, message: string | null): string | null {
+  if (!number) return null;
+  let phone = number.replace(/\D/g, "");
+  if (!phone) return null;
+  if (phone.startsWith("0")) phone = `62${phone.slice(1)}`;
+  return `https://wa.me/${phone}?text=${encodeURIComponent(message || "Halo, saya ingin bertanya.")}`;
+}
+
 export function UnitNewsDetail({ unit, news }: UnitNewsDetailData) {
   const primary = safeUnitColor(unit.primary_color, "#14532d");
   const secondary = safeUnitColor(unit.secondary_color, "#fef08a");
   const image = isRealImage(news.image_url) ? news.image_url : null;
   const contentHtml = DOMPurify.sanitize(news.content || "");
   const backHref = `/${unit.slug}`;
+  const whatsapp = waHref(unit.wa_number, unit.wa_message);
   const rootStyle = {
     "--unit-primary": primary,
     "--unit-secondary": secondary,
     fontFamily: "var(--font-nunito), sans-serif",
-    color: "#24392c",
-    background: "#fffdf8",
-    width: "100%",
   } as CSSProperties;
 
   return (
     <div className={`unit-site ${unitSiteFontClass}`} style={rootStyle}>
-      <header style={{ background: "var(--unit-primary)", color: "#fff", padding: "18px 48px" }}>
-        <div style={{ maxWidth: 900, margin: "0 auto", display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
-          <div style={{ fontFamily: "var(--font-baloo), sans-serif", fontWeight: 700, fontSize: 19 }}>{unit.name}</div>
+      <header className="unit-site-header">
+        <div className="unit-site-header-inner">
+          <Link href={backHref} style={{ color: "#fff", fontWeight: 700 }}>{unit.name}</Link>
           <Link href={backHref} style={{ color: "#fff", fontWeight: 600, fontSize: 14 }}>Kembali ke situs unit</Link>
         </div>
       </header>
 
-      <main style={{ maxWidth: 900, margin: "0 auto", padding: "56px 48px" }}>
-        <article>
+      <main className="unit-site-section">
+        <article className="unit-site-container" style={{ maxWidth: 900 }}>
           {formatDate(news.published_at || news.created_at) ? (
-            <div style={{ color: "var(--unit-primary)", fontSize: 13, fontWeight: 600, marginBottom: 14 }}>
-              {formatDate(news.published_at || news.created_at)}
-            </div>
+            <div style={{ color: primary, fontSize: 13, fontWeight: 600, marginBottom: 14 }}>{formatDate(news.published_at || news.created_at)}</div>
           ) : null}
-          <h1 style={{ fontFamily: "var(--font-baloo), sans-serif", fontSize: "clamp(1.75rem, 4vw, 2.75rem)", lineHeight: 1.2, color: "var(--unit-primary)", margin: "0 0 28px" }}>
-            {news.title}
-          </h1>
-          {image ? (
-            <img src={image} alt={news.title} style={{ width: "100%", maxHeight: 420, objectFit: "cover", borderRadius: 16, marginBottom: 32 }} decoding="async" />
-          ) : null}
+          <h1 style={{ fontFamily: "var(--font-baloo), sans-serif", fontSize: "clamp(1.75rem, 5vw, 2.75rem)", lineHeight: 1.2, color: primary, margin: "0 0 28px" }}>{news.title}</h1>
+          {image ? <img src={image} alt={news.title} style={{ width: "100%", maxHeight: 420, objectFit: "cover", borderRadius: 16, marginBottom: 32 }} decoding="async" /> : null}
           <div className="unit-site-profil" dangerouslySetInnerHTML={{ __html: contentHtml }} />
         </article>
-        <div style={{ marginTop: 40, paddingTop: 24, borderTop: "1px solid #e2e8e2" }}>
-          <Link href={backHref} style={{ display: "inline-block", background: "var(--unit-secondary)", color: "#1b2b1f", padding: "12px 22px", borderRadius: 10, fontWeight: 700 }}>
-            Kembali ke {unit.name}
-          </Link>
-        </div>
       </main>
 
-      <footer style={{ background: "#173d27", color: "#e4f3e7", padding: "28px 48px" }}>
-        <div style={{ maxWidth: 900, margin: "0 auto", display: "flex", flexWrap: "wrap", justifyContent: "space-between", gap: 16, fontSize: 14 }}>
-          <div style={{ fontFamily: "var(--font-baloo), sans-serif", fontWeight: 700 }}>{unit.name}</div>
-          <a href={foundationUrl()} style={{ color: "var(--unit-secondary)", fontWeight: 700 }}>Yayasan Nuurul Muttaqiin</a>
+      <footer className="unit-site-footer">
+        <div className="unit-site-container" style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", gap: 16, fontSize: 14 }}>
+          <div>
+            <div style={{ fontFamily: "var(--font-baloo), sans-serif", fontWeight: 700 }}>{unit.name}</div>
+            {unit.contact_email ? <div>{unit.contact_email}</div> : null}
+          </div>
+          <a href={foundationUrl()} style={{ color: secondary, fontWeight: 700 }}>Yayasan Nuurul Muttaqiin</a>
         </div>
       </footer>
 
+      {whatsapp ? <a href={whatsapp} target="_blank" rel="noopener noreferrer" className="unit-site-wa" aria-label="Hubungi via WhatsApp">WA</a> : null}
       <style>{unitSiteStyles}</style>
     </div>
   );

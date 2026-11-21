@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { getUnitNewsDetail, getUnitSiteData } from "./unit-site-data";
+import { getUnitNewsDetail, getUnitSiteData, getUnitSiteUnit } from "./unit-site-data";
 import { unitSiteOrigin } from "@/lib/unit-sites";
 
 export async function generateUnitSiteMetadata(slug: string): Promise<Metadata> {
@@ -41,4 +41,13 @@ export async function generateUnitNewsMetadata(newsSlug: string, unitSlug: strin
     openGraph: { title: news.title, description, url, images: image },
     twitter: { card: "summary_large_image", title: news.title, description, images: image?.map((item) => item.url) },
   };
+}
+
+export async function generateUnitListingMetadata(slug: string, kind: "berita" | "agenda"): Promise<Metadata> {
+  const unit = await getUnitSiteUnit(slug).catch(() => null);
+  if (!unit) return {};
+  const title = kind === "berita" ? `Berita ${unit.name}` : `Agenda ${unit.name}`;
+  const description = unit.description || `Informasi ${kind} di ${unit.name}.`;
+  const url = `${unitSiteOrigin(slug)}/${slug}/${kind}`;
+  return { title, description, alternates: { canonical: url }, openGraph: { title, description, url } };
 }

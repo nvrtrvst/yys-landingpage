@@ -6,7 +6,7 @@ import { toast } from "sonner";
 
 type Testimonial = { id: number, author_name: string, role: string, content: string, image_url: string, order_index: number, is_active: number, unit_id: number | null };
 type Unit = { id: number, name: string, slug: string };
-type Faq = { id: number, question: string, answer: string, category: string, order_index: number, is_active: number };
+type Faq = { id: number, question: string, answer: string, category: string, order_index: number, is_active: number, unit_id: number | null };
 
 export function TestimonialsFaqManager({ userRole, userUnitId }: { userRole?: string; userUnitId?: number | null }) {
   const isUnitAdmin = userRole === 'admin_unit';
@@ -270,6 +270,20 @@ export function TestimonialsFaqManager({ userRole, userUnitId }: { userRole?: st
                       <label className="block text-sm font-medium mb-1">Kategori</label>
                       <input type="text" value={editingFaq.category || ""} onChange={e => setEditingFaq({...editingFaq, category: e.target.value})} placeholder="Misal: Pendaftaran, Pembayaran" className="w-full border rounded p-2" />
                     </div>
+                    {isUnitAdmin ? (
+                      <div>
+                        <label className="block text-sm font-medium mb-1">Target</label>
+                        <input type="text" value="Unit ini" readOnly className="w-full border rounded p-2 bg-slate-50" />
+                      </div>
+                    ) : (
+                      <div>
+                        <label className="block text-sm font-medium mb-1">Target (Unit / Yayasan)</label>
+                        <select value={editingFaq.unit_id ?? ""} onChange={e => setEditingFaq({...editingFaq, unit_id: e.target.value ? parseInt(e.target.value) : null})} className="w-full border rounded p-2">
+                          <option value="">Yayasan (Global)</option>
+                          {units.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
+                        </select>
+                      </div>
+                    )}
                     <div>
                       <label className="block text-sm font-medium mb-1">Urutan</label>
                       <input type="number" value={editingFaq.order_index || 0} onChange={e => setEditingFaq({...editingFaq, order_index: parseInt(e.target.value)||0})} className="w-full border rounded p-2" />
@@ -286,7 +300,7 @@ export function TestimonialsFaqManager({ userRole, userUnitId }: { userRole?: st
                 </form>
               ) : (
                 <div className="overflow-x-auto">
-                  <button onClick={() => setEditingFaq({})} className="bg-primary-600 text-white px-4 py-2 rounded mb-4">+ Tambah FAQ</button>
+                  <button onClick={() => setEditingFaq({ unit_id: isUnitAdmin ? (userUnitId ?? null) : null })} className="bg-primary-600 text-white px-4 py-2 rounded mb-4">+ Tambah FAQ</button>
                   <table className="w-full text-left border-collapse">
                     <thead>
                       <tr className="bg-slate-50 border-b"><th className="p-3">Urutan</th><th className="p-3 w-1/2">Pertanyaan</th><th className="p-3">Kategori</th><th className="p-3">Status</th><th className="p-3 text-right">Aksi</th></tr>
