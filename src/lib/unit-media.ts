@@ -16,6 +16,16 @@ export function parseCarouselImages(value: unknown): string[] {
 }
 
 export function youtubeEmbedUrl(value: string | null | undefined): string | null {
+  const id = youtubeId(value);
+  return id ? `https://www.youtube-nocookie.com/embed/${id}` : null;
+}
+
+export function youtubeWatchUrl(value: string | null | undefined): string | null {
+  const id = youtubeId(value);
+  return id ? `https://www.youtube.com/watch?v=${id}` : null;
+}
+
+function youtubeId(value: string | null | undefined): string | null {
   if (!value) return null;
   const input = value.trim();
   const patterns = [
@@ -24,7 +34,7 @@ export function youtubeEmbedUrl(value: string | null | undefined): string | null
   ];
   for (const pattern of patterns) {
     const match = input.match(pattern);
-    if (match?.[1]) return `https://www.youtube-nocookie.com/embed/${match[1]}`;
+    if (match?.[1]) return match[1];
   }
   return null;
 }

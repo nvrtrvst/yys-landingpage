@@ -4,7 +4,7 @@ import type { CSSProperties } from "react";
 import { unitSiteFontClass } from "./unit-site-fonts";
 import { safeUnitColor, unitSiteStyles } from "./unit-site-styles";
 import { foundationUrl } from "@/lib/unit-sites";
-import { parseCarouselImages, safeMapEmbedUrl, youtubeEmbedUrl } from "@/lib/unit-media";
+import { parseCarouselImages, safeMapEmbedUrl, youtubeEmbedUrl, youtubeWatchUrl } from "@/lib/unit-media";
 import { UnitCarousel } from "./UnitCarousel";
 import type { UnitSiteData } from "./unit-site-data";
 
@@ -62,6 +62,7 @@ export function UnitSite({ unit, news, events, testimonials, galleries, programs
   const realGalleries = galleries.filter((item) => isRealImage(item.image_url));
   const carouselImages = parseCarouselImages(unit.carousel_images);
   const videoEmbed = youtubeEmbedUrl(unit.youtube_url);
+  const videoWatch = youtubeWatchUrl(unit.youtube_url);
   const mapEmbed = safeMapEmbedUrl(unit.map_embed_url, unit.address);
   const hasMedia = carouselImages.length > 0 || !!videoEmbed;
   const faqGroups = faqs.reduce<Record<string, typeof faqs>>((groups, item) => {
@@ -232,8 +233,15 @@ export function UnitSite({ unit, news, events, testimonials, galleries, programs
             <div className="unit-site-media-grid">
               {carouselImages.length ? <div><UnitCarousel images={carouselImages} /></div> : null}
               {videoEmbed ? (
-                <div className="unit-site-video">
-                  <iframe src={videoEmbed} title={`Video ${unit.name}`} allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen loading="lazy" />
+                <div>
+                  <div className="unit-site-video">
+                    <iframe src={videoEmbed} title={`Video ${unit.name}`} allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen loading="lazy" />
+                  </div>
+                  {videoWatch ? (
+                    <a href={videoWatch} target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", minHeight: 44, marginTop: 10, color: primary, fontWeight: 700 }}>
+                      Tonton di YouTube
+                    </a>
+                  ) : null}
                 </div>
               ) : null}
             </div>

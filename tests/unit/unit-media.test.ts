@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseCarouselImages, safeMapEmbedUrl, youtubeEmbedUrl } from "@/lib/unit-media";
+import { parseCarouselImages, safeMapEmbedUrl, youtubeEmbedUrl, youtubeWatchUrl } from "@/lib/unit-media";
 
 describe("parseCarouselImages", () => {
   it("parses JSON and filters unsafe values", () => {
@@ -23,6 +23,10 @@ describe("youtubeEmbedUrl", () => {
 
   it("rejects invalid links", () => {
     expect(youtubeEmbedUrl("https://example.com/video")).toBeNull();
+  });
+
+  it("provides a watch fallback", () => {
+    expect(youtubeWatchUrl("https://youtu.be/abcdefghijk")).toBe("https://www.youtube.com/watch?v=abcdefghijk");
   });
 });
 
