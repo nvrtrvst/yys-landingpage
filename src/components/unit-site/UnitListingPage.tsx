@@ -39,8 +39,10 @@ export function UnitListingPage({ unit, title, children }: { unit: UnitSiteUnit;
         </div>
       </main>
       <footer className="unit-site-footer">
-        <div className="unit-site-container" style={{ fontSize: 14 }}>
-          <Link href={foundationUrl()} style={{ color: secondary, fontWeight: 700 }}>Yayasan Nuurul Muttaqiin</Link>
+        <div className="unit-site-container unit-site-legal" style={{ fontSize: 14 }}>
+          <Link href="/privacy">Privacy Policy</Link>
+          <Link href="/terms">Terms of Service</Link>
+          <Link href={foundationUrl()}>Yayasan Nuurul Muttaqiin</Link>
         </div>
       </footer>
       {whatsapp ? <a href={whatsapp} target="_blank" rel="noopener noreferrer" className="unit-site-wa" aria-label="Hubungi via WhatsApp">WA</a> : null}

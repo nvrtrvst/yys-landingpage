@@ -20,6 +20,8 @@ export interface UnitSiteUnit extends RowDataPacket {
   stat_founded: string | null;
   hero_background: string | null;
   programs_background: string | null;
+  carousel_images: string | null;
+  youtube_url: string | null;
   address: string | null;
   phone: string | null;
   contact_email: string | null;
@@ -89,6 +91,19 @@ export interface UnitSiteFaq extends RowDataPacket {
   category: string | null;
 }
 
+export interface UnitMadingPost extends RowDataPacket {
+  id: number;
+  slug: string;
+  title: string;
+  excerpt: string | null;
+  content: string | null;
+  cover_image: string | null;
+  published_at: string | null;
+  created_at: string | null;
+  author_name: string | null;
+  category_name: string | null;
+}
+
 export interface UnitSiteData {
   unit: UnitSiteUnit;
   news: UnitSiteNews[];
@@ -97,6 +112,7 @@ export interface UnitSiteData {
   galleries: UnitSiteGallery[];
   programs: UnitSiteProgram[];
   faqs: UnitSiteFaq[];
+  mading: UnitMadingPost[];
 }
 
 export interface UnitNewsDetailData {
@@ -117,7 +133,22 @@ export interface UnitAgendaData {
   events: UnitSiteEvent[];
 }
 
-const UNIT_COLUMNS = `id, name, slug, description, tagline, image_url, logo_url, primary_color, secondary_color, content, history_html, vision, mission, profile_image, stat_students, stat_founded, hero_background, programs_background, address, phone, contact_email, social_instagram, social_facebook, social_youtube, map_embed_url, wa_number, wa_message`;
+export interface UnitGalleryData {
+  unit: UnitSiteUnit;
+  galleries: UnitSiteGallery[];
+}
+
+export interface UnitMadingListData {
+  unit: UnitSiteUnit;
+  posts: UnitMadingPost[];
+}
+
+export interface UnitMadingDetailData {
+  unit: UnitSiteUnit;
+  post: UnitMadingPost;
+}
+
+const UNIT_COLUMNS = `id, name, slug, description, tagline, image_url, logo_url, primary_color, secondary_color, content, history_html, vision, mission, profile_image, stat_students, stat_founded, hero_background, programs_background, carousel_images, youtube_url, address, phone, contact_email, social_instagram, social_facebook, social_youtube, map_embed_url, wa_number, wa_message`;
 
 export async function getUnitSiteUnit(slug: string): Promise<UnitSiteUnit | null> {
   const [rows] = await pool.execute<UnitSiteUnit[]>(
@@ -168,6 +199,16 @@ export async function getUnitSiteData(slug: string): Promise<UnitSiteData | null
        ORDER BY order_index ASC, id DESC LIMIT 12`,
       [unit.id]
     ),
+    pool.execute<UnitMadingPost[]>(
+      `SELECT p.id, p.slug, p.title, LEFT(p.content, 180) AS excerpt, p.cover_image, p.published_at, p.created_at,
+              u.name AS author_name, c.name AS category_name
+       FROM mading_posts p
+       JOIN users u ON u.id = p.author_id
+       LEFT JOIN mading_categories c ON c.id = p.category_id
+       WHERE p.status = 'approved' AND p.unit_id = ?
+       ORDER BY COALESCE(p.published_at, p.created_at) DESC LIMIT 3`,
+      [unit.id]
+    ),
   ]);
 
   const fulfilled = <T>(index: number): T[] => results[index].status === "fulfilled" ? (results[index] as PromiseFulfilledResult<[T[], unknown]>).value[0] : [];
@@ -183,6 +224,7 @@ export async function getUnitSiteData(slug: string): Promise<UnitSiteData | null
     galleries: fulfilled<UnitSiteGallery>(3),
     programs: fulfilled<UnitSiteProgram>(4),
     faqs: fulfilled<UnitSiteFaq>(5),
+    mading: fulfilled<UnitMadingPost>(6),
   };
 }
 
@@ -237,4 +279,48 @@ export async function getUnitAgenda(unitSlug: string): Promise<UnitAgendaData | 
     [unit.id]
   );
   return { unit, events: rows };
+}
+
+export async function getUnitGallery(unitSlug: string): Promise<UnitGalleryData | null> {
+  const unit = await getUnitSiteUnit(unitSlug);
+  if (!unit) return null;
+  const [rows] = await pool.execute<UnitSiteGallery[]>(
+    `SELECT id, title, image_url, created_at FROM galleries
+     WHERE unit_id = ? ORDER BY created_at DESC LIMIT 60`,
+    [unit.id]
+  );
+  return { unit, galleries: rows };
+}
+
+export async function getUnitMadingPosts(unitSlug: string, limit: number = 30): Promise<UnitMadingListData | null> {
+  const unit = await getUnitSiteUnit(unitSlug);
+  if (!unit) return null;
+  const [rows] = await pool.execute<UnitMadingPost[]>(
+    `SELECT p.id, p.slug, p.title, LEFT(p.content, 180) AS excerpt, p.cover_image, p.published_at, p.created_at,
+            u.name AS author_name, c.name AS category_name
+     FROM mading_posts p
+     JOIN users u ON u.id = p.author_id
+     LEFT JOIN mading_categories c ON c.id = p.category_id
+     WHERE p.status = 'approved' AND p.unit_id = ?
+     ORDER BY COALESCE(p.published_at, p.created_at) DESC LIMIT ${Math.max(1, Math.min(60, Math.floor(limit)))}`,
+    [unit.id]
+  );
+  return { unit, posts: rows };
+}
+
+export async function getUnitMadingDetail(unitSlug: string, postSlug: string): Promise<UnitMadingDetailData | null> {
+  const unit = await getUnitSiteUnit(unitSlug);
+  if (!unit) return null;
+  const [rows] = await pool.execute<UnitMadingPost[]>(
+    `SELECT p.id, p.slug, p.title, p.content, p.cover_image, p.published_at, p.created_at,
+            u.name AS author_name, c.name AS category_name
+     FROM mading_posts p
+     JOIN users u ON u.id = p.author_id
+     LEFT JOIN mading_categories c ON c.id = p.category_id
+     WHERE p.slug = ? AND p.status = 'approved' AND p.unit_id = ?`,
+    [postSlug, unit.id]
+  );
+  const post = rows[0];
+  if (!post) return null;
+  return { unit, post };
 }

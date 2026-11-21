@@ -66,7 +66,11 @@ export function UnitNewsDetail({ unit, news }: UnitNewsDetailData) {
             <div style={{ fontFamily: "var(--font-baloo), sans-serif", fontWeight: 700 }}>{unit.name}</div>
             {unit.contact_email ? <div>{unit.contact_email}</div> : null}
           </div>
-          <a href={foundationUrl()} style={{ color: secondary, fontWeight: 700 }}>Yayasan Nuurul Muttaqiin</a>
+          <div className="unit-site-legal">
+            <a href="/privacy">Privacy Policy</a>
+            <a href="/terms">Terms of Service</a>
+            <a href={foundationUrl()}>Yayasan Nuurul Muttaqiin</a>
+          </div>
         </div>
       </footer>
 

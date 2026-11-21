@@ -5,6 +5,7 @@ import { getServerSessionDual } from "@/lib/mading-auth";
 import { canAccessUnit, createAuditLog, createNotification } from "@/lib/mading";
 import { getClientIp } from "@/lib/rate-limit";
 import { revalidatePath } from "next/cache";
+import { revalidateUnitSites } from "@/lib/revalidate-unit-sites";
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -105,6 +106,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     );
 
     revalidatePath("/mading");
+    await revalidateUnitSites();
     return NextResponse.json({ success: true, status: toStatus });
   } catch (error) {
     console.error("Error updating post status:", error);

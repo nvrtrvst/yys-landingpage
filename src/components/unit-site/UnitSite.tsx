@@ -4,6 +4,8 @@ import type { CSSProperties } from "react";
 import { unitSiteFontClass } from "./unit-site-fonts";
 import { safeUnitColor, unitSiteStyles } from "./unit-site-styles";
 import { foundationUrl } from "@/lib/unit-sites";
+import { parseCarouselImages, safeMapEmbedUrl, youtubeEmbedUrl } from "@/lib/unit-media";
+import { UnitCarousel } from "./UnitCarousel";
 import type { UnitSiteData } from "./unit-site-data";
 
 function isRealImage(url: string | null | undefined): url is string {
@@ -41,7 +43,7 @@ function waHref(number: string | null, message: string | null): string | null {
   return `https://wa.me/${phone}?text=${text}`;
 }
 
-export function UnitSite({ unit, news, events, testimonials, galleries, programs, faqs }: UnitSiteData) {
+export function UnitSite({ unit, news, events, testimonials, galleries, programs, faqs, mading }: UnitSiteData) {
   const primary = safeUnitColor(unit.primary_color, "#14532d");
   const secondary = safeUnitColor(unit.secondary_color, "#fef08a");
   const heroImage = isRealImage(unit.image_url) ? unit.image_url : null;
@@ -58,6 +60,18 @@ export function UnitSite({ unit, news, events, testimonials, galleries, programs
   ].filter((item) => item.value && item.value !== "0");
   const hasProfile = !!(historyHtml || unit.vision || missionLines.length || profileImage || stats.length || contentHtml);
   const realGalleries = galleries.filter((item) => isRealImage(item.image_url));
+  const carouselImages = parseCarouselImages(unit.carousel_images);
+  const videoEmbed = youtubeEmbedUrl(unit.youtube_url);
+  const mapEmbed = safeMapEmbedUrl(unit.map_embed_url, unit.address);
+  const hasMedia = carouselImages.length > 0 || !!videoEmbed;
+  const faqGroups = faqs.reduce<Record<string, typeof faqs>>((groups, item) => {
+    const key = item.category?.trim() || "Umum";
+    if (!groups[key]) groups[key] = [];
+    groups[key].push(item);
+    return groups;
+  }, {});
+  const madingHref = `/${unit.slug}/mading`;
+  const galleryHref = `/${unit.slug}/galeri`;
   const socials = [
     { label: "Instagram", url: unit.social_instagram },
     { label: "Facebook", url: unit.social_facebook },
@@ -75,6 +89,8 @@ export function UnitSite({ unit, news, events, testimonials, galleries, programs
     { label: "Berita", href: "#berita" },
     { label: "Agenda", href: "#agenda" },
     ...(realGalleries.length ? [{ label: "Galeri", href: "#galeri" }] : []),
+    ...(hasMedia ? [{ label: "Media", href: "#media" }] : []),
+    ...(mading.length ? [{ label: "Mading", href: "#mading" }] : []),
     ...(faqs.length ? [{ label: "Tanya Jawab", href: "#tanya-jawab" }] : []),
   ];
   const rootStyle = {
@@ -206,6 +222,43 @@ export function UnitSite({ unit, news, events, testimonials, galleries, programs
                 </a>
               ))}
             </div>
+            <Link href={galleryHref} style={{ color: primary, fontWeight: 700, display: "inline-flex", minHeight: 44, alignItems: "center", marginTop: 16 }}>Lihat galeri lengkap</Link>
+          </div>
+        </section>
+      ) : null}
+
+      {hasMedia ? (
+        <section id="media" className="unit-site-section" style={{ background: "#f3f7f2" }}>
+          <div className="unit-site-container">
+            <h2 className="unit-site-h2">Media &amp; Video</h2>
+            <div className="unit-site-media-grid">
+              {carouselImages.length ? <div><UnitCarousel images={carouselImages} /></div> : null}
+              {videoEmbed ? (
+                <div className="unit-site-video">
+                  <iframe src={videoEmbed} title={`Video ${unit.name}`} allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen loading="lazy" />
+                </div>
+              ) : null}
+            </div>
+          </div>
+        </section>
+      ) : null}
+
+      {mading.length ? (
+        <section id="mading" className="unit-site-section">
+          <div className="unit-site-container">
+            <h2 className="unit-site-h2">Tulisan Siswa &amp; Guru</h2>
+            <div className="unit-site-mading-grid">
+              {mading.map((post) => (
+                <Link key={post.id} href={`/${unit.slug}/mading/${post.slug}`} className="unit-site-card" style={{ color: "inherit" }}>
+                  {isRealImage(post.cover_image) ? <img src={post.cover_image} alt="" style={{ width: "100%", height: 140, objectFit: "cover", borderRadius: 10, marginBottom: 12 }} loading="lazy" decoding="async" /> : null}
+                  <div style={{ fontSize: 12, fontWeight: 700, color: primary }}>{post.category_name || "Tulisan"}</div>
+                  <h3 style={{ fontFamily: "var(--font-baloo), sans-serif", fontSize: 18, margin: "6px 0 8px" }}>{post.title}</h3>
+                  {post.excerpt ? <p style={{ margin: 0, lineHeight: 1.6, color: "#4a5a4f" }}>{plainText(post.excerpt)}</p> : null}
+                  <div style={{ fontSize: 12, color: "#66756b", marginTop: 10 }}>{post.author_name || ""} · {formatDate(post.published_at || post.created_at)}</div>
+                </Link>
+              ))}
+            </div>
+            <Link href={madingHref} style={{ color: primary, fontWeight: 700, display: "inline-flex", minHeight: 44, alignItems: "center", marginTop: 16 }}>Lihat semua tulisan</Link>
           </div>
         </section>
       ) : null}
@@ -280,11 +333,16 @@ export function UnitSite({ unit, news, events, testimonials, galleries, programs
         <section id="tanya-jawab" className="unit-site-section unit-site-faq">
           <div className="unit-site-container">
             <h2 className="unit-site-h2">Tanya Jawab</h2>
-            {faqs.map((item) => (
-              <details key={item.id}>
-                <summary>{item.question}</summary>
-                <div className="unit-site-faq-answer" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(item.answer) }} />
-              </details>
+            {Object.entries(faqGroups).map(([category, items]) => (
+              <div key={category}>
+                <h3>{category}</h3>
+                {items.map((item) => (
+                  <details key={item.id}>
+                    <summary>{item.question}</summary>
+                    <div className="unit-site-faq-answer unit-site-answer" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(item.answer) }} />
+                  </details>
+                ))}
+              </div>
             ))}
           </div>
         </section>
@@ -306,10 +364,23 @@ export function UnitSite({ unit, news, events, testimonials, galleries, programs
             {unit.phone ? <div style={{ fontSize: 14 }}>{unit.phone}</div> : null}
             {unit.contact_email ? <div style={{ fontSize: 14 }}>{unit.contact_email}</div> : null}
           </div>
-          <div style={{ fontSize: 14, display: "flex", flexWrap: "wrap", gap: 16 }}>
-            {socials.map((item) => <a key={item.label} href={item.url || ""} target="_blank" rel="noopener noreferrer" style={{ color: secondary, fontWeight: 700 }}>{item.label}</a>)}
-            {unit.map_embed_url ? <a href={unit.map_embed_url} target="_blank" rel="noopener noreferrer" style={{ color: secondary, fontWeight: 700 }}>Lokasi</a> : null}
-            <a href={foundation} style={{ color: secondary, fontWeight: 700 }}>Yayasan Nuurul Muttaqiin</a>
+          <div style={{ fontSize: 14 }}>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 16 }}>
+              {socials.map((item) => <a key={item.label} href={item.url || ""} target="_blank" rel="noopener noreferrer" style={{ color: secondary, fontWeight: 700 }}>{item.label}</a>)}
+            </div>
+            {mapEmbed ? (
+              <details style={{ marginTop: 8 }}>
+                <summary style={{ minHeight: 44, display: "flex", alignItems: "center", color: secondary, fontWeight: 700, cursor: "pointer" }}>Lokasi</summary>
+                <div className="unit-site-map-video" style={{ marginTop: 8 }}>
+                  <iframe src={mapEmbed} title={`Lokasi ${unit.name}`} loading="lazy" referrerPolicy="no-referrer-when-downgrade" />
+                </div>
+              </details>
+            ) : null}
+            <div className="unit-site-legal" style={{ marginTop: 8 }}>
+              <a href="/privacy">Privacy Policy</a>
+              <a href="/terms">Terms of Service</a>
+              <a href={foundation}>Yayasan Nuurul Muttaqiin</a>
+            </div>
           </div>
         </div>
       </footer>

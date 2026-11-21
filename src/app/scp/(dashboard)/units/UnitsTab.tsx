@@ -172,6 +172,20 @@ export function UnitsTab({ units, refresh }: { units: Unit[], refresh: () => voi
               <input type="file" accept="image/*" onChange={(e) => handleUpload(e, "programs_background")} className="text-sm" />
             </div>
           </div>
+          <div className="md:col-span-2">
+            <label className="block text-sm font-medium mb-1">Gambar Carousel (satu URL per baris, maksimal 8)</label>
+            <textarea
+              value={Array.isArray(editingUnit.carousel_images) ? editingUnit.carousel_images.join("\n") : ""}
+              onChange={e => setEditingUnit({...editingUnit, carousel_images: e.target.value.split(/\r?\n/).map((line) => line.trim()).filter(Boolean).slice(0, 8)})}
+              rows={4}
+              className="w-full border rounded p-2 focus:ring-2 focus:ring-primary-500"
+              placeholder="/uploads/contoh-1.webp"
+            />
+          </div>
+          <div className="md:col-span-2">
+            <label className="block text-sm font-medium mb-1">Video YouTube</label>
+            <input type="text" value={editingUnit.youtube_url || ""} onChange={e => setEditingUnit({...editingUnit, youtube_url: e.target.value})} className="w-full border rounded p-2" placeholder="https://youtube.com/watch?v=..." />
+          </div>
 
           <div>
             <label className="block text-sm font-medium mb-1">Alamat Unit</label>

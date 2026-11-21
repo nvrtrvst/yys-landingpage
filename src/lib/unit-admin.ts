@@ -21,6 +21,8 @@ export const unitSchema = z.object({
   stat_founded: z.string().nullable().optional(),
   hero_background: z.string().nullable().optional(),
   programs_background: z.string().nullable().optional(),
+  carousel_images: z.array(z.string()).max(8).nullable().optional(),
+  youtube_url: z.string().nullable().optional().refine((value) => !value || /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\//i.test(value), "URL YouTube tidak valid"),
   order_index: z.number().int().default(0),
   address: z.string().nullable().optional(),
   phone: z.string().nullable().optional(),
@@ -40,7 +42,7 @@ export type UnitInput = z.infer<typeof unitSchema>;
 export const UNIT_COLUMNS = [
   "name", "slug", "description", "content", "image_url", "logo_url", "primary_color", "secondary_color", "tagline",
   "history_html", "vision", "mission", "profile_image", "stat_students", "stat_founded",
-  "hero_background", "programs_background", "address", "phone", "contact_email",
+  "hero_background", "programs_background", "carousel_images", "youtube_url", "address", "phone", "contact_email",
   "social_instagram", "social_facebook", "social_youtube", "map_embed_url", "map_coordinates",
   "wa_number", "wa_message", "order_index", "status",
 ] as const;
@@ -70,6 +72,8 @@ export function unitParams(data: UnitInput): (string | number | null)[] {
     value(data.stat_founded),
     value(data.hero_background),
     value(data.programs_background),
+    data.carousel_images?.length ? JSON.stringify(data.carousel_images) : null,
+    value(data.youtube_url),
     value(data.address),
     value(data.phone),
     value(data.contact_email),

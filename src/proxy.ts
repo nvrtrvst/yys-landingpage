@@ -62,7 +62,7 @@ export default withAuth(
         response.headers.forEach((value, key) => rewrite.headers.set(key, value));
         return rewrite;
       }
-      const allowed = ["/_next/", "/uploads/", "/favicon.ico", "/logo.png", "/robots.txt", "/sitemap.xml", "/api/", "/ppdb", `/${unitSlug}`];
+      const allowed = ["/_next/", "/uploads/", "/favicon.ico", "/logo.png", "/robots.txt", "/sitemap.xml", "/api/", "/ppdb", "/privacy", "/terms", `/${unitSlug}`];
       if (!allowed.some((p) => path === p || path.startsWith(p))) {
         return new NextResponse("Not Found", { status: 404 });
       }
