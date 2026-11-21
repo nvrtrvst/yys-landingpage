@@ -2,14 +2,12 @@ import Link from "next/link";
 import DOMPurify from "isomorphic-dompurify";
 import type { CSSProperties } from "react";
 import { unitSiteFontClass } from "./unit-site-fonts";
+import { safeUnitColor, unitSiteStyles } from "./unit-site-styles";
+import { foundationUrl } from "@/lib/unit-sites";
 import type { UnitSiteData } from "./unit-site-data";
 
 function isRealImage(url: string | null | undefined): url is string {
   return !!url && !url.startsWith("/uploads/dummy/");
-}
-
-function safeColor(value: string | null | undefined, fallback: string): string {
-  return value && /^#[0-9a-fA-F]{6}$/.test(value) ? value.toLowerCase() : fallback;
 }
 
 function formatDate(value: string | null): string {
@@ -31,8 +29,8 @@ function eventDateBadge(value: string): string {
 }
 
 export function UnitSite({ unit, news, events, testimonials, galleries }: UnitSiteData) {
-  const primary = safeColor(unit.primary_color, "#14532d");
-  const secondary = safeColor(unit.secondary_color, "#fef08a");
+  const primary = safeUnitColor(unit.primary_color, "#14532d");
+  const secondary = safeUnitColor(unit.secondary_color, "#fef08a");
   const heroImage = isRealImage(unit.image_url) ? unit.image_url : null;
   const logo = isRealImage(unit.logo_url) ? unit.logo_url : null;
   const contentHtml = unit.content && !/lorem ipsum/i.test(unit.content)
@@ -40,6 +38,7 @@ export function UnitSite({ unit, news, events, testimonials, galleries }: UnitSi
     : "";
   const realGalleries = galleries.filter((item) => isRealImage(item.image_url));
   const ppdbHref = `/ppdb?unit=${unit.slug}`;
+  const foundation = foundationUrl();
   const navItems = [
     { label: "Beranda", href: "#beranda" },
     ...(contentHtml ? [{ label: "Profil", href: "#profil" }] : []),
@@ -139,7 +138,7 @@ export function UnitSite({ unit, news, events, testimonials, galleries }: UnitSi
           {news.length ? (
             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
               {news.map((item) => (
-                <Link key={item.id} href={`/berita/${item.slug}`} style={{ display: "flex", gap: 14, alignItems: "center", background: "#fff", border: "1px solid #e2e8e2", borderRadius: 14, padding: 14, color: "inherit" }}>
+                <Link key={item.id} href={`/${unit.slug}/berita/${item.slug}`} style={{ display: "flex", gap: 14, alignItems: "center", background: "#fff", border: "1px solid #e2e8e2", borderRadius: 14, padding: 14, color: "inherit" }}>
                   {isRealImage(item.image_url) ? (
                     <img src={item.image_url} alt="" style={{ width: 72, height: 72, objectFit: "cover", borderRadius: 10 }} loading="lazy" decoding="async" />
                   ) : null}
@@ -204,28 +203,13 @@ export function UnitSite({ unit, news, events, testimonials, galleries }: UnitSi
             {unit.phone ? <div style={{ fontSize: 14 }}>{unit.phone}</div> : null}
           </div>
           <div style={{ fontSize: 14 }}>
-            <Link href="/" style={{ color: "var(--unit-secondary)", fontWeight: 700 }}>Kembali ke Yayasan Nuurul Muttaqiin</Link>
+            <a href={foundation} style={{ color: "var(--unit-secondary)", fontWeight: 700 }}>Kembali ke Yayasan Nuurul Muttaqiin</a>
             <div style={{ marginTop: 8 }}>© 2026 Yayasan Nuurul Muttaqiin</div>
           </div>
         </div>
       </footer>
 
-      <style>{`
-        .unit-site a { text-decoration: none; }
-        .unit-site-header-inner { max-width: 1200px; margin: 0 auto; padding: 14px 48px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
-        .unit-site-nav-mobile { display: none; }
-        .unit-site-gallery-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
-        .unit-site-profil h2 { font-family: var(--font-baloo), sans-serif; font-size: 1.75rem; color: var(--unit-primary); margin: 0 0 16px; }
-        .unit-site-profil h3 { font-family: var(--font-baloo), sans-serif; font-size: 1.25rem; margin: 24px 0 8px; }
-        .unit-site-profil p { line-height: 1.7; color: #4a5a4f; }
-        .unit-site-profil ul, .unit-site-profil ol { line-height: 1.7; color: #4a5a4f; padding-left: 20px; }
-        @media (max-width: 820px) {
-          .unit-site-nav { display: none !important; }
-          .unit-site-nav-mobile { display: block !important; }
-          .unit-site-header-inner { padding: 14px 20px; }
-          #beranda, #galeri, #profil, #berita, #agenda { padding-left: 20px !important; padding-right: 20px !important; }
-        }
-      `}</style>
+      <style>{unitSiteStyles}</style>
     </div>
   );
 }

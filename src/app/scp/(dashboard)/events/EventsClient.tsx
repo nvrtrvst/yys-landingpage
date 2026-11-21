@@ -185,6 +185,7 @@ export function EventsClient({ userRole, userUnitId }: { userRole?: string; user
             <div>
               <label className="block text-sm font-medium mb-1">Deskripsi Singkat</label>
               <textarea value={editingItem.description || ""} onChange={e => setEditingItem({...editingItem, description: e.target.value})} rows={3} className="w-full border rounded p-2 focus:ring-2 focus:ring-primary-100"></textarea>
+              <p className="text-xs text-slate-500 mt-1">Agenda tampil di situs unit hanya jika waktu mulai hari ini atau setelahnya.</p>
             </div>
             {isUnitAdmin ? (
               <div>

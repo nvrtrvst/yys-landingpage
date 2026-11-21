@@ -1,6 +1,7 @@
 import { withAuth } from "next-auth/middleware";
 import { NextResponse } from "next/server";
 import { firstAccessibleHref, hasModuleAccess, moduleForApiPath, moduleForPath, type ModuleKey } from "@/lib/modules";
+import { unitSlugFromHost } from "@/lib/unit-sites";
 
 const MADING_HOST_PREFIX = "penamaya.";
 const MADING_ALLOWED = ["/mading", "/api/mading", "/_next/", "/uploads/", "/favicon.ico", "/logo.png"];
@@ -47,6 +48,22 @@ export default withAuth(
         if (path === "/") {
           return NextResponse.rewrite(new URL("/mading", req.url));
         }
+        return new NextResponse("Not Found", { status: 404 });
+      }
+      return response;
+    }
+
+    const unitSlug = unitSlugFromHost(host);
+    if (unitSlug) {
+      if (path === "/") {
+        const target = new URL(`/${unitSlug}`, req.url);
+        target.search = req.nextUrl.search;
+        const rewrite = NextResponse.rewrite(target);
+        response.headers.forEach((value, key) => rewrite.headers.set(key, value));
+        return rewrite;
+      }
+      const allowed = ["/_next/", "/uploads/", "/favicon.ico", "/logo.png", "/robots.txt", "/sitemap.xml", "/api/", "/ppdb", `/${unitSlug}`];
+      if (!allowed.some((p) => path === p || path.startsWith(p))) {
         return new NextResponse("Not Found", { status: 404 });
       }
       return response;
