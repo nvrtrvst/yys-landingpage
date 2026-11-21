@@ -43,7 +43,7 @@ function waHref(number: string | null, message: string | null): string | null {
   return `https://wa.me/${phone}?text=${text}`;
 }
 
-export function UnitSite({ unit, news, events, testimonials, galleries, programs, faqs, mading }: UnitSiteData) {
+export function UnitSite({ unit, news, events, testimonials, galleries, programs, faqs }: UnitSiteData) {
   const primary = safeUnitColor(unit.primary_color, "#14532d");
   const secondary = safeUnitColor(unit.secondary_color, "#fef08a");
   const heroImage = isRealImage(unit.image_url) ? unit.image_url : null;
@@ -70,7 +70,6 @@ export function UnitSite({ unit, news, events, testimonials, galleries, programs
     groups[key].push(item);
     return groups;
   }, {});
-  const madingHref = `/${unit.slug}/mading`;
   const galleryHref = `/${unit.slug}/galeri`;
   const socials = [
     { label: "Instagram", url: unit.social_instagram },
@@ -90,7 +89,6 @@ export function UnitSite({ unit, news, events, testimonials, galleries, programs
     { label: "Agenda", href: "#agenda" },
     ...(realGalleries.length ? [{ label: "Galeri", href: "#galeri" }] : []),
     ...(hasMedia ? [{ label: "Media", href: "#media" }] : []),
-    ...(mading.length ? [{ label: "Mading", href: "#mading" }] : []),
     ...(faqs.length ? [{ label: "Tanya Jawab", href: "#tanya-jawab" }] : []),
   ];
   const rootStyle = {
@@ -239,26 +237,6 @@ export function UnitSite({ unit, news, events, testimonials, galleries, programs
                 </div>
               ) : null}
             </div>
-          </div>
-        </section>
-      ) : null}
-
-      {mading.length ? (
-        <section id="mading" className="unit-site-section">
-          <div className="unit-site-container">
-            <h2 className="unit-site-h2">Tulisan Siswa &amp; Guru</h2>
-            <div className="unit-site-mading-grid">
-              {mading.map((post) => (
-                <Link key={post.id} href={`/${unit.slug}/mading/${post.slug}`} className="unit-site-card" style={{ color: "inherit" }}>
-                  {isRealImage(post.cover_image) ? <img src={post.cover_image} alt="" style={{ width: "100%", height: 140, objectFit: "cover", borderRadius: 10, marginBottom: 12 }} loading="lazy" decoding="async" /> : null}
-                  <div style={{ fontSize: 12, fontWeight: 700, color: primary }}>{post.category_name || "Tulisan"}</div>
-                  <h3 style={{ fontFamily: "var(--font-baloo), sans-serif", fontSize: 18, margin: "6px 0 8px" }}>{post.title}</h3>
-                  {post.excerpt ? <p style={{ margin: 0, lineHeight: 1.6, color: "#4a5a4f" }}>{plainText(post.excerpt)}</p> : null}
-                  <div style={{ fontSize: 12, color: "#66756b", marginTop: 10 }}>{post.author_name || ""} · {formatDate(post.published_at || post.created_at)}</div>
-                </Link>
-              ))}
-            </div>
-            <Link href={madingHref} style={{ color: primary, fontWeight: 700, display: "inline-flex", minHeight: 44, alignItems: "center", marginTop: 16 }}>Lihat semua tulisan</Link>
           </div>
         </section>
       ) : null}

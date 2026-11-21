@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { getUnitMadingDetail, getUnitNewsDetail, getUnitSiteData, getUnitSiteUnit } from "./unit-site-data";
+import { getUnitNewsDetail, getUnitSiteData, getUnitSiteUnit } from "./unit-site-data";
 import { unitSiteOrigin } from "@/lib/unit-sites";
 
 export async function generateUnitSiteMetadata(slug: string): Promise<Metadata> {
@@ -43,21 +43,12 @@ export async function generateUnitNewsMetadata(newsSlug: string, unitSlug: strin
   };
 }
 
-export async function generateUnitListingMetadata(slug: string, kind: "berita" | "agenda" | "galeri" | "mading"): Promise<Metadata> {
+export async function generateUnitListingMetadata(slug: string, kind: "berita" | "agenda" | "galeri"): Promise<Metadata> {
   const unit = await getUnitSiteUnit(slug).catch(() => null);
   if (!unit) return {};
-  const labels = { berita: "Berita", agenda: "Agenda", galeri: "Galeri", mading: "Tulisan" };
+  const labels = { berita: "Berita", agenda: "Agenda", galeri: "Galeri" };
   const title = `${labels[kind]} ${unit.name}`;
   const description = unit.description || `Informasi ${kind} di ${unit.name}.`;
   const url = `${unitSiteOrigin(slug)}/${slug}/${kind}`;
-  return { title, description, alternates: { canonical: url }, openGraph: { title, description, url } };
-}
-
-export async function generateUnitMadingMetadata(slug: string, postSlug: string): Promise<Metadata> {
-  const data = await getUnitMadingDetail(slug, postSlug).catch(() => null);
-  if (!data) return {};
-  const title = data.post.title;
-  const description = (data.post.excerpt || "").replace(/<[^>]*>/g, "").trim().slice(0, 160) || `Tulisan di ${data.unit.name}.`;
-  const url = `${unitSiteOrigin(slug)}/${slug}/mading/${data.post.slug}`;
   return { title, description, alternates: { canonical: url }, openGraph: { title, description, url } };
 }

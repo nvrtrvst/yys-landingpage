@@ -24,7 +24,6 @@ export const unitSiteStyles = `
 .unit-site-card { background: #fff; border: 1px solid #e2e8e2; border-radius: 14px; padding: 16px; }
 .unit-site-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 24px; }
 .unit-site-gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr)); gap: 16px; }
-.unit-site-mading-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); gap: 16px; }
 .unit-site-profil h2 { font-size: clamp(1.4rem, 4vw, 1.9rem); color: var(--unit-primary); margin: 0 0 16px; }
 .unit-site-profil h3 { font-size: 1.15rem; margin: 24px 0 8px; }
 .unit-site-profil p, .unit-site-profil li { line-height: 1.7; color: #4a5a4f; }
