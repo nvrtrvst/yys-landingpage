@@ -6,7 +6,7 @@ import { ProgramsTab } from "./ProgramsTab";
 export type Unit = { id: number, name: string, slug: string, description: string, content: string, image_url: string, logo_url: string, primary_color: string, secondary_color: string, tagline: string, history_html: string, vision: string, mission: string, profile_image: string, stat_students: string, stat_founded: string, hero_background: string, programs_background: string, carousel_images: string[], youtube_url: string, address: string, phone: string, contact_email: string, social_instagram: string, social_facebook: string, social_youtube: string, map_embed_url: string, map_coordinates: string, wa_number: string, wa_message: string, order_index: number, status: string };
 export type Program = { id: number, title: string, description: string, image_url: string, unit_id: number | null, order_index: number, status: string, unit_name?: string };
 
-export function UnitsManager() {
+export function UnitsManager({ userRole }: { userRole?: string }) {
   const [activeTab, setActiveTab] = useState<'units' | 'programs'>('units');
   const [units, setUnits] = useState<Unit[]>([]);
   const [programs, setPrograms] = useState<Program[]>([]);
@@ -74,7 +74,7 @@ export function UnitsManager() {
           <div className="text-center py-12 text-slate-500">Memuat data...</div>
         ) : (
           <>
-            {activeTab === 'units' && <UnitsTab units={units} refresh={fetchData} />}
+            {activeTab === 'units' && <UnitsTab units={units} refresh={fetchData} userRole={userRole} />}
             {activeTab === 'programs' && <ProgramsTab programs={programs} units={units} refresh={fetchData} />}
           </>
         )}

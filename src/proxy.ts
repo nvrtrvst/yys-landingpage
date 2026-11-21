@@ -76,7 +76,7 @@ export default withAuth(
     const role = token?.role;
 
     // SCP admin-only routes
-    const adminOnlyRoutes = ["/scp/settings", "/scp/ppdb", "/scp/units", "/scp/users"];
+    const adminOnlyRoutes = ["/scp/settings", "/scp/ppdb", "/scp/users"];
     if (adminOnlyRoutes.some((r) => path.startsWith(r))) {
       if (role !== "superadmin" && role !== "admin" && role !== "petugas") {
         return NextResponse.redirect(new URL("/scp", req.url));

@@ -5,7 +5,8 @@ import { useState } from "react";
 import { Unit } from "./UnitsManager";
 import { toast } from "sonner";
 
-export function UnitsTab({ units, refresh }: { units: Unit[], refresh: () => void }) {
+export function UnitsTab({ units, refresh, userRole }: { units: Unit[], refresh: () => void, userRole?: string }) {
+  const isUnitAdmin = userRole === 'admin_unit';
   const [editingUnit, setEditingUnit] = useState<Partial<Unit> | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -83,7 +84,7 @@ export function UnitsTab({ units, refresh }: { units: Unit[], refresh: () => voi
           </div>
           <div>
             <label className="block text-sm font-medium mb-1">Slug (URL) *</label>
-            <input type="text" value={editingUnit.slug || ""} onChange={e => setEditingUnit({...editingUnit, slug: e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, '-')})} className="w-full border rounded p-2 focus:ring-2 focus:ring-primary-500" required />
+            <input type="text" value={editingUnit.slug || ""} onChange={e => setEditingUnit({...editingUnit, slug: e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, '-')})} readOnly={isUnitAdmin} className={`w-full border rounded p-2 focus:ring-2 focus:ring-primary-500 ${isUnitAdmin ? 'bg-slate-50' : ''}`} required />
           </div>
           
           <div className="md:col-span-2">
@@ -249,9 +250,11 @@ export function UnitsTab({ units, refresh }: { units: Unit[], refresh: () => voi
     <div>
       <div className="flex justify-between items-center mb-6">
         <h3 className="text-xl font-bold">Daftar Unit Sekolah</h3>
-        <button onClick={() => setEditingUnit({})} className="bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 flex items-center gap-2">
-          + Tambah Unit
-        </button>
+        {!isUnitAdmin ? (
+          <button onClick={() => setEditingUnit({})} className="bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 flex items-center gap-2">
+            + Tambah Unit
+          </button>
+        ) : null}
       </div>
 
       <div className="overflow-x-auto">
@@ -281,7 +284,7 @@ export function UnitsTab({ units, refresh }: { units: Unit[], refresh: () => voi
                   </td>
                   <td className="p-3 text-right">
                     <button onClick={() => setEditingUnit(unit)} className="text-sky-600 hover:text-sky-700 mr-3 text-sm">Edit</button>
-                    <button onClick={() => handleDelete(unit.id)} className="text-rose-600 hover:text-rose-700 text-sm">Hapus</button>
+                    {!isUnitAdmin ? <button onClick={() => handleDelete(unit.id)} className="text-rose-600 hover:text-rose-700 text-sm">Hapus</button> : null}
                   </td>
                 </tr>
               ))

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { handleApiError } from '@/lib/errors';
+import { ForbiddenError, handleApiError } from '@/lib/errors';
 import pool from '@/lib/db';
 import { ResultSetHeader } from 'mysql2';
 import { requireModuleOrRoles } from '@/lib/api-auth';
@@ -9,7 +9,12 @@ import { UNIT_INSERT_SQL, UNIT_SELECT, unitParams, unitSchema } from '@/lib/unit
 
 export async function GET(request: Request) {
   try {
-    await requireModuleOrRoles('units', ['superadmin', 'admin']);
+    const session = await requireModuleOrRoles('units', ['superadmin', 'admin', 'admin_unit']);
+    if (session.user.role === 'admin_unit') {
+      if (!session.user.unit_id) throw new ForbiddenError('Akun unit belum terhubung ke unit');
+      const [rows] = await pool.execute(`SELECT id, ${UNIT_SELECT} FROM units WHERE id = ?`, [session.user.unit_id]);
+      return NextResponse.json(rows);
+    }
 
     const [rows] = await pool.execute(`SELECT id, ${UNIT_SELECT} FROM units ORDER BY order_index ASC, id DESC`);
     return NextResponse.json(rows);

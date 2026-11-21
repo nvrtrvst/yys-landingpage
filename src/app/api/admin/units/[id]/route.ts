@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { handleApiError } from '@/lib/errors';
+import { ForbiddenError, handleApiError } from '@/lib/errors';
 import pool from '@/lib/db';
 import { requireModuleOrRoles } from '@/lib/api-auth';
 import { revalidatePath } from 'next/cache';
@@ -9,9 +9,11 @@ import { UNIT_SELECT, UNIT_UPDATE_SQL, unitParams, unitSchema } from '@/lib/unit
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    await requireModuleOrRoles('units', ['superadmin', 'admin']);
+    const session = await requireModuleOrRoles('units', ['superadmin', 'admin', 'admin_unit']);
+    const id = (await params).id;
+    if (session.user.role === 'admin_unit' && session.user.unit_id !== Number(id)) throw new ForbiddenError('Dilarang');
 
-    const [rows] = await pool.execute<RowDataPacket[]>(`SELECT id, ${UNIT_SELECT}, mading_enabled, created_at FROM units WHERE id = ?`, [(await params).id]);
+    const [rows] = await pool.execute<RowDataPacket[]>(`SELECT id, ${UNIT_SELECT}, mading_enabled, created_at FROM units WHERE id = ?`, [id]);
     if (rows.length === 0) return NextResponse.json({ error: 'Not Found' }, { status: 404 });
     return NextResponse.json(rows[0]);
   } catch (error) {
@@ -21,24 +23,34 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
 
 export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    await requireModuleOrRoles('units', ['superadmin', 'admin']);
+    const session = await requireModuleOrRoles('units', ['superadmin', 'admin', 'admin_unit']);
+    const id = (await params).id;
+    if (session.user.role === 'admin_unit') {
+      if (!session.user.unit_id || session.user.unit_id !== Number(id)) throw new ForbiddenError('Dilarang');
+    }
 
     const body = await request.json();
     const result = unitSchema.safeParse(body);
     if (!result.success) return NextResponse.json({ error: 'Invalid data' }, { status: 400 });
 
     const data = result.data;
-    if (isReservedUnitSlug(data.slug)) {
+    const [existing] = await pool.execute<RowDataPacket[]>('SELECT slug, status, order_index FROM units WHERE id = ?', [id]);
+    const oldSlug = existing[0]?.slug as string | undefined;
+    if (!oldSlug) return NextResponse.json({ error: 'Not Found' }, { status: 404 });
+
+    let payload = data;
+    if (session.user.role === 'admin_unit') {
+      if (data.slug !== oldSlug) throw new ForbiddenError('Slug tidak dapat diubah oleh admin unit');
+      payload = { ...data, slug: oldSlug, status: existing[0].status, order_index: existing[0].order_index };
+    } else if (isReservedUnitSlug(data.slug)) {
       return NextResponse.json({ error: 'Slug tidak tersedia.' }, { status: 400 });
     }
-    const id = (await params).id;
-    const [existing] = await pool.execute<RowDataPacket[]>('SELECT slug FROM units WHERE id = ?', [id]);
-    const oldSlug = existing[0]?.slug as string | undefined;
-    await pool.execute(UNIT_UPDATE_SQL, [...unitParams(data), id]);
+
+    await pool.execute(UNIT_UPDATE_SQL, [...unitParams(payload), id]);
 
     revalidatePath('/');
-    revalidatePath(`/unit/${data.slug}`);
-    await revalidateUnitSites([oldSlug, data.slug]);
+    revalidatePath(`/unit/${payload.slug}`);
+    await revalidateUnitSites([oldSlug, payload.slug]);
     return NextResponse.json({ success: true });
   } catch(error: unknown) {
     if ((error as { code?: string }).code === 'ER_DUP_ENTRY') return NextResponse.json({ error: 'Slug sudah digunakan.' }, { status: 400 });

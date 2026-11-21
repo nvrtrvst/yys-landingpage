@@ -49,7 +49,7 @@ export const navSections: NavSection[] = [
   {
     label: "Konten",
     items: [
-      { name: "Units & Program", href: "/scp/units", icon: Users, roles: ["superadmin", "admin"], module: "units" },
+      { name: "Units & Program", href: "/scp/units", icon: Users, roles: ["superadmin", "admin", "admin_unit"], module: "units" },
       { name: "Berita & Artikel", href: "/scp/news", icon: FileText, roles: ["superadmin", "admin", "admin_unit", "editor"], module: "news" },
       { name: "Galeri", href: "/scp/gallery", icon: ImageIcon, roles: ["superadmin", "admin", "admin_unit", "editor"], module: "gallery" },
       { name: "Testimoni & FAQ", href: "/scp/testimonials", icon: MessageSquare, roles: ["superadmin", "admin", "admin_unit"], module: "testimonials" },
