@@ -233,14 +233,23 @@ export function UnitSite({ unit, news, events, testimonials, galleries, programs
             <div className="unit-site-media-grid">
               {carouselImages.length ? <div><UnitCarousel images={carouselImages} /></div> : null}
               {videoEmbed ? (
-                <div>
-                  <div className="unit-site-video">
-                    <iframe src={videoEmbed} title={`Video ${unit.name}`} allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture" referrerPolicy="unsafe-url" allowFullScreen loading="lazy" />
-                  </div>
+                <div className="unit-site-video-container">
+                  {videoEmbed ? (
+                    <div className="unit-site-video-wrapper">
+                      <iframe src={videoEmbed} title={`Video ${unit.name}`} allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture" referrerPolicy="unsafe-url" allowFullScreen loading="lazy" onError={(e) => {
+                        const el = e.currentTarget as HTMLIFrameElement | null;
+                        el?.style.setProperty("display", "none");
+                        const fallback = el?.parentElement?.querySelector(".unit-site-video-fallback") as HTMLElement | null;
+                        fallback?.style.setProperty("display", "flex");
+                      }} />
+                    </div>
+                  ) : null}
                   {videoWatch ? (
-                    <a href={videoWatch} target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", minHeight: 44, marginTop: 10, color: primary, fontWeight: 700 }}>
-                      Tonton di YouTube
-                    </a>
+                    <div className="unit-site-video-fallback" style={{ display: "none" }}>
+                      <a href={videoWatch} target="_blank" rel="noopener noreferrer" className="unit-site-cta">
+                        Tonton di YouTube
+                      </a>
+                    </div>
                   ) : null}
                 </div>
               ) : null}
