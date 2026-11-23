@@ -3,6 +3,15 @@ import { RowDataPacket } from "mysql2";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
+import fs from "fs";
+import path from "path";
+
+// Server Component: cek fallback logo di server (onError tidak bisa dipakai di RSC)
+function unitLogoSrc(unit?: string | null): string {
+  const file = `${unit?.toLowerCase() || "logo"}.png`;
+  const exists = fs.existsSync(path.join(process.cwd(), "public", "logo", file));
+  return exists ? `/logo/${file}` : "/logo.png";
+}
 
 export default async function MassPrintPPDBPage({ searchParams }: { searchParams: Promise<{ [key: string]: string | string[] | undefined }> }) {
   // Authentication check (Security: Prevent IDOR)
@@ -165,13 +174,9 @@ export default async function MassPrintPPDBPage({ searchParams }: { searchParams
             <div className="flex items-center border-b border-black pb-3 mb-4">
               <div className="w-20 h-20 ml-2 flex items-center justify-center shrink-0">
                 <img 
-                  src={`/logo/${student.unit?.toLowerCase() || 'logo'}.png`} 
+                  src={unitLogoSrc(student.unit)} 
                   alt={`Logo ${student.unit}`} 
                   className="w-full h-full object-contain"
-                  onError={(event) => {
-                    event.currentTarget.onerror = null;
-                    event.currentTarget.src = "/logo.png";
-                  }}
                 />
               </div>
               <div className="ml-4 text-center flex-grow">
