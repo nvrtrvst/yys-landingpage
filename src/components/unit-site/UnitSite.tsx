@@ -235,7 +235,7 @@ export function UnitSite({ unit, news, events, testimonials, galleries, programs
               {videoEmbed ? (
                 <div>
                   <div className="unit-site-video">
-                    <iframe src={videoEmbed} title={`Video ${unit.name}`} allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture" referrerPolicy="strict-origin-when-cross-origin" allowFullScreen loading="lazy" />
+                    <iframe src={videoEmbed} title={`Video ${unit.name}`} allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture" referrerPolicy="unsafe-url" allowFullScreen loading="lazy" />
                   </div>
                   {videoWatch ? (
                     <a href={videoWatch} target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", minHeight: 44, marginTop: 10, color: primary, fontWeight: 700 }}>
