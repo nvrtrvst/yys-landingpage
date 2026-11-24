@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { unitUrl } from "@/lib/unit-sites";
-import { Menu, X, Construction } from "lucide-react";
+import { Menu, X, Construction, ChevronDown } from "lucide-react";
 import { motion } from "framer-motion";
 import { useMounted } from "@/lib/useMounted";
 
@@ -96,7 +96,7 @@ export function HeaderUI({ settings, units }: { settings: Record<string, string>
               <Link href="/#unit" className={`text-sm font-medium transition-colors hover:text-primary-400 flex items-center gap-1 ${
                   isScrolled ? "text-gray-700" : "text-white drop-shadow-md"
                 }`}>
-                Unit Sekolah <span aria-hidden="true">â–¾</span>
+                Unit Sekolah <ChevronDown className="h-4 w-4" aria-hidden="true" />
               </Link>
               <div role="menu" className="absolute top-full left-0 mt-2 w-48 bg-white shadow-lg border border-gray-100 rounded-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible focus-within:opacity-100 focus-within:visible transition-all duration-200 py-2 min-w-[200px] w-max max-w-xs">
                 {units.map(u => (

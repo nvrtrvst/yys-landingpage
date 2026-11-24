@@ -1,6 +1,6 @@
 import nodemailer from "nodemailer";
 
-// Cache transporter at module level â€” avoids creating a new connection object on each request
+// Cache transporter at module level — avoids creating a new connection object on each request
 let _transporter: ReturnType<typeof nodemailer.createTransport> | null = null;
 
 function getTransporter() {

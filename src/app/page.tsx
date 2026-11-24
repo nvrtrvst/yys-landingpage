@@ -92,7 +92,7 @@ export default async function Home() {
       ? totalStudents.toLocaleString("id-ID")
       : settings.stat_students && settings.stat_students !== "0"
         ? settings.stat_students
-        : "Ã¢â‚¬â€";
+        : "—";
   const missionLines = settings.profile_mission
     ? settings.profile_mission
         .split("\n")
@@ -138,9 +138,9 @@ export default async function Home() {
 
       <main className="relative z-10 min-h-screen flex flex-col">
       <Header />
-      <h1 className="sr-only">{heroTitle} Ã¢â‚¬â€ {heroSubtitle}</h1>
+      <h1 className="sr-only">{heroTitle} — {heroSubtitle}</h1>
       
-      {/* HERO SECTION Ã¢â‚¬â€ taller spacer to keep content from entering viewport during fill */}
+      {/* HERO SECTION — taller spacer to keep content from entering viewport during fill */}
       <section className="relative flex min-h-[calc(100dvh+220px)] items-center justify-center overflow-hidden md:min-h-[calc(100vh+400px)]">
         <HeroParallax />
 
@@ -161,7 +161,7 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* TENTANG SECTION Ã¢â‚¬â€ Heritage */}
+      {/* TENTANG SECTION — Heritage */}
       <section id="tentang" className="py-16 md:py-24 bg-gray-50 relative overflow-hidden">
         <SectionMotif className="-top-10 -right-10 h-80 w-80 opacity-[0.09] md:h-[28rem] md:w-[28rem]" />
         <SectionMotif className="-bottom-16 -left-12 h-64 w-64 opacity-[0.10] md:h-80 md:w-80" />
@@ -191,7 +191,7 @@ export default async function Home() {
 
               {settings.profile_vision && (
                 <figure className="relative my-9 pl-6 border-l-[3px] border-accent-default">
-                  <span aria-hidden className="absolute -top-4 left-2 font-serif text-6xl leading-none text-accent-default/25">Ã¢â‚¬Å“</span>
+                  <span aria-hidden className="absolute -top-4 left-2 font-serif text-6xl leading-none text-accent-default/25">“</span>
                   <p className="font-serif italic text-xl md:text-2xl text-gray-700 leading-relaxed">{settings.profile_vision}</p>
                   <figcaption className="mt-2 text-xs font-semibold uppercase tracking-wider text-accent-default">Visi</figcaption>
                 </figure>

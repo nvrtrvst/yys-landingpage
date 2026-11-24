@@ -367,7 +367,7 @@ export function PPDBForm({ units, initialUnit = "", ppdbConfigs = {} }: { units:
                     ))}
                   </select>
                 ) : null}
-                {loadingMajors ? <p className="mt-2 text-sm text-gray-500">Memuat jurusanâ€¦</p> : null}
+                {loadingMajors ? <p className="mt-2 text-sm text-gray-500">Memuat jurusan…</p> : null}
                 {majorsError ? (
                   <p className="mt-2 text-sm text-rose-600">
                     {majorsError}{" "}
@@ -402,7 +402,7 @@ export function PPDBForm({ units, initialUnit = "", ppdbConfigs = {} }: { units:
               <div className="md:col-span-2">
                 <label htmlFor="student_name" className="mb-1 block text-sm font-medium text-gray-700">Nama Lengkap <span className="text-red-500">*</span></label>
                 <input id="student_name" type="text" required maxLength={150} autoComplete="name" name="student_name" value={formData.student_name} onChange={handleChange} placeholder="Sesuai akta kelahiran/ijazah" aria-describedby="student_name-hint" className={fieldClass} />
-                <Hint id="student_name-hint">3â€“150 karakter. Tulis sesuai dokumen resmi.</Hint>
+                <Hint id="student_name-hint">3–150 karakter. Tulis sesuai dokumen resmi.</Hint>
               </div>
 
               {formData.unit === 'SMK' ? (
@@ -429,7 +429,7 @@ export function PPDBForm({ units, initialUnit = "", ppdbConfigs = {} }: { units:
               <div>
                 <label htmlFor="birth_place" className="mb-1 block text-sm font-medium text-gray-700">Tempat Lahir <span className="text-red-500">*</span></label>
                 <input id="birth_place" type="text" required maxLength={100} name="birth_place" value={formData.birth_place} onChange={handleChange} placeholder="Contoh: Garut" aria-describedby="birth_place-hint" className={fieldClass} />
-                <Hint id="birth_place-hint">3â€“100 karakter.</Hint>
+                <Hint id="birth_place-hint">3–100 karakter.</Hint>
               </div>
               <div>
                 <label htmlFor="birth_date" className="mb-1 block text-sm font-medium text-gray-700">Tanggal Lahir <span className="text-red-500">*</span></label>
@@ -508,17 +508,17 @@ export function PPDBForm({ units, initialUnit = "", ppdbConfigs = {} }: { units:
               <div>
                 <label htmlFor="father_name" className="mb-1 block text-sm font-medium text-gray-700">Nama Ayah <span className="text-red-500">*</span></label>
                 <input id="father_name" type="text" required maxLength={150} autoComplete="name" name="father_name" value={formData.father_name} onChange={handleChange} placeholder="Sesuai KK/KTP" aria-describedby="father_name-hint" className={fieldClass} />
-                <Hint id="father_name-hint">3â€“150 karakter, sesuai Kartu Keluarga/KTP.</Hint>
+                <Hint id="father_name-hint">3–150 karakter, sesuai Kartu Keluarga/KTP.</Hint>
               </div>
               <div>
                 <label htmlFor="mother_name" className="mb-1 block text-sm font-medium text-gray-700">Nama Ibu <span className="text-red-500">*</span></label>
                 <input id="mother_name" type="text" required maxLength={150} autoComplete="name" name="mother_name" value={formData.mother_name} onChange={handleChange} placeholder="Sesuai KK/KTP" aria-describedby="mother_name-hint" className={fieldClass} />
-                <Hint id="mother_name-hint">3â€“150 karakter, sesuai Kartu Keluarga/KTP.</Hint>
+                <Hint id="mother_name-hint">3–150 karakter, sesuai Kartu Keluarga/KTP.</Hint>
               </div>
               <div>
                 <label htmlFor="phone" className="mb-1 block text-sm font-medium text-gray-700">No. HP / WhatsApp Aktif <span className="text-red-500">*</span></label>
                 <input id="phone" type="text" required maxLength={20} inputMode="tel" autoComplete="tel" name="phone" value={formData.phone} onChange={handleChange} placeholder="081234567890" aria-describedby="phone-hint" className={fieldClass} />
-                <Hint id="phone-hint">10â€“20 digit, diawali 08 atau 62. Pastikan WhatsApp aktif untuk notifikasi panitia.</Hint>
+                <Hint id="phone-hint">10–20 digit, diawali 08 atau 62. Pastikan WhatsApp aktif untuk notifikasi panitia.</Hint>
               </div>
               <div>
                 <label htmlFor="email" className="mb-1 block text-sm font-medium text-gray-700">Email <span className="text-red-500">*</span></label>
@@ -674,7 +674,7 @@ export function PPDBForm({ units, initialUnit = "", ppdbConfigs = {} }: { units:
 
             {errorMsg && (
               <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm flex items-start gap-3">
-                <span className="text-red-500 text-lg leading-none mt-0.5">âœ•</span>
+                <span className="text-red-500 text-lg leading-none mt-0.5">✕</span>
                 <span>{errorMsg}</span>
               </div>
             )}
@@ -690,7 +690,7 @@ export function PPDBForm({ units, initialUnit = "", ppdbConfigs = {} }: { units:
 
         {step === 6 && (
           <div className="text-center py-12 space-y-6">
-            <div className="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-4xl mx-auto mb-6">âœ“</div>
+            <div className="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-4xl mx-auto mb-6">✓</div>
             <h2 className="text-3xl font-bold text-gray-900">{successMsg}</h2>
             <p className="text-gray-600 max-w-md mx-auto">
               Terima kasih telah mendaftar di Yayasan Nuurul Muttaqiin. Berikut adalah nomor pendaftaran Anda:

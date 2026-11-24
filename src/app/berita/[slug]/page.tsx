@@ -35,7 +35,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
   const settings = await getSettings();
   const description = String(news.content || "").replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim().slice(0, 160)
-    || `${news.title} â€” Yayasan Nuurul Muttaqiin.`;
+    || `${news.title} — Yayasan Nuurul Muttaqiin.`;
   const image = news.image_url && !String(news.image_url).startsWith("/uploads/dummy/")
     ? String(news.image_url)
     : settings.og_image || settings.site_logo || undefined;
