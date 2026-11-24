@@ -1,7 +1,9 @@
 import Link from "next/link";
 import DOMPurify from "isomorphic-dompurify";
 import type { CSSProperties } from "react";
+import { UnitMobileMenu } from "./UnitMobileMenu";
 import { unitSiteFontClass } from "./unit-site-fonts";
+import { contrastInk, DEFAULT_UNIT_PRIMARY, DEFAULT_UNIT_SECONDARY } from "./unit-site-color";
 import { safeUnitColor, unitSiteStyles } from "./unit-site-styles";
 import { foundationUrl } from "@/lib/unit-sites";
 import type { UnitNewsDetailData } from "./unit-site-data";
@@ -28,15 +30,26 @@ function waHref(number: string | null, message: string | null): string | null {
 }
 
 export function UnitNewsDetail({ unit, news }: UnitNewsDetailData) {
-  const primary = safeUnitColor(unit.primary_color, "#14532d");
-  const secondary = safeUnitColor(unit.secondary_color, "#fef08a");
+  const primary = safeUnitColor(unit.primary_color, DEFAULT_UNIT_PRIMARY);
+  const secondary = safeUnitColor(unit.secondary_color, DEFAULT_UNIT_SECONDARY);
+  const ink = contrastInk(secondary);
+  const onPrimary = contrastInk(primary);
   const image = isRealImage(news.image_url) ? news.image_url : null;
   const contentHtml = DOMPurify.sanitize(news.content || "");
   const backHref = `/${unit.slug}`;
+  const ppdbHref = `/ppdb?unit=${unit.slug}`;
   const whatsapp = waHref(unit.wa_number, unit.wa_message);
+  const navItems = [
+    { label: "Beranda", href: backHref },
+    { label: "Berita", href: `/${unit.slug}/berita` },
+    { label: "Agenda", href: `/${unit.slug}/agenda` },
+    { label: "Galeri", href: `/${unit.slug}/galeri` },
+  ];
   const rootStyle = {
     "--unit-primary": primary,
     "--unit-secondary": secondary,
+    "--unit-ink": ink,
+    "--unit-on-primary": onPrimary,
     fontFamily: "var(--font-nunito), sans-serif",
   } as CSSProperties;
 
@@ -44,8 +57,12 @@ export function UnitNewsDetail({ unit, news }: UnitNewsDetailData) {
     <div className={`unit-site ${unitSiteFontClass}`} style={rootStyle}>
       <header className="unit-site-header">
         <div className="unit-site-header-inner">
-          <Link href={backHref} style={{ color: "#fff", fontWeight: 700 }}>{unit.name}</Link>
-          <Link href={backHref} style={{ color: "#fff", fontWeight: 600, fontSize: 14 }}>Kembali ke situs unit</Link>
+          <Link href={backHref} style={{ color: onPrimary, fontWeight: 700 }}>{unit.name}</Link>
+          <nav className="unit-site-nav">
+            {navItems.map((item) => <a key={item.href} href={item.href}>{item.label}</a>)}
+            <Link href={ppdbHref} className="unit-site-cta">Daftar PPDB</Link>
+          </nav>
+          <UnitMobileMenu items={navItems} ctaHref={ppdbHref} />
         </div>
       </header>
 
@@ -63,7 +80,7 @@ export function UnitNewsDetail({ unit, news }: UnitNewsDetailData) {
       <footer className="unit-site-footer">
         <div className="unit-site-container" style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", gap: 16, fontSize: 14 }}>
           <div>
-            <div style={{ fontFamily: "var(--font-baloo), sans-serif", fontWeight: 700 }}>{unit.name}</div>
+            <div style={{ fontFamily: "var(--font-baloo), sans-serif", fontWeight: 700, color: "#e4f3e7" }}>{unit.name}</div>
             {unit.contact_email ? <div>{unit.contact_email}</div> : null}
           </div>
           <div className="unit-site-legal">

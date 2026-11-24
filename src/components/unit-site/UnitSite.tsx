@@ -2,10 +2,12 @@ import Link from "next/link";
 import DOMPurify from "isomorphic-dompurify";
 import type { CSSProperties } from "react";
 import { unitSiteFontClass } from "./unit-site-fonts";
+import { contrastInk, DEFAULT_UNIT_PRIMARY, DEFAULT_UNIT_SECONDARY } from "./unit-site-color";
 import { safeUnitColor, unitSiteStyles } from "./unit-site-styles";
 import { foundationUrl } from "@/lib/unit-sites";
 import { parseCarouselImages, safeMapEmbedUrl, youtubeEmbedUrl, youtubeWatchUrl } from "@/lib/unit-media";
 import { UnitCarousel } from "./UnitCarousel";
+import { UnitMobileMenu } from "./UnitMobileMenu";
 import type { UnitSiteData } from "./unit-site-data";
 
 function isRealImage(url: string | null | undefined): url is string {
@@ -44,8 +46,10 @@ function waHref(number: string | null, message: string | null): string | null {
 }
 
 export function UnitSite({ unit, news, events, testimonials, galleries, programs, faqs }: UnitSiteData) {
-  const primary = safeUnitColor(unit.primary_color, "#14532d");
-  const secondary = safeUnitColor(unit.secondary_color, "#fef08a");
+  const primary = safeUnitColor(unit.primary_color, DEFAULT_UNIT_PRIMARY);
+  const secondary = safeUnitColor(unit.secondary_color, DEFAULT_UNIT_SECONDARY);
+  const ink = contrastInk(secondary);
+  const onPrimary = contrastInk(primary);
   const heroImage = isRealImage(unit.image_url) ? unit.image_url : null;
   const heroBackground = isRealImage(unit.hero_background) ? unit.hero_background : null;
   const programBackground = isRealImage(unit.programs_background) ? unit.programs_background : null;
@@ -95,6 +99,8 @@ export function UnitSite({ unit, news, events, testimonials, galleries, programs
   const rootStyle = {
     "--unit-primary": primary,
     "--unit-secondary": secondary,
+    "--unit-ink": ink,
+    "--unit-on-primary": onPrimary,
     fontFamily: "var(--font-nunito), sans-serif",
   } as CSSProperties;
 
@@ -113,13 +119,7 @@ export function UnitSite({ unit, news, events, testimonials, galleries, programs
             {navItems.map((item) => <a key={item.href} href={item.href}>{item.label}</a>)}
             <Link href={ppdbHref} className="unit-site-cta">Daftar PPDB</Link>
           </nav>
-          <details className="unit-site-nav-mobile">
-            <summary className="unit-site-menu-button">Menu</summary>
-            <div className="unit-site-menu">
-              {navItems.map((item) => <a key={item.href} href={item.href}>{item.label}</a>)}
-              <Link href={ppdbHref} className="unit-site-cta">Daftar PPDB</Link>
-            </div>
-          </details>
+          <UnitMobileMenu items={navItems} ctaHref={ppdbHref} />
         </div>
       </header>
 
@@ -135,7 +135,7 @@ export function UnitSite({ unit, news, events, testimonials, galleries, programs
               {unit.description ? <p style={{ fontSize: "clamp(1rem, 2.5vw, 1.125rem)", lineHeight: 1.6, margin: "0 0 28px", color: "rgba(255,255,255,0.9)" }}>{unit.description}</p> : null}
               <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
                 <Link href={ppdbHref} className="unit-site-cta">Daftar PPDB</Link>
-                {hasProfile ? <a href="#profil" className="unit-site-cta-outline" style={{ color: "#fff", borderColor: "rgba(255,255,255,0.6)" }}>Profil Unit</a> : null}
+                {hasProfile ? <a href="#profil" className="unit-site-cta-outline unit-site-cta-outline--hero">Profil Unit</a> : null}
               </div>
             </div>
             {heroImage ? (

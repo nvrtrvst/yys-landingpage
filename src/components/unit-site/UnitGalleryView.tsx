@@ -1,5 +1,12 @@
 import type { UnitSiteGallery } from "./unit-site-data";
 
+function formatDate(value: string | null): string {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });
+}
+
 export function UnitGalleryView({ galleries }: { galleries: UnitSiteGallery[] }) {
   if (galleries.length === 0) {
     return <p style={{ color: "#66756b" }}>Belum ada foto kegiatan untuk unit ini.</p>;
@@ -12,7 +19,7 @@ export function UnitGalleryView({ galleries }: { galleries: UnitSiteGallery[] })
           {item.title || item.created_at ? (
             <div style={{ padding: 12, fontSize: 13 }}>
               <div style={{ fontWeight: 700 }}>{item.title || "Kegiatan"}</div>
-              {item.created_at ? <div style={{ color: "#66756b" }}>{new Date(item.created_at).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}</div> : null}
+              {formatDate(item.created_at) ? <div style={{ color: "#66756b" }}>{formatDate(item.created_at)}</div> : null}
             </div>
           ) : null}
         </a>

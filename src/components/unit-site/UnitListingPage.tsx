@@ -1,6 +1,8 @@
 import Link from "next/link";
 import type { CSSProperties, ReactNode } from "react";
+import { UnitMobileMenu } from "./UnitMobileMenu";
 import { unitSiteFontClass } from "./unit-site-fonts";
+import { contrastInk, DEFAULT_UNIT_PRIMARY, DEFAULT_UNIT_SECONDARY } from "./unit-site-color";
 import { safeUnitColor, unitSiteStyles } from "./unit-site-styles";
 import { foundationUrl } from "@/lib/unit-sites";
 import type { UnitSiteUnit } from "./unit-site-data";
@@ -14,13 +16,24 @@ function waHref(number: string | null, message: string | null): string | null {
 }
 
 export function UnitListingPage({ unit, title, children }: { unit: UnitSiteUnit; title: string; children: ReactNode }) {
-  const primary = safeUnitColor(unit.primary_color, "#14532d");
-  const secondary = safeUnitColor(unit.secondary_color, "#fef08a");
+  const primary = safeUnitColor(unit.primary_color, DEFAULT_UNIT_PRIMARY);
+  const secondary = safeUnitColor(unit.secondary_color, DEFAULT_UNIT_SECONDARY);
+  const ink = contrastInk(secondary);
+  const onPrimary = contrastInk(primary);
   const whatsapp = waHref(unit.wa_number, unit.wa_message);
   const backHref = `/${unit.slug}`;
+  const ppdbHref = `/ppdb?unit=${unit.slug}`;
+  const navItems = [
+    { label: "Beranda", href: backHref },
+    { label: "Berita", href: `/${unit.slug}/berita` },
+    { label: "Agenda", href: `/${unit.slug}/agenda` },
+    { label: "Galeri", href: `/${unit.slug}/galeri` },
+  ];
   const rootStyle = {
     "--unit-primary": primary,
     "--unit-secondary": secondary,
+    "--unit-ink": ink,
+    "--unit-on-primary": onPrimary,
     fontFamily: "var(--font-nunito), sans-serif",
   } as CSSProperties;
 
@@ -28,8 +41,12 @@ export function UnitListingPage({ unit, title, children }: { unit: UnitSiteUnit;
     <div className={`unit-site ${unitSiteFontClass}`} style={rootStyle}>
       <header className="unit-site-header">
         <div className="unit-site-header-inner">
-          <Link href={backHref} style={{ color: "#fff", fontWeight: 700 }}>{unit.name}</Link>
-          <Link href={backHref} style={{ color: "#fff", fontWeight: 600, fontSize: 14 }}>Kembali ke situs unit</Link>
+          <Link href={backHref} style={{ color: onPrimary, fontWeight: 700 }}>{unit.name}</Link>
+          <nav className="unit-site-nav">
+            {navItems.map((item) => <a key={item.href} href={item.href}>{item.label}</a>)}
+            <Link href={ppdbHref} className="unit-site-cta">Daftar PPDB</Link>
+          </nav>
+          <UnitMobileMenu items={navItems} ctaHref={ppdbHref} />
         </div>
       </header>
       <main className="unit-site-section">
