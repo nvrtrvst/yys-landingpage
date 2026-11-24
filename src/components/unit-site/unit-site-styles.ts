@@ -5,6 +5,7 @@ export function safeUnitColor(value: string | null | undefined, fallback: string
 export const unitSiteStyles = `
 .unit-site { color: #24392c; background: #fffdf8; }
 .unit-site a { text-decoration: none; }
+.unit-site :focus-visible { outline: 3px solid var(--unit-secondary); outline-offset: 3px; border-radius: 4px; }
 .unit-site img { max-width: 100%; }
 .unit-site-header { position: sticky; top: 0; z-index: 20; background: var(--unit-primary); color: #fff; }
 .unit-site-header-inner { max-width: 1200px; margin: 0 auto; padding: max(10px, env(safe-area-inset-top)) 20px 10px; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }

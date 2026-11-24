@@ -13,6 +13,6 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 export default async function Page({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const data = await getUnitNewsDetail(slug, "lpq").catch(() => null);
-  if (!data) notFound();
+  if (!data || !data.unit.id) notFound();
   return <UnitNewsDetail {...data} />;
 }

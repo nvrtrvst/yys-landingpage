@@ -1,5 +1,6 @@
 import pool from "@/lib/db";
 import { RowDataPacket } from "mysql2";
+import { isKnownUnitSlug, UNIT_FALLBACK } from "@/lib/unit-sites";
 
 export interface UnitSiteUnit extends RowDataPacket {
   id: number;
@@ -126,17 +127,62 @@ export interface UnitGalleryData {
 
 const UNIT_COLUMNS = `id, name, slug, description, tagline, image_url, logo_url, primary_color, secondary_color, content, history_html, vision, mission, profile_image, stat_students, stat_founded, hero_background, programs_background, carousel_images, youtube_url, address, phone, contact_email, social_instagram, social_facebook, social_youtube, map_embed_url, wa_number, wa_message`;
 
+function fallbackUnit(slug: string): UnitSiteUnit | null {
+  if (!isKnownUnitSlug(slug)) return null;
+  const preset = UNIT_FALLBACK[slug];
+  return {
+    id: 0,
+    slug,
+    name: preset.name,
+    description: null,
+    tagline: preset.tagline,
+    image_url: null,
+    logo_url: null,
+    primary_color: null,
+    secondary_color: null,
+    content: null,
+    history_html: null,
+    vision: null,
+    mission: null,
+    profile_image: null,
+    stat_students: null,
+    stat_founded: null,
+    hero_background: null,
+    programs_background: null,
+    carousel_images: null,
+    youtube_url: null,
+    address: null,
+    phone: null,
+    contact_email: null,
+    social_instagram: null,
+    social_facebook: null,
+    social_youtube: null,
+    map_embed_url: null,
+    wa_number: null,
+    wa_message: null,
+  } as UnitSiteUnit;
+}
+
 export async function getUnitSiteUnit(slug: string): Promise<UnitSiteUnit | null> {
-  const [rows] = await pool.execute<UnitSiteUnit[]>(
-    `SELECT ${UNIT_COLUMNS} FROM units WHERE slug = ? AND status = 'active'`,
-    [slug]
-  );
-  return rows[0] ?? null;
+  try {
+    const [rows] = await pool.execute<UnitSiteUnit[]>(
+      `SELECT ${UNIT_COLUMNS} FROM units WHERE slug = ? AND status = 'active'`,
+      [slug]
+    );
+    return rows[0] ?? fallbackUnit(slug);
+  } catch (error) {
+    // DB sementara tak terjangkau: unit yang dikenal tetap tampil, bukan 404 seluruh situs.
+    console.error("Failed to load unit, serving fallback shell", error);
+    return fallbackUnit(slug);
+  }
 }
 
 export async function getUnitSiteData(slug: string): Promise<UnitSiteData | null> {
   const unit = await getUnitSiteUnit(slug);
   if (!unit) return null;
+  if (!unit.id) {
+    return { unit, news: [], events: [], testimonials: [], galleries: [], programs: [], faqs: [] };
+  }
 
   // One failing feed must not blank the others.
   const results = await Promise.allSettled([
@@ -196,6 +242,8 @@ export async function getUnitSiteData(slug: string): Promise<UnitSiteData | null
 export async function getUnitNewsDetail(newsSlug: string, unitSlug: string): Promise<UnitNewsDetailData | null> {
   const unit = await getUnitSiteUnit(unitSlug);
   if (!unit) return null;
+  // Fallback shell (DB down / unit belum ada) tidak punya berita: jangan tampilkan 200 palsu.
+  if (!unit.id) return null;
 
   const [rows] = await pool.execute<UnitSiteNewsDetail[]>(
     `SELECT n.id, n.title, n.slug, n.content, n.image_url, n.published_at, n.created_at
@@ -213,6 +261,7 @@ export async function getUnitNewsDetail(newsSlug: string, unitSlug: string): Pro
 export async function getUnitNewsList(unitSlug: string, requestedPage: number): Promise<UnitNewsListData | null> {
   const unit = await getUnitSiteUnit(unitSlug);
   if (!unit) return null;
+  if (!unit.id) return { unit, news: [], total: 0, page: 1, totalPages: 1 };
 
   const pageSize = 8;
   const page = Number.isInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1;
@@ -236,6 +285,7 @@ export async function getUnitNewsList(unitSlug: string, requestedPage: number): 
 export async function getUnitAgenda(unitSlug: string): Promise<UnitAgendaData | null> {
   const unit = await getUnitSiteUnit(unitSlug);
   if (!unit) return null;
+  if (!unit.id) return { unit, events: [] };
 
   const [rows] = await pool.execute<UnitSiteEvent[]>(
     `SELECT id, title, description, start_date, location FROM events
@@ -249,6 +299,8 @@ export async function getUnitAgenda(unitSlug: string): Promise<UnitAgendaData | 
 export async function getUnitGallery(unitSlug: string): Promise<UnitGalleryData | null> {
   const unit = await getUnitSiteUnit(unitSlug);
   if (!unit) return null;
+  if (!unit.id) return { unit, galleries: [] };
+
   const [rows] = await pool.execute<UnitSiteGallery[]>(
     `SELECT id, title, image_url, created_at FROM galleries
      WHERE unit_id = ? ORDER BY created_at DESC LIMIT 60`,

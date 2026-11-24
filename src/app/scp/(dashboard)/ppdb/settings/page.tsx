@@ -1,15 +1,14 @@
 import { PageHeader } from "@/components/scp/PageHeader";
 import { PPDBSettingsForm } from "./PPDBSettingsForm";
-import pool from "@/lib/db";
-import { RowDataPacket } from "mysql2";
+import { getSettings } from "@/lib/db";
 
 export default async function AdminPPDBSettingsPage() {
-  const [rows] = await pool.execute<RowDataPacket[]>('SELECT setting_value FROM settings WHERE setting_key = "ppdb_config"');
-  
+  const settings = await getSettings();
+
   let initialConfig = null;
-  if (rows.length > 0 && rows[0].setting_value) {
+  if (settings.ppdb_config) {
     try {
-      initialConfig = JSON.parse(rows[0].setting_value);
+      initialConfig = JSON.parse(settings.ppdb_config);
     } catch (e) {
       console.error("Failed to parse ppdb_config JSON", e);
     }

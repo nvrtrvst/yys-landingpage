@@ -48,7 +48,7 @@ export function FAQSection({ data }: { data: FaqItem[] }) {
                     >
                       <button 
                         onClick={() => setOpenId(isOpen ? null : faq.id)}
-                        className="w-full text-left px-6 py-5 flex justify-between items-center focus:outline-none"
+                        className="w-full text-left px-6 py-5 flex justify-between items-center focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-primary-600"
                       >
                         <span className="font-bold text-gray-900 text-lg pr-8">{faq.question}</span>
                         <span className={`w-8 h-8 rounded-full flex items-center justify-center bg-white border border-gray-200 transition-transform duration-300 flex-shrink-0 ${isOpen ? 'rotate-180 bg-primary-100 border-primary-200 text-primary-700' : 'text-gray-400'}`}>

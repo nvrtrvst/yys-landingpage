@@ -9,23 +9,40 @@ import DOMPurify from "isomorphic-dompurify";
 export const revalidate = 60;
 
 export default async function BeritaDetailPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
   let newsItem: RowDataPacket | null = null;
-  
+  let failed = false;
+
   try {
     const [rows] = await pool.execute<RowDataPacket[]>(
       "SELECT title, content, image_url, published_at, created_at FROM news WHERE slug = ? AND status = 'published'",
-      [(await params).slug]
+      [slug]
     );
-    
-    if (rows.length === 0) {
-      notFound();
-    }
-    
-    newsItem = rows[0];
+    newsItem = rows[0] ?? null;
   } catch (error) {
     console.error("Failed to fetch news detail", error);
-    notFound();
+    failed = true;
   }
+
+  if (failed) {
+    return (
+      <main className="min-h-screen flex flex-col bg-white">
+        <div className="bg-primary-900"><Header /></div>
+        <div className="flex-1 flex items-center justify-center px-4 py-24 text-center">
+          <div>
+            <h1 className="font-serif text-3xl font-bold text-gray-900 mb-3">Berita belum dapat dimuat</h1>
+            <p className="text-gray-600 mb-6">Silakan coba lagi beberapa saat lagi.</p>
+            <Link href="/berita" className="inline-block px-6 py-3 bg-primary-600 text-white rounded-full font-semibold hover:bg-primary-700 transition">
+              Kembali ke Daftar Berita
+            </Link>
+          </div>
+        </div>
+        <Footer />
+      </main>
+    );
+  }
+
+  if (!newsItem) notFound();
 
   return (
     <main className="min-h-screen flex flex-col bg-white">

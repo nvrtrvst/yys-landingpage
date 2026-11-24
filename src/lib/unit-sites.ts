@@ -2,6 +2,14 @@ export const UNIT_SLUGS = ["lpq", "tk", "sd", "smp", "smk"] as const;
 
 export type UnitSlug = (typeof UNIT_SLUGS)[number];
 
+export const UNIT_FALLBACK: Record<UnitSlug, { name: string; tagline: string }> = {
+  lpq: { name: "LPQ Nuurul Muttaqiin", tagline: "Lembaga Pendidikan Qur'an" },
+  tk: { name: "TK Nuurul Muttaqiin", tagline: "Taman Kanak-kanak Islam" },
+  sd: { name: "SD Nuurul Muttaqiin", tagline: "Sekolah Dasar Islam" },
+  smp: { name: "SMP Nuurul Muttaqiin", tagline: "Sekolah Menengah Pertama Islam" },
+  smk: { name: "SMK Nuurul Muttaqiin", tagline: "Sekolah Menengah Kejuruan" },
+};
+
 const DEFAULT_ROOT_URL = "https://nuurulmuttaqiin.or.id";
 
 function rootUrl(): URL {
@@ -16,19 +24,16 @@ export function rootHost(): string {
   return rootUrl().hostname.replace(/^www\./, "").toLowerCase();
 }
 
+export function isKnownUnitSlug(value: string): value is UnitSlug {
+  return (UNIT_SLUGS as readonly string[]).includes(value);
+}
+
 export function unitSlugFromHost(host: string, baseHost: string = rootHost()): UnitSlug | null {
   const hostname = host.split(":")[0].toLowerCase().replace(/\.$/, "");
   const suffix = `.${baseHost.toLowerCase()}`;
   if (!hostname.endsWith(suffix)) return null;
   const slug = hostname.slice(0, -suffix.length);
-  return (UNIT_SLUGS as readonly string[]).includes(slug) ? (slug as UnitSlug) : null;
-}
-
-export function unitSiteOrigin(slug: string): string {
-  const url = rootUrl();
-  const host = url.hostname.replace(/^www\./, "");
-  const port = url.port ? `:${url.port}` : "";
-  return `${url.protocol}//${slug}.${host}${port}`;
+  return isKnownUnitSlug(slug) ? slug : null;
 }
 
 export function foundationUrl(): string {

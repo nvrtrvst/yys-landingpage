@@ -7,6 +7,7 @@ import Link from "next/link";
 import DOMPurify from "isomorphic-dompurify";
 import { MapPin, Phone } from "lucide-react";
 import type { Metadata } from "next";
+import { foundationUrl, isKnownUnitSlug, UNIT_FALLBACK, UNIT_SLUGS } from "@/lib/unit-sites";
 
 export const revalidate = 60;
 
@@ -45,11 +46,31 @@ function isMeaningful(value: string | null | undefined, min: number): value is s
 }
 
 async function getUnit(slug: string): Promise<UnitRow | null> {
-  const [rows] = await pool.execute<UnitRow[]>(
-    "SELECT id, name, slug, image_url, description, address, phone, content FROM units WHERE slug = ? AND status = 'active'",
-    [slug]
-  );
-  return rows[0] ?? null;
+  try {
+    const [rows] = await pool.execute<UnitRow[]>(
+      "SELECT id, name, slug, image_url, description, address, phone, content FROM units WHERE slug = ? AND status = 'active'",
+      [slug]
+    );
+    if (rows[0]) return rows[0];
+  } catch (error) {
+    console.error("unit fetch", error);
+  }
+  const preset = isKnownUnitSlug(slug) ? UNIT_FALLBACK[slug] : undefined;
+  if (!preset) return null;
+  return {
+    id: 0,
+    name: preset.name,
+    slug,
+    image_url: null,
+    description: null,
+    address: null,
+    phone: null,
+    content: null,
+  } as UnitRow;
+}
+
+export function generateStaticParams() {
+  return UNIT_SLUGS.map((slug) => ({ slug }));
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
@@ -76,29 +97,32 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 export default async function UnitDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
+  if (!isKnownUnitSlug(slug)) notFound();
+
   let unit: UnitRow | null = null;
   let programs: ProgramRow[] = [];
   let otherUnits: UnitCard[] = [];
 
-  try {
-    unit = await getUnit(slug);
-    if (!unit) notFound();
+  unit = await getUnit(slug);
+  if (!unit) notFound();
 
-    const [[programRows], [otherRows]] = await Promise.all([
-      pool.execute<ProgramRow[]>(
-        "SELECT id, title, description, image_url FROM programs WHERE unit_id = ? AND status = 'active' ORDER BY order_index ASC",
-        [unit.id]
-      ),
-      pool.execute<UnitCard[]>(
-        "SELECT id, name, slug, image_url, description FROM units WHERE status = 'active' AND id <> ? ORDER BY order_index ASC LIMIT 4",
-        [unit.id]
-      ),
-    ]);
-    programs = programRows;
-    otherUnits = otherRows;
-  } catch (error) {
-    console.error("Failed to fetch unit detail", error);
-    notFound();
+  if (unit.id) {
+    try {
+      const [[programRows], [otherRows]] = await Promise.all([
+        pool.execute<ProgramRow[]>(
+          "SELECT id, title, description, image_url FROM programs WHERE unit_id = ? AND status = 'active' ORDER BY order_index ASC",
+          [unit.id]
+        ),
+        pool.execute<UnitCard[]>(
+          "SELECT id, name, slug, image_url, description FROM units WHERE status = 'active' AND id <> ? ORDER BY order_index ASC LIMIT 4",
+          [unit.id]
+        ),
+      ]);
+      programs = programRows;
+      otherUnits = otherRows;
+    } catch (error) {
+      console.error("Failed to fetch unit detail", error);
+    }
   }
 
   const rawContent = unit.content || "";
@@ -107,7 +131,7 @@ export default async function UnitDetailPage({ params }: { params: Promise<{ slu
   const phone = isMeaningful(unit.phone, 6) ? unit.phone : null;
   const heroImage = isRealImage(unit.image_url) ? unit.image_url : null;
   const ppdbHref = `/ppdb?unit=${unit.slug}`;
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://nuurulmuttaqiin.or.id";
+  const baseUrl = foundationUrl();
   const absoluteImage = heroImage
     ? heroImage.startsWith("http")
       ? heroImage
