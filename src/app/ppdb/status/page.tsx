@@ -3,6 +3,12 @@ import { Footer } from "@/components/Footer";
 import pool from "@/lib/db";
 import { RowDataPacket } from "mysql2";
 import Link from "next/link";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Cek Status Pendaftaran",
+  robots: { index: false, follow: false },
+};
 
 export default async function PPDBStatusPage({
   searchParams,

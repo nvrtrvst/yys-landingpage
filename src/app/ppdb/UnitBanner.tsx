@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { unitUrl } from "@/lib/unit-sites";
 import type { PPDBUnit } from "./types";
 
 function isRealImage(url: string | null): url is string {
@@ -47,7 +48,7 @@ export function UnitBanner({
       </div>
       <div className="flex flex-wrap items-center gap-2 sm:ml-auto">
         <Link
-          href={`/unit/${unit.slug}`}
+          href={unitUrl(String(unit.slug))}
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex min-h-11 items-center text-sm font-medium text-primary-700 hover:underline"

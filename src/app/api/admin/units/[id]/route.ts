@@ -49,7 +49,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     await pool.execute(UNIT_UPDATE_SQL, [...unitParams(payload), id]);
 
     revalidatePath('/');
-    revalidatePath(`/unit/${payload.slug}`);
+    revalidatePath(`/${payload.slug}`);
     await revalidateUnitSites([oldSlug, payload.slug]);
     return NextResponse.json({ success: true });
   } catch(error: unknown) {

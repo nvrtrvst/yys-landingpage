@@ -1,15 +1,9 @@
 import { PageHeader } from "@/components/scp/PageHeader";
 import { SettingsForm } from "./SettingsForm";
-import pool from "@/lib/db";
-import { RowDataPacket } from "mysql2";
+import { getSettings } from "@/lib/db";
 
 export default async function AdminSettingsPage() {
-  const [rows] = await pool.execute<RowDataPacket[]>('SELECT setting_key, setting_value FROM settings');
-  
-  const settingsData: Record<string, string> = {};
-  rows.forEach(row => {
-    settingsData[row.setting_key] = row.setting_value;
-  });
+  const settingsData = await getSettings();
 
   return (
     <div className="max-w-7xl mx-auto pb-12">

@@ -105,7 +105,7 @@ export default function PrintKelulusanPage() {
                 <h2 className="text-md font-bold uppercase tracking-wider text-black whitespace-nowrap">Sistem Penerimaan Peserta Murid Baru (SPMB)</h2>
                 <h2 className="text-md font-bold uppercase tracking-wider text-black">{siswa.unit} Nuurul Muttaqiin</h2>  
                 <p className="text-sm mt-1 text-black">Jl. Raya Cisurupan no 154, Kec. Cisurupan, Kab. Garut, Prov. Jawa Barat</p>
-                <p className="text-sm text-black">Email: info@nuurulmuttaqiin.or.id | Web: nuurulmuttaqiin.or.id | telp: 0262-577358</p>
+                <p className="text-sm text-black">Email: info@nuurulmuttaqiin.sch.id | Web: nuurulmuttaqiin.sch.id | telp: 0262-577358</p>
               </div>
 
               <div className="w-20 flex-shrink-0"></div> {/* Spacer for centering */}

@@ -4,6 +4,7 @@ import { TestimonialsSection, type Testimonial } from "@/components/Testimonials
 import pool from "@/lib/db";
 import { RowDataPacket } from "mysql2";
 import Link from "next/link";
+import { foundationUrl, unitUrl } from "@/lib/unit-sites";
 import { getSettings } from "@/lib/db";
 import { HeroParallax } from "@/components/parallax/HeroParallax";
 import { ImageParallax } from "@/components/parallax/ImageParallax";
@@ -91,7 +92,7 @@ export default async function Home() {
       ? totalStudents.toLocaleString("id-ID")
       : settings.stat_students && settings.stat_students !== "0"
         ? settings.stat_students
-        : "—";
+        : "Ã¢â‚¬â€";
   const missionLines = settings.profile_mission
     ? settings.profile_mission
         .split("\n")
@@ -99,8 +100,37 @@ export default async function Home() {
         .filter(Boolean)
     : [];
 
+  const base = foundationUrl();
+  const siteName = settings.site_name || "Yayasan Nuurul Muttaqiin";
+  const orgJsonLd = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": `${base}/#organization`,
+        name: siteName,
+        url: base,
+        logo: `${base}${settings.site_logo && !settings.site_logo.startsWith("/uploads/dummy/") ? settings.site_logo : "/logo.png"}`,
+        sameAs: [
+          settings.social_instagram || settings.instagram_url,
+          settings.social_facebook || settings.facebook_url,
+          settings.social_youtube || settings.youtube_url,
+        ].filter(Boolean),
+      },
+      {
+        "@type": "WebSite",
+        "@id": `${base}/#website`,
+        url: base,
+        name: siteName,
+        inLanguage: "id-ID",
+        publisher: { "@id": `${base}/#organization` },
+      },
+    ],
+  };
+
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(orgJsonLd) }} />
       <div style={{position:'fixed',inset:0,zIndex:0}}>
         <div style={{position:'absolute',inset:0,backgroundImage:`url(${heroBg})`,backgroundSize:'cover',backgroundPosition:'center',backgroundRepeat:'no-repeat'}} />
         <div style={{position:'absolute',inset:0,backgroundColor:'rgba(6,78,59,0.6)'}} />
@@ -108,9 +138,9 @@ export default async function Home() {
 
       <main className="relative z-10 min-h-screen flex flex-col">
       <Header />
-      <h1 className="sr-only">{heroTitle} — {heroSubtitle}</h1>
+      <h1 className="sr-only">{heroTitle} Ã¢â‚¬â€ {heroSubtitle}</h1>
       
-      {/* HERO SECTION — taller spacer to keep content from entering viewport during fill */}
+      {/* HERO SECTION Ã¢â‚¬â€ taller spacer to keep content from entering viewport during fill */}
       <section className="relative flex min-h-[calc(100dvh+220px)] items-center justify-center overflow-hidden md:min-h-[calc(100vh+400px)]">
         <HeroParallax />
 
@@ -131,7 +161,7 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* TENTANG SECTION — Heritage */}
+      {/* TENTANG SECTION Ã¢â‚¬â€ Heritage */}
       <section id="tentang" className="py-16 md:py-24 bg-gray-50 relative overflow-hidden">
         <SectionMotif className="-top-10 -right-10 h-80 w-80 opacity-[0.09] md:h-[28rem] md:w-[28rem]" />
         <SectionMotif className="-bottom-16 -left-12 h-64 w-64 opacity-[0.10] md:h-80 md:w-80" />
@@ -161,7 +191,7 @@ export default async function Home() {
 
               {settings.profile_vision && (
                 <figure className="relative my-9 pl-6 border-l-[3px] border-accent-default">
-                  <span aria-hidden className="absolute -top-4 left-2 font-serif text-6xl leading-none text-accent-default/25">“</span>
+                  <span aria-hidden className="absolute -top-4 left-2 font-serif text-6xl leading-none text-accent-default/25">Ã¢â‚¬Å“</span>
                   <p className="font-serif italic text-xl md:text-2xl text-gray-700 leading-relaxed">{settings.profile_vision}</p>
                   <figcaption className="mt-2 text-xs font-semibold uppercase tracking-wider text-accent-default">Visi</figcaption>
                 </figure>
@@ -238,7 +268,7 @@ export default async function Home() {
           {units.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-7">
               {units.map((unit) => (
-                <Link key={unit.id} href={`/unit/${unit.slug}`} className="group block h-full">
+                <Link key={unit.id} href={unitUrl(String(unit.slug))} className="group block h-full">
                   <TiltCard className="relative bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl border border-gray-100 h-full flex flex-col transition-all duration-300">
                     <div className="relative aspect-[4/3] overflow-hidden bg-gray-100">
                       {unit.image_url ? (

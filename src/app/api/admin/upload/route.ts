@@ -47,6 +47,12 @@ export async function POST(request: Request) {
     const file = formData.get('file') as File;
     if (!file) throw new ValidationError('File tidak ditemukan');
 
+    const outputPng = formData.get('format') === 'png';
+    const requestedWidth = Number(formData.get('max'));
+    const maxWidth = Number.isFinite(requestedWidth) && requestedWidth > 0
+      ? Math.min(2000, Math.max(64, Math.round(requestedWidth)))
+      : 1920;
+
     if (file.size > MAX_FILE_SIZE) throw new FileTooLargeError(MAX_FILE_SIZE_DISPLAY);
 
     const buffer = Buffer.from(await file.arrayBuffer());
@@ -59,15 +65,15 @@ export async function POST(request: Request) {
     if (isPdf && isSiswa) throw new ValidationError('Siswa hanya bisa upload gambar.');
 
     let finalBuffer: Buffer = buffer;
-    const ext = isPdf ? 'pdf' : 'webp';
+    const ext = isPdf ? 'pdf' : outputPng ? 'png' : 'webp';
     const filename = `${crypto.randomUUID()}-${Date.now()}.${ext}`;
 
     if (!isPdf) {
       try {
-        finalBuffer = await sharp(buffer)
-          .resize({ width: 1920, withoutEnlargement: true })
-          .webp({ quality: 80 })
-          .toBuffer();
+        const resized = sharp(buffer).resize({ width: maxWidth, withoutEnlargement: true });
+        finalBuffer = outputPng
+          ? await resized.png({ compressionLevel: 9 }).toBuffer()
+          : await resized.webp({ quality: 80 }).toBuffer();
       } catch (err) {
         logError(err, 'Sharp processing');
         throw new ValidationError('Gagal memproses gambar.');

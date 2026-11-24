@@ -3,12 +3,13 @@ import { useState, useEffect, useCallback } from "react";
 import { UnitsTab } from "./UnitsTab";
 import { ProgramsTab } from "./ProgramsTab";
 import { UnitMediaTab } from "./UnitMediaTab";
+import { UnitPpdbTab } from "./UnitPpdbTab";
 
 export type Unit = { id: number, name: string, slug: string, description: string, content: string, image_url: string, logo_url: string, primary_color: string, secondary_color: string, tagline: string, history_html: string, vision: string, mission: string, profile_image: string, stat_students: string, stat_founded: string, hero_background: string, programs_background: string, carousel_images: string[], youtube_url: string, address: string, phone: string, contact_email: string, social_instagram: string, social_facebook: string, social_youtube: string, map_embed_url: string, map_coordinates: string, wa_number: string, wa_message: string, order_index: number, status: string };
 export type Program = { id: number, title: string, description: string, image_url: string, unit_id: number | null, order_index: number, status: string, unit_name?: string };
 
 export function UnitsManager({ userRole }: { userRole?: string }) {
-  const [activeTab, setActiveTab] = useState<'units' | 'programs' | 'media'>('units');
+  const [activeTab, setActiveTab] = useState<'units' | 'programs' | 'media' | 'ppdb'>('units');
   const [units, setUnits] = useState<Unit[]>([]);
   const [programs, setPrograms] = useState<Program[]>([]);
   const [loading, setLoading] = useState(true);
@@ -74,6 +75,12 @@ export function UnitsManager({ userRole }: { userRole?: string }) {
         >
           Media Unit
         </button>
+        <button 
+          className={`flex-1 py-4 text-center font-semibold ${activeTab === 'ppdb' ? 'border-b-2 border-primary-600 text-primary-700' : 'text-slate-500 hover:text-slate-700'}`}
+          onClick={() => setActiveTab('ppdb')}
+        >
+          Jadwal PPDB
+        </button>
       </div>
       
       <div className="p-6">
@@ -84,6 +91,7 @@ export function UnitsManager({ userRole }: { userRole?: string }) {
             {activeTab === 'units' && <UnitsTab units={units} refresh={fetchData} userRole={userRole} />}
             {activeTab === 'programs' && <ProgramsTab programs={programs} units={units} refresh={fetchData} />}
             {activeTab === 'media' && <UnitMediaTab units={units} refresh={fetchData} userRole={userRole} />}
+            {activeTab === 'ppdb' && <UnitPpdbTab units={units} refresh={fetchData} userRole={userRole} />}
           </>
         )}
       </div>

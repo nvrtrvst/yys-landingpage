@@ -3,8 +3,25 @@ import { Footer } from "@/components/Footer";
 import pool from "@/lib/db";
 import { RowDataPacket } from "mysql2";
 import Link from "next/link";
+import type { Metadata } from "next";
+import { foundationUrl } from "@/lib/unit-sites";
 
 const PAGE_SIZE = 9;
+
+export async function generateMetadata({ searchParams }: { searchParams: Promise<{ page?: string }> }): Promise<Metadata> {
+  const page = Math.max(1, Number((await searchParams).page) || 1);
+  const url = `${foundationUrl()}/berita`;
+  const title = "Berita Yayasan Nuurul Muttaqiin";
+  const description = "Kabar terbaru kegiatan, prestasi, dan pengumuman Yayasan Pendidikan Islam Nuurul Muttaqiin.";
+
+  return {
+    title,
+    description,
+    alternates: { canonical: url },
+    robots: page > 1 ? { index: false, follow: true } : undefined,
+    openGraph: { type: "website", title, description, url },
+  };
+}
 
 export default async function BeritaPage({
   searchParams,

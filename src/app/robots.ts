@@ -8,7 +8,7 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: "*",
         allow: "/",
-        disallow: ["/scp", "/api", "/print", "/mading/admin-unit", "/mading/guru", "/mading/siswa"],
+        disallow: ["/scp", "/api", "/print", "/ppdb/status", "/mading/admin-unit", "/mading/guru", "/mading/siswa"],
       },
     ],
     sitemap: `${base}/sitemap.xml`,

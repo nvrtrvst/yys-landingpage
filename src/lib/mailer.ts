@@ -1,6 +1,6 @@
 import nodemailer from "nodemailer";
 
-// Cache transporter at module level — avoids creating a new connection object on each request
+// Cache transporter at module level â€” avoids creating a new connection object on each request
 let _transporter: ReturnType<typeof nodemailer.createTransport> | null = null;
 
 function getTransporter() {
@@ -18,11 +18,12 @@ function getTransporter() {
 }
 
 // Mengecek apakah file logo unit tersedia di folder public, jika tidak fallback ke logo utama
+import { foundationUrl } from '@/lib/unit-sites';
 import fs from 'fs';
 import path from 'path';
 
 function getUnitLogoUrl(unit: string): string {
-  const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:5000';
+  const baseUrl = foundationUrl();
   const unitFile = `${unit.toLowerCase()}.png`;
   const logoPath = path.join(process.cwd(), 'public', 'logo', unitFile);
   
@@ -54,7 +55,7 @@ export async function sendPPDBSingleEmail({
   const logoUrl = getUnitLogoUrl(unit);
 
   const mailOptions = {
-    from: `"Panitia PPDB ${unit}" <info@nuurulmuttaqiin.or.id>`,
+    from: `"Panitia PPDB ${unit}" <info@nuurulmuttaqiin.sch.id>`,
     to: to,
     subject: `Bukti Pendaftaran PPDB - ${student_name}`,
     html: `
@@ -85,7 +86,7 @@ export async function sendPPDBSingleEmail({
 
         <p>Anda dapat mengecek status pendaftaran Anda secara berkala melalui tautan berikut:</p>
         <p style="text-align: center; margin: 30px 0;">
-          <a href="${process.env.NEXTAUTH_URL || 'http://localhost:5000'}/ppdb/status" style="background-color: #16a34a; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">Cek Status Pendaftaran</a>
+          <a href="${foundationUrl()}/ppdb/status" style="background-color: #16a34a; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">Cek Status Pendaftaran</a>
         </p>
 
         <p style="color: #64748b; font-size: 14px;">Silakan simpan email ini sebagai bukti pendaftaran Anda.</p>
@@ -136,7 +137,7 @@ export async function sendPPDBStatusEmail({
   }
 
   const mailOptions = {
-    from: `"Panitia PPDB ${unit} Nuurul Muttaqiin" <info@nuurulmuttaqiin.or.id>`,
+    from: `"Panitia PPDB ${unit} Nuurul Muttaqiin" <info@nuurulmuttaqiin.sch.id>`,
     to: to,
     subject: `Update Status PPDB - ${student_name}`,
     html: `
@@ -154,7 +155,7 @@ export async function sendPPDBStatusEmail({
 
         <p>Anda dapat mengecek detail pendaftaran Anda secara berkala melalui tautan berikut:</p>
         <p style="text-align: center; margin: 30px 0;">
-          <a href="${process.env.NEXTAUTH_URL || 'http://localhost:5000'}/ppdb/status" style="background-color: #16a34a; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">Cek Status Pendaftaran</a>
+          <a href="${foundationUrl()}/ppdb/status" style="background-color: #16a34a; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">Cek Status Pendaftaran</a>
         </p>
 
         <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 20px 0;" />
@@ -191,10 +192,10 @@ export async function sendNewUserEmail({
   }
 
   const transporter = getTransporter();
-  const setupUrl = `${process.env.NEXTAUTH_URL || 'http://localhost:5000'}/scp/reset-password/${token}`;
+  const setupUrl = `${foundationUrl()}/scp/reset-password/${token}`;
 
   const mailOptions = {
-    from: `"CMS Yayasan Nuurul Muttaqiin" <info@nuurulmuttaqiin.or.id>`,
+    from: `"CMS Yayasan Nuurul Muttaqiin" <info@nuurulmuttaqiin.sch.id>`,
     to: to,
     subject: `Selamat Datang di CMS Yayasan Nuurul Muttaqiin`,
     html: `
@@ -245,10 +246,10 @@ export async function sendPasswordResetEmail({
   }
 
   const transporter = getTransporter();
-  const resetUrl = `${process.env.NEXTAUTH_URL || 'http://localhost:5000'}/mading/siswa/reset-password/${token}`;
+  const resetUrl = `${foundationUrl()}/mading/siswa/reset-password/${token}`;
 
   const mailOptions = {
-    from: `"Mading Online Nuurul Muttaqiin" <info@nuurulmuttaqiin.or.id>`,
+    from: `"Mading Online Nuurul Muttaqiin" <info@nuurulmuttaqiin.sch.id>`,
     to: to,
     subject: `Reset Password - Mading Online`,
     html: `

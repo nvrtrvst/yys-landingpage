@@ -38,7 +38,11 @@ export async function POST(request: Request) {
     const [insertResult] = await pool.execute<ResultSetHeader>(UNIT_INSERT_SQL, unitParams(data));
 
     revalidatePath('/');
-    revalidatePath('/unit/[slug]', 'page');
+    revalidatePath('/sd');
+    revalidatePath('/tk');
+    revalidatePath('/smp');
+    revalidatePath('/smk');
+    revalidatePath('/lpq');
     await revalidateUnitSites([data.slug]);
 
     return NextResponse.json({ success: true, id: insertResult.insertId });

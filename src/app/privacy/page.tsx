@@ -56,7 +56,7 @@ export default function PrivacyPage() {
           <div>
             <h2 className="mb-3 font-serif text-2xl font-bold text-gray-900">Kontak</h2>
             <p>
-              Pertanyaan mengenai privasi dapat disampaikan melalui email info@nuurulmuttaqiin.or.id atau telepon
+              Pertanyaan mengenai privasi dapat disampaikan melalui email info@nuurulmuttaqiin.sch.id atau telepon
               0262-577358.
             </p>
           </div>

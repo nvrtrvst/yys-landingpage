@@ -39,3 +39,13 @@ export function unitSlugFromHost(host: string, baseHost: string = rootHost()): U
 export function foundationUrl(): string {
   return rootUrl().toString().replace(/\/$/, "");
 }
+
+// ponytail: path-relative now; return the absolute unit-domain URL once units.custom_domain is populated.
+export function unitUrl(slug: string, path = "/"): string {
+  if (!path || path === "/") return `/${slug}`;
+  return `/${slug}${path.startsWith("/") ? path : `/${path}`}`;
+}
+
+export function unitNewsUrl(slug: string, newsSlug: string): string {
+  return unitUrl(slug, `/berita/${newsSlug}`);
+}

@@ -68,8 +68,10 @@ export async function POST(request: Request) {
       connection.release();
     }
 
-    // Trigger revalidation for homepage where settings are displayed
+    // Revalidate pages that read settings (homepage, PPDB, and layout metadata like favicon/OG).
     revalidatePath('/');
+    revalidatePath('/ppdb');
+    revalidatePath('/', 'layout');
 
     return NextResponse.json({ success: true });
   } catch (error) {

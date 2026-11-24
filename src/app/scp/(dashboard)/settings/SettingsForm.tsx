@@ -8,6 +8,12 @@ import { btnGhostDanger, btnPrimary, btnSecondary, inputClass, textareaClass } f
 const readOnlyInputClass =
   "h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm text-slate-500";
 
+const PNG_UPLOADS: Record<string, number> = {
+  site_logo: 480,
+  site_icon: 512,
+  og_image: 1200,
+};
+
 function Section({
   title,
   description,
@@ -104,6 +110,8 @@ export function SettingsForm({ initialData }: { initialData: Record<string, stri
     site_name: initialData.site_name || "",
     site_tagline: initialData.site_tagline || "",
     site_logo: initialData.site_logo || "",
+    site_icon: initialData.site_icon || "",
+    og_image: initialData.og_image || "",
     hero_title: initialData.hero_title || "",
     hero_subtitle: initialData.hero_subtitle || "",
     hero_background: initialData.hero_background || "",
@@ -139,6 +147,10 @@ export function SettingsForm({ initialData }: { initialData: Record<string, stri
 
     const uploadData = new FormData();
     uploadData.append("file", file);
+    if (PNG_UPLOADS[fieldName]) {
+      uploadData.append("format", "png");
+      uploadData.append("max", String(PNG_UPLOADS[fieldName]));
+    }
 
     const toastId = toast.loading("Mengunggah file...");
     try {
@@ -203,6 +215,24 @@ export function SettingsForm({ initialData }: { initialData: Record<string, stri
               onRemove={() => handleRemoveImage("site_logo")}
             />
           </div>
+          <ImageField
+            id="site_icon"
+            label="Favicon"
+            hint="PNG persegi minimal 512 x 512 px, latar transparan."
+            value={formData.site_icon}
+            previewClass="h-16 w-16 rounded object-contain"
+            onChange={(e) => handleFileUpload(e, "site_icon")}
+            onRemove={() => handleRemoveImage("site_icon")}
+          />
+          <ImageField
+            id="og_image"
+            label="Gambar Pratinjau Tautan (OG)"
+            hint="Optimal 1200 x 630 px, PNG."
+            value={formData.og_image}
+            previewClass="h-16 w-full max-w-[200px] rounded object-cover"
+            onChange={(e) => handleFileUpload(e, "og_image")}
+            onRemove={() => handleRemoveImage("og_image")}
+          />
         </div>
       </Section>
 

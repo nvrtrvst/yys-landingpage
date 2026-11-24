@@ -1,28 +1,68 @@
+import { cache } from "react";
+import type { Metadata } from "next";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
-import pool from "@/lib/db";
+import pool, { getSettings } from "@/lib/db";
 import { RowDataPacket } from "mysql2";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import Link from "next/link";
 import DOMPurify from "isomorphic-dompurify";
+import { newsPath } from "@/lib/news-links";
+import { foundationUrl } from "@/lib/unit-sites";
 
 export const revalidate = 60;
 
-export default async function BeritaDetailPage({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = await params;
-  let newsItem: RowDataPacket | null = null;
-  let failed = false;
-
+const loadNews = cache(async (slug: string) => {
   try {
     const [rows] = await pool.execute<RowDataPacket[]>(
-      "SELECT title, content, image_url, published_at, created_at FROM news WHERE slug = ? AND status = 'published'",
+      `SELECT n.title, n.content, n.image_url, n.published_at, n.created_at, n.unit_id, u.slug AS unit_slug
+       FROM news n LEFT JOIN units u ON u.id = n.unit_id
+       WHERE n.slug = ? AND n.status = 'published'`,
       [slug]
     );
-    newsItem = rows[0] ?? null;
+    return { news: rows[0] ?? null, failed: false };
   } catch (error) {
     console.error("Failed to fetch news detail", error);
-    failed = true;
+    return { news: null, failed: true };
   }
+});
+
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params;
+  const { news, failed } = await loadNews(slug);
+  if (failed || !news) return {};
+  if (news.unit_id) return { robots: { index: false, follow: true } };
+
+  const settings = await getSettings();
+  const description = String(news.content || "").replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim().slice(0, 160)
+    || `${news.title} â€” Yayasan Nuurul Muttaqiin.`;
+  const image = news.image_url && !String(news.image_url).startsWith("/uploads/dummy/")
+    ? String(news.image_url)
+    : settings.og_image || settings.site_logo || undefined;
+  const url = `${foundationUrl()}/berita/${slug}`;
+  const published = news.published_at ? new Date(String(news.published_at)).toISOString() : undefined;
+  const modified = news.created_at ? new Date(String(news.created_at)).toISOString() : published;
+
+  return {
+    title: { absolute: String(news.title) },
+    description,
+    alternates: { canonical: url },
+    openGraph: {
+      type: "article",
+      title: String(news.title),
+      description,
+      url,
+      images: image ? [{ url: image, alt: String(news.title) }] : undefined,
+      publishedTime: published,
+      modifiedTime: modified,
+    },
+    twitter: { card: "summary_large_image", title: String(news.title), description, images: image ? [image] : undefined },
+  };
+}
+
+export default async function BeritaDetailPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const { news: newsItem, failed } = await loadNews(slug);
 
   if (failed) {
     return (
@@ -43,9 +83,34 @@ export default async function BeritaDetailPage({ params }: { params: Promise<{ s
   }
 
   if (!newsItem) notFound();
+  if (newsItem.unit_id) {
+    if (newsItem.unit_slug) permanentRedirect(newsPath(String(newsItem.unit_slug), slug));
+    notFound();
+  }
+
+  const base = foundationUrl();
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "NewsArticle",
+    headline: String(newsItem.title),
+    image: newsItem.image_url ? [`${base}${String(newsItem.image_url)}`] : undefined,
+    datePublished: newsItem.published_at ? new Date(String(newsItem.published_at)).toISOString() : undefined,
+    dateModified: newsItem.created_at ? new Date(String(newsItem.created_at)).toISOString() : undefined,
+    author: { "@type": "Organization", name: "Yayasan Nuurul Muttaqiin" },
+    publisher: {
+      "@type": "Organization",
+      name: "Yayasan Nuurul Muttaqiin",
+      logo: { "@type": "ImageObject", url: `${base}/logo.png` },
+    },
+    mainEntityOfPage: `${base}/berita/${slug}`,
+  };
 
   return (
     <main className="min-h-screen flex flex-col bg-white">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <div className="bg-primary-900">
         <Header />
         {/* Compact header for detail pages */}

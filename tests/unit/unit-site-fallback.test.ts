@@ -2,7 +2,7 @@ import { describe, expect, it, vi, afterEach } from "vitest";
 
 vi.mock("@/lib/db", () => {
   const execute = vi.fn();
-  return { default: { execute }, getSettings: vi.fn() };
+  return { default: { execute }, getSettings: vi.fn().mockResolvedValue({}) };
 });
 
 import pool from "@/lib/db";

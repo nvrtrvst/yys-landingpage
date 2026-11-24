@@ -5,7 +5,9 @@ import { UnitMobileMenu } from "./UnitMobileMenu";
 import { unitSiteFontClass } from "./unit-site-fonts";
 import { contrastInk, DEFAULT_UNIT_PRIMARY, DEFAULT_UNIT_SECONDARY } from "./unit-site-color";
 import { safeUnitColor, unitSiteStyles } from "./unit-site-styles";
-import { foundationUrl } from "@/lib/unit-sites";
+import { foundationUrl, unitUrl } from "@/lib/unit-sites";
+import { unitLogoUrl } from "@/lib/unit-logo";
+import { getSettings } from "@/lib/db";
 import type { UnitNewsDetailData } from "./unit-site-data";
 
 function isRealImage(url: string | null | undefined): url is string {
@@ -29,21 +31,22 @@ function waHref(number: string | null, message: string | null): string | null {
   return `https://wa.me/${phone}?text=${encodeURIComponent(message || "Halo, saya ingin bertanya.")}`;
 }
 
-export function UnitNewsDetail({ unit, news }: UnitNewsDetailData) {
+export async function UnitNewsDetail({ unit, news }: UnitNewsDetailData) {
   const primary = safeUnitColor(unit.primary_color, DEFAULT_UNIT_PRIMARY);
   const secondary = safeUnitColor(unit.secondary_color, DEFAULT_UNIT_SECONDARY);
   const ink = contrastInk(secondary);
   const onPrimary = contrastInk(primary);
   const image = isRealImage(news.image_url) ? news.image_url : null;
   const contentHtml = DOMPurify.sanitize(news.content || "");
-  const backHref = `/${unit.slug}`;
+  const logo = unitLogoUrl(unit, (await getSettings()).site_logo || null);
+  const backHref = unitUrl(unit.slug);
   const ppdbHref = `/ppdb?unit=${unit.slug}`;
   const whatsapp = waHref(unit.wa_number, unit.wa_message);
   const navItems = [
     { label: "Beranda", href: backHref },
-    { label: "Berita", href: `/${unit.slug}/berita` },
-    { label: "Agenda", href: `/${unit.slug}/agenda` },
-    { label: "Galeri", href: `/${unit.slug}/galeri` },
+    { label: "Berita", href: unitUrl(unit.slug, "/berita") },
+    { label: "Agenda", href: unitUrl(unit.slug, "/agenda") },
+    { label: "Galeri", href: unitUrl(unit.slug, "/galeri") },
   ];
   const rootStyle = {
     "--unit-primary": primary,
@@ -57,7 +60,10 @@ export function UnitNewsDetail({ unit, news }: UnitNewsDetailData) {
     <div className={`unit-site ${unitSiteFontClass}`} style={rootStyle}>
       <header className="unit-site-header">
         <div className="unit-site-header-inner">
-          <Link href={backHref} style={{ color: onPrimary, fontWeight: 700 }}>{unit.name}</Link>
+          <Link href={backHref} style={{ color: onPrimary, fontWeight: 700, display: "inline-flex", alignItems: "center", gap: 10 }}>
+            <img src={logo} alt="" style={{ height: 36, width: "auto", maxWidth: 120, objectFit: "contain" }} />
+            {unit.name}
+          </Link>
           <nav className="unit-site-nav">
             {navItems.map((item) => <a key={item.href} href={item.href}>{item.label}</a>)}
             <Link href={ppdbHref} className="unit-site-cta">Daftar PPDB</Link>

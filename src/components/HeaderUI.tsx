@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import { unitUrl } from "@/lib/unit-sites";
 import { Menu, X, Construction } from "lucide-react";
 import { motion } from "framer-motion";
 import { useMounted } from "@/lib/useMounted";
@@ -95,11 +96,11 @@ export function HeaderUI({ settings, units }: { settings: Record<string, string>
               <Link href="/#unit" className={`text-sm font-medium transition-colors hover:text-primary-400 flex items-center gap-1 ${
                   isScrolled ? "text-gray-700" : "text-white drop-shadow-md"
                 }`}>
-                Unit Sekolah <span aria-hidden="true">▾</span>
+                Unit Sekolah <span aria-hidden="true">â–¾</span>
               </Link>
               <div role="menu" className="absolute top-full left-0 mt-2 w-48 bg-white shadow-lg border border-gray-100 rounded-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible focus-within:opacity-100 focus-within:visible transition-all duration-200 py-2 min-w-[200px] w-max max-w-xs">
                 {units.map(u => (
-                  <Link key={u.slug} href={`/unit/${u.slug}`} className="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-600">
+                  <Link key={u.slug} href={unitUrl(String(u.slug))} className="block px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-600">
                     {u.name}
                   </Link>
                 ))}
@@ -175,7 +176,7 @@ export function HeaderUI({ settings, units }: { settings: Record<string, string>
             <span className="block mb-4">Unit Sekolah:</span>
             <div className="flex flex-col gap-3 pl-4">
                {units.map(u => (
-                  <Link key={u.slug} onClick={() => setIsMobileMenuOpen(false)} href={`/unit/${u.slug}`} className="inline-flex min-h-11 items-center py-2 text-lg text-gray-600 hover:text-primary-600">
+                  <Link key={u.slug} onClick={() => setIsMobileMenuOpen(false)} href={unitUrl(String(u.slug))} className="inline-flex min-h-11 items-center py-2 text-lg text-gray-600 hover:text-primary-600">
                     {u.name}
                   </Link>
                 ))}

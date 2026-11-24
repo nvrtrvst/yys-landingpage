@@ -2,8 +2,16 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import pool from "@/lib/db";
 import { RowDataPacket } from "mysql2";
+import type { Metadata } from "next";
+import { foundationUrl } from "@/lib/unit-sites";
 
 export const revalidate = 60;
+
+export const metadata: Metadata = {
+  title: "Agenda & Kalender Akademik",
+  description: "Jadwal kegiatan penting dan acara mendatang di lingkungan Yayasan Nuurul Muttaqiin.",
+  alternates: { canonical: `${foundationUrl()}/agenda` },
+};
 
 export default async function AgendaPage() {
   let events: RowDataPacket[] = [];

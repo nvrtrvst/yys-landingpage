@@ -1,6 +1,7 @@
-import pool from "@/lib/db";
+import pool, { getSettings } from "@/lib/db";
 import { RowDataPacket } from "mysql2";
 import { isKnownUnitSlug, UNIT_FALLBACK } from "@/lib/unit-sites";
+import { parsePpdbConfig, type PpdbConfig } from "@/lib/ppdb-config";
 
 export interface UnitSiteUnit extends RowDataPacket {
   id: number;
@@ -32,6 +33,7 @@ export interface UnitSiteUnit extends RowDataPacket {
   map_embed_url: string | null;
   wa_number: string | null;
   wa_message: string | null;
+  ppdb_config: string | null;
 }
 
 export interface UnitSiteNews extends RowDataPacket {
@@ -100,6 +102,8 @@ export interface UnitSiteData {
   galleries: UnitSiteGallery[];
   programs: UnitSiteProgram[];
   faqs: UnitSiteFaq[];
+  foundationLogo: string | null;
+  ppdb: PpdbConfig | null;
 }
 
 export interface UnitNewsDetailData {
@@ -125,7 +129,7 @@ export interface UnitGalleryData {
   galleries: UnitSiteGallery[];
 }
 
-const UNIT_COLUMNS = `id, name, slug, description, tagline, image_url, logo_url, primary_color, secondary_color, content, history_html, vision, mission, profile_image, stat_students, stat_founded, hero_background, programs_background, carousel_images, youtube_url, address, phone, contact_email, social_instagram, social_facebook, social_youtube, map_embed_url, wa_number, wa_message`;
+const UNIT_COLUMNS = `id, name, slug, description, tagline, image_url, logo_url, primary_color, secondary_color, content, history_html, vision, mission, profile_image, stat_students, stat_founded, hero_background, programs_background, carousel_images, youtube_url, address, phone, contact_email, social_instagram, social_facebook, social_youtube, map_embed_url, wa_number, wa_message, ppdb_config`;
 
 function fallbackUnit(slug: string): UnitSiteUnit | null {
   if (!isKnownUnitSlug(slug)) return null;
@@ -160,6 +164,7 @@ function fallbackUnit(slug: string): UnitSiteUnit | null {
     map_embed_url: null,
     wa_number: null,
     wa_message: null,
+    ppdb_config: null,
   } as UnitSiteUnit;
 }
 
@@ -180,8 +185,11 @@ export async function getUnitSiteUnit(slug: string): Promise<UnitSiteUnit | null
 export async function getUnitSiteData(slug: string): Promise<UnitSiteData | null> {
   const unit = await getUnitSiteUnit(slug);
   if (!unit) return null;
+  const settings = await getSettings();
+  const foundationLogo = settings.site_logo || null;
+  const ppdb = parsePpdbConfig(unit.ppdb_config);
   if (!unit.id) {
-    return { unit, news: [], events: [], testimonials: [], galleries: [], programs: [], faqs: [] };
+    return { unit, news: [], events: [], testimonials: [], galleries: [], programs: [], faqs: [], foundationLogo, ppdb };
   }
 
   // One failing feed must not blank the others.
@@ -236,6 +244,8 @@ export async function getUnitSiteData(slug: string): Promise<UnitSiteData | null
     galleries: fulfilled<UnitSiteGallery>(3),
     programs: fulfilled<UnitSiteProgram>(4),
     faqs: fulfilled<UnitSiteFaq>(5),
+    foundationLogo,
+    ppdb,
   };
 }
 

@@ -25,7 +25,8 @@ export async function generateMetadata(): Promise<Metadata> {
   const description =
     settings.hero_subtitle?.trim() ||
     "Yayasan Pendidikan Islam Nuurul Muttaqiin menghadirkan pendidikan berkualitas dari jenjang LPQ hingga SMK dengan mengedepankan adab, ilmu, dan teknologi.";
-  const image = settings.site_logo || settings.hero_background || "/uploads/dummy/hero_bg.png";
+  const image = settings.og_image || settings.site_logo || settings.hero_background || "/uploads/dummy/hero_bg.png";
+  const icon = settings.site_icon || "/logo.png";
 
   return {
     metadataBase: new URL(baseUrl),
@@ -36,6 +37,7 @@ export async function generateMetadata(): Promise<Metadata> {
     description,
     keywords: ["sekolah islam", "yayasan nuurul muttaqiin", "sekolah unggulan", "ppdb online", "pendidikan karakter"],
     alternates: { canonical: "/" },
+    icons: { icon, apple: icon },
     openGraph: {
       title: siteName,
       description: settings.hero_subtitle || "Membentuk Generasi Qurani & Berprestasi",

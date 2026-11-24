@@ -22,6 +22,7 @@ ALTER TABLE units
   ADD COLUMN IF NOT EXISTS secondary_color VARCHAR(7) DEFAULT '#fef08a' AFTER primary_color,
   ADD COLUMN IF NOT EXISTS tagline VARCHAR(255) NULL AFTER phone,
   ADD COLUMN IF NOT EXISTS mading_enabled TINYINT(1) DEFAULT 1 AFTER tagline,
+  ADD COLUMN IF NOT EXISTS ppdb_config JSON NULL,
   ADD INDEX idx_mading_enabled (mading_enabled);
 
 -- Add photo and unit_id to users

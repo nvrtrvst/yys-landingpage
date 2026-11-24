@@ -1,18 +1,11 @@
 import { PageHeader } from "@/components/scp/PageHeader";
 import { PPDBSettingsForm } from "./PPDBSettingsForm";
 import { getSettings } from "@/lib/db";
+import { parsePpdbConfig } from "@/lib/ppdb-config";
 
 export default async function AdminPPDBSettingsPage() {
   const settings = await getSettings();
-
-  let initialConfig = null;
-  if (settings.ppdb_config) {
-    try {
-      initialConfig = JSON.parse(settings.ppdb_config);
-    } catch (e) {
-      console.error("Failed to parse ppdb_config JSON", e);
-    }
-  }
+  const initialConfig = parsePpdbConfig(settings.ppdb_config);
 
   return (
     <div className="max-w-7xl mx-auto pb-12">

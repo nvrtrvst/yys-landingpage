@@ -56,7 +56,7 @@ export default function TermsPage() {
             <h2 className="mb-3 font-serif text-2xl font-bold text-gray-900">Perubahan Ketentuan</h2>
             <p>
               Ketentuan ini dapat diperbarui sewaktu-waktu. Versi terbaru akan ditampilkan pada halaman ini. Pertanyaan
-              dapat disampaikan melalui info@nuurulmuttaqiin.or.id.
+              dapat disampaikan melalui info@nuurulmuttaqiin.sch.id.
             </p>
           </div>
         </div>

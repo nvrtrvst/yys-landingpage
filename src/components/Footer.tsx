@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { getSettings } from "@/lib/db";
+import { unitUrl } from "@/lib/unit-sites";
+import { unitLogoUrl } from "@/lib/unit-logo";
 import pool from "@/lib/db";
 import { RowDataPacket } from "mysql2";
 import { Mail, Map as MapIcon, MapPin, Phone } from "lucide-react";
@@ -9,16 +11,11 @@ function safeUrl(url: string | undefined): string {
   return /^(https?:\/\/|mailto:|tel:)/i.test(url) ? url : "#";
 }
 
-function safeImg(url: string | undefined): string | null {
-  if (!url) return null;
-  return /^(https?:\/\/|\/)/i.test(url) ? url : null;
-}
-
 export async function Footer() {
   const settings = await getSettings();
   const address = settings.contact_address || "Jl. Pendidikan No. 1, Kota Islam";
   const phone = settings.contact_phone || "0812-3456-7890";
-  const email = settings.contact_email || "info@nuurulmuttaqiin.or.id";
+  const email = settings.contact_email || "info@nuurulmuttaqiin.sch.id";
   let mapEmbedUrl = settings.map_embed_url;
 
   let units: RowDataPacket[] = [];
@@ -92,16 +89,12 @@ export async function Footer() {
                   {units.map((u) => (
                     <Link
                       key={u.id}
-                      href={`/unit/${u.slug}`}
+                      href={unitUrl(String(u.slug))}
                       aria-label={u.name}
                       title={u.name}
                       className="w-11 h-11 rounded-full bg-white/10 overflow-hidden flex items-center justify-center hover:bg-white/20 hover:scale-105 transition border border-white/10"
                     >
-                      {safeImg(u.logo_url) ? (
-                        <img src={safeImg(u.logo_url)!} alt={u.name} className="w-full h-full object-cover" loading="lazy" decoding="async" />
-                      ) : (
-                        <span className="text-sm font-bold text-white">{u.name.charAt(0)}</span>
-                      )}
+                      <img src={unitLogoUrl({ logo_url: String(u.logo_url || "") }, settings.site_logo)} alt={u.name} className="w-full h-full object-cover" loading="lazy" decoding="async" />
                     </Link>
                   ))}
                 </div>
@@ -129,11 +122,11 @@ export async function Footer() {
           <div className="col-span-1 md:col-span-1">
             <h4 className="text-lg font-semibold mb-4 text-primary-200">Unit Sekolah</h4>
             <ul className="space-y-3 text-primary-100">
-              <li><Link href="/unit/lpq" className="inline-flex min-h-11 items-center py-2.5 hover:text-white transition">LPQ Nuurul Muttaqiin</Link></li>
-              <li><Link href="/unit/tk" className="inline-flex min-h-11 items-center py-2.5 hover:text-white transition">TK Nuurul Muttaqiin</Link></li>
-              <li><Link href="/unit/sd" className="inline-flex min-h-11 items-center py-2.5 hover:text-white transition">SD Nuurul Muttaqiin</Link></li>
-              <li><Link href="/unit/smp" className="inline-flex min-h-11 items-center py-2.5 hover:text-white transition">SMP Nuurul Muttaqiin</Link></li>
-              <li><Link href="/unit/smk" className="inline-flex min-h-11 items-center py-2.5 hover:text-white transition">SMK Nuurul Muttaqiin</Link></li>
+              <li><Link href={unitUrl("lpq")} className="inline-flex min-h-11 items-center py-2.5 hover:text-white transition">LPQ Nuurul Muttaqiin</Link></li>
+              <li><Link href={unitUrl("tk")} className="inline-flex min-h-11 items-center py-2.5 hover:text-white transition">TK Nuurul Muttaqiin</Link></li>
+              <li><Link href={unitUrl("sd")} className="inline-flex min-h-11 items-center py-2.5 hover:text-white transition">SD Nuurul Muttaqiin</Link></li>
+              <li><Link href={unitUrl("smp")} className="inline-flex min-h-11 items-center py-2.5 hover:text-white transition">SMP Nuurul Muttaqiin</Link></li>
+              <li><Link href={unitUrl("smk")} className="inline-flex min-h-11 items-center py-2.5 hover:text-white transition">SMK Nuurul Muttaqiin</Link></li>
             </ul>
           </div>
 

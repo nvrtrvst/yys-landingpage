@@ -1,7 +1,8 @@
-﻿import type { MetadataRoute } from "next";
+import type { MetadataRoute } from "next";
 import pool from "@/lib/db";
 import { RowDataPacket } from "mysql2";
 import { UNIT_SLUGS, foundationUrl } from "@/lib/unit-sites";
+import { newsPath } from "@/lib/news-links";
 
 export const revalidate = 3600;
 
@@ -46,7 +47,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   for (const row of news) {
     const slug = String(row.slug);
     const unitSlug = row.unit_id ? unitSlugs.get(Number(row.unit_id)) : undefined;
-    const url = unitSlug ? `${base}/${unitSlug}/berita/${slug}` : `${base}/berita/${slug}`;
+    if (row.unit_id && !unitSlug) continue;
+    const url = `${base}${newsPath(unitSlug, slug)}`;
     const lastModified = row.published_at ? new Date(String(row.published_at)) : now;
     entries.push({ url, lastModified, changeFrequency: "monthly", priority: 0.6 });
   }
