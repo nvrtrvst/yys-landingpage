@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { ForbiddenError, handleApiError } from "@/lib/errors";
+import { ForbiddenError } from "@/lib/errors";
+import { handleUnitAdminError } from "@/lib/unit-admin-errors";
 import pool from "@/lib/db";
 import { requireModuleOrRoles } from "@/lib/api-auth";
 import { revalidateUnitSites } from "@/lib/revalidate-unit-sites";
@@ -23,7 +24,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
     if (rows.length === 0) return NextResponse.json({ error: "Not Found" }, { status: 404 });
     return NextResponse.json({ config: parsePpdbConfig(rows[0].ppdb_config), updated_at: rows[0].updated_at });
   } catch (error) {
-    return handleApiError(error);
+    return handleUnitAdminError(error);
   }
 }
 
@@ -75,6 +76,6 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     revalidatePath("/ppdb");
     return NextResponse.json({ success: true, config, updated_at: newUpdatedAt });
   } catch (error) {
-    return handleApiError(error);
+    return handleUnitAdminError(error);
   }
 }

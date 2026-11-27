@@ -62,6 +62,7 @@ export function UnitsTab({ units, refresh, userRole }: { units: Unit[], refresh:
   const [editingUnit, setEditingUnit] = useState<Partial<Unit> | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [uploads, setUploads] = useState(0);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>, fieldName: string) => {
     const file = e.target.files?.[0];
@@ -96,6 +97,7 @@ export function UnitsTab({ units, refresh, userRole }: { units: Unit[], refresh:
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (uploads > 0 || isSaving) return;
+    setSaveError(null);
     setIsSaving(true);
     const toastId = toast.loading("Menyimpan...");
     try {
@@ -107,22 +109,32 @@ export function UnitsTab({ units, refresh, userRole }: { units: Unit[], refresh:
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...editingUnit, og_image: editingUnit?.og_image || null })
       });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) {
+        const message = typeof data.error === "string" ? data.error : "Pengaturan unit belum dapat disimpan. Coba lagi beberapa saat. Jika tetap gagal, hubungi administrator server.";
+        const displayedError = `${message}${typeof data.code === "string" ? ` (Kode: ${data.code})` : ""}`;
+        setSaveError(displayedError);
         if (res.status === 409) {
-          toast.error(data.error, {
+          toast.error(displayedError, {
             id: toastId,
-            action: { label: "Muat ulang", onClick: () => { refresh(); setEditingUnit(null); } },
+            action: { label: "Muat ulang", onClick: () => {
+              if (confirm("Muat ulang akan mengganti isian yang belum disimpan dengan data terbaru. Lanjutkan?")) {
+                refresh(); setEditingUnit(null); setSaveError(null);
+              }
+            } },
           });
           return;
         }
-        throw new Error(data.error || "Gagal");
+        toast.error(displayedError, { id: toastId });
+        return;
       }
       toast.success("Tersimpan!", { id: toastId });
       setEditingUnit(null);
       refresh();
-    } catch (err: unknown) {
-      toast.error((getErrorMessage(err)), { id: toastId });
+    } catch {
+      const message = "Tidak dapat menghubungi server. Periksa koneksi internet, lalu coba simpan lagi. Jika sebelumnya sudah menekan Simpan, periksa data terbaru sebelum mengulang.";
+      setSaveError(message);
+      toast.error(message, { id: toastId });
     } finally {
       setIsSaving(false);
     }
@@ -149,6 +161,14 @@ export function UnitsTab({ units, refresh, userRole }: { units: Unit[], refresh:
           <h3 className="text-xl font-bold">{editingUnit.id ? "Edit Unit" : "Tambah Unit Baru"}</h3>
           <button type="button" onClick={() => setEditingUnit(null)} className={btnSecondary}>Kembali ke Daftar</button>
         </div>
+
+        {saveError ? (
+          <div role="alert" className="rounded-lg border border-rose-200 bg-rose-50 p-4 text-sm text-rose-900">
+            <p className="font-semibold">Pengaturan unit belum berhasil disimpan</p>
+            <p className="mt-1 break-words">{saveError}</p>
+            <p className="mt-2">Isian Anda masih ada di form ini. Jangan tutup halaman sebelum mencatat atau menyalin perubahan.</p>
+          </div>
+        ) : null}
 
         <Section legend="Identitas Unit">
           <div>

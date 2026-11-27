@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
-import { ForbiddenError, handleApiError } from '@/lib/errors';
+import { ForbiddenError } from '@/lib/errors';
+import { handleUnitAdminError, unitValidationResponse } from '@/lib/unit-admin-errors';
 import pool from '@/lib/db';
 import { ResultSetHeader } from 'mysql2';
 import { requireModuleOrRoles } from '@/lib/api-auth';
@@ -20,7 +21,7 @@ export async function GET(request: Request) {
     const [rows] = await pool.execute(`SELECT id, ${UNIT_SELECT}, DATE_FORMAT(updated_at, '%Y-%m-%d %H:%i:%s.%f') AS updated_at FROM units ORDER BY order_index ASC, id DESC`);
     return NextResponse.json(rows);
   } catch (error) {
-    return handleApiError(error);
+    return handleUnitAdminError(error);
   }
 }
 
@@ -31,7 +32,7 @@ export async function POST(request: Request) {
 
     const body = await request.json();
     const result = unitSchema.safeParse(body);
-    if (!result.success) return NextResponse.json({ error: 'Invalid data', details: result.error.issues }, { status: 400 });
+    if (!result.success) return unitValidationResponse(result.error.issues);
 
     const data = result.data;
     if (isReservedUnitSlug(data.slug)) {
@@ -49,10 +50,6 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ success: true, id: insertResult.insertId });
   } catch(error: unknown) {
-    console.error(error);
-    if ((error as { code?: string }).code === 'ER_DUP_ENTRY') {
-      return NextResponse.json({ error: 'Slug sudah digunakan. Silakan gunakan slug lain.' }, { status: 400 });
-    }
-    return handleApiError(error);
+    return handleUnitAdminError(error);
   }
 }

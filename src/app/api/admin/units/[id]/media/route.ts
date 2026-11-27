@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { ForbiddenError, handleApiError } from "@/lib/errors";
+import { ForbiddenError } from "@/lib/errors";
+import { handleUnitAdminError } from "@/lib/unit-admin-errors";
 import pool from "@/lib/db";
 import { requireModuleOrRoles } from "@/lib/api-auth";
 import { z } from "zod";
@@ -35,6 +36,6 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     await revalidateUnitSites();
     return NextResponse.json({ success: true });
   } catch (error) {
-    return handleApiError(error);
+    return handleUnitAdminError(error);
   }
 }
