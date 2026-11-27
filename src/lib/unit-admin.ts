@@ -3,6 +3,17 @@ import DOMPurify from "isomorphic-dompurify";
 
 const hexColor = z.string().regex(/^#[0-9a-fA-F]{6}$/, "Warna tidak valid");
 
+const uploadOrHttpUrl = z.string().trim().refine((value) => {
+  if (!value) return true;
+  try {
+    const url = new URL(value, "https://uploads.local");
+    if (value.startsWith("/uploads/")) return url.origin === "https://uploads.local" && url.pathname.startsWith("/uploads/");
+    return /^https?:\/\//i.test(value) && (url.protocol === "http:" || url.protocol === "https:") && !url.username && !url.password;
+  } catch {
+    return false;
+  }
+}, "URL gambar tidak valid");
+
 export const unitSchema = z.object({
   name: z.string().min(1),
   slug: z.string().min(1),
@@ -10,6 +21,9 @@ export const unitSchema = z.object({
   content: z.string().nullable().optional(),
   image_url: z.string().nullable().optional(),
   logo_url: z.string().nullable().optional(),
+  og_image: uploadOrHttpUrl.nullable().optional(),
+  hero_title: z.string().max(120, "Judul hero maksimal 120 karakter").nullable().optional(),
+  hero_subtitle: z.string().max(300, "Subjudul hero maksimal 300 karakter").nullable().optional(),
   primary_color: hexColor.nullable().optional(),
   secondary_color: hexColor.nullable().optional(),
   tagline: z.string().nullable().optional(),
@@ -45,11 +59,12 @@ export const UNIT_COLUMNS = [
   "hero_background", "programs_background", "carousel_images", "youtube_url", "address", "phone", "contact_email",
   "social_instagram", "social_facebook", "social_youtube", "map_embed_url", "map_coordinates",
   "wa_number", "wa_message", "order_index", "status",
+  "hero_title", "hero_subtitle", "og_image",
 ] as const;
 
 export const UNIT_SELECT = UNIT_COLUMNS.join(", ");
 export const UNIT_INSERT_SQL = `INSERT INTO units (${UNIT_COLUMNS.join(", ")}) VALUES (${UNIT_COLUMNS.map(() => "?").join(", ")})`;
-export const UNIT_UPDATE_SQL = `UPDATE units SET ${UNIT_COLUMNS.map((column) => `${column}=?`).join(", ")} WHERE id=?`;
+export const UNIT_UPDATE_SQL = `UPDATE units SET ${UNIT_COLUMNS.map((column) => `${column}=?`).join(", ")}, updated_at=GREATEST(CURRENT_TIMESTAMP(6), updated_at + INTERVAL 1 MICROSECOND) WHERE id=?`;
 
 export function unitParams(data: UnitInput): (string | number | null)[] {
   const value = (input: string | null | undefined) => input?.trim() || null;
@@ -86,5 +101,8 @@ export function unitParams(data: UnitInput): (string | number | null)[] {
     value(data.wa_message),
     data.order_index,
     data.status,
+    value(data.hero_title),
+    value(data.hero_subtitle),
+    value(data.og_image),
   ];
 }

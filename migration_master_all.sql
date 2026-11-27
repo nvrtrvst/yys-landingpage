@@ -25,6 +25,24 @@ ALTER TABLE units
   ADD COLUMN IF NOT EXISTS ppdb_config JSON NULL,
   ADD INDEX idx_mading_enabled (mading_enabled);
 
+SET @unit_site_column = (SELECT IF(COUNT(*) = 0, 'ALTER TABLE units ADD COLUMN hero_title VARCHAR(255) NULL', 'SELECT 1') FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'units' AND COLUMN_NAME = 'hero_title');
+PREPARE stmt FROM @unit_site_column;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+SET @unit_site_column = (SELECT IF(COUNT(*) = 0, 'ALTER TABLE units ADD COLUMN hero_subtitle TEXT NULL', 'SELECT 1') FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'units' AND COLUMN_NAME = 'hero_subtitle');
+PREPARE stmt FROM @unit_site_column;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+SET @unit_site_column = (SELECT IF(COUNT(*) = 0, 'ALTER TABLE units ADD COLUMN og_image VARCHAR(255) NULL', 'SELECT 1') FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'units' AND COLUMN_NAME = 'og_image');
+PREPARE stmt FROM @unit_site_column;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+SET @unit_site_column = (SELECT IF(COUNT(*) = 0, 'ALTER TABLE units ADD COLUMN updated_at TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6)', 'SELECT 1') FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'units' AND COLUMN_NAME = 'updated_at');
+PREPARE stmt FROM @unit_site_column;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+ALTER TABLE units MODIFY COLUMN updated_at TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6);
+
 -- Add photo and unit_id to users
 ALTER TABLE users
   ADD COLUMN IF NOT EXISTS photo VARCHAR(255) NULL AFTER email,

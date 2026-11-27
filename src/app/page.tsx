@@ -5,6 +5,7 @@ import pool from "@/lib/db";
 import { RowDataPacket } from "mysql2";
 import Link from "next/link";
 import { foundationUrl, unitUrl } from "@/lib/unit-sites";
+import { serializeJsonLd } from "@/lib/json-ld";
 import { getSettings } from "@/lib/db";
 import { HeroParallax } from "@/components/parallax/HeroParallax";
 import { ImageParallax } from "@/components/parallax/ImageParallax";
@@ -130,7 +131,7 @@ export default async function Home() {
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(orgJsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(orgJsonLd) }} />
       <div style={{position:'fixed',inset:0,zIndex:0}}>
         <div style={{position:'absolute',inset:0,backgroundImage:`url(${heroBg})`,backgroundSize:'cover',backgroundPosition:'center',backgroundRepeat:'no-repeat'}} />
         <div style={{position:'absolute',inset:0,backgroundColor:'rgba(6,78,59,0.6)'}} />

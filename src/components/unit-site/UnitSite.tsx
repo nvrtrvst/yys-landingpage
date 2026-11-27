@@ -6,6 +6,7 @@ import { contrastInk, DEFAULT_UNIT_PRIMARY, DEFAULT_UNIT_SECONDARY } from "./uni
 import { safeUnitColor, unitSiteStyles } from "./unit-site-styles";
 import { foundationUrl, unitNewsUrl, unitUrl } from "@/lib/unit-sites";
 import { unitLogoUrl } from "@/lib/unit-logo";
+import { serializeJsonLd } from "@/lib/json-ld";
 import { parseCarouselImages, safeMapEmbedUrl, youtubeEmbedUrl, youtubeWatchUrl } from "@/lib/unit-media";
 import { UnitCarousel } from "./UnitCarousel";
 import { UnitMobileMenu } from "./UnitMobileMenu";
@@ -151,7 +152,7 @@ export function UnitSite({ unit, news, events, testimonials, galleries, programs
     <div className={`unit-site ${unitSiteFontClass}`} style={rootStyle}>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: serializeJsonLd(jsonLd) }}
       />
       <header className="unit-site-header">
         <div className="unit-site-header-inner">
@@ -179,12 +180,12 @@ export function UnitSite({ unit, news, events, testimonials, galleries, programs
               <h1 style={{ fontFamily: "var(--font-baloo), sans-serif", fontSize: "clamp(2rem, 6vw, 3.25rem)", lineHeight: 1.1, margin: "16px 0 10px" }}>
                 {unit.name}
               </h1>
-              {unit.tagline ? (
+              {unit.hero_title || unit.tagline ? (
                 <p style={{ fontFamily: "var(--font-baloo), sans-serif", fontSize: "clamp(1.05rem, 2.6vw, 1.35rem)", fontWeight: 600, margin: "0 0 16px", opacity: 0.92 }}>
-                  {unit.tagline}
+                  {unit.hero_title || unit.tagline}
                 </p>
               ) : null}
-              {unit.description ? <p style={{ fontSize: "clamp(1rem, 2.5vw, 1.125rem)", lineHeight: 1.6, margin: "0 0 28px", opacity: 0.88 }}>{unit.description}</p> : null}
+              {unit.hero_subtitle || unit.description ? <p style={{ fontSize: "clamp(1rem, 2.5vw, 1.125rem)", lineHeight: 1.6, margin: "0 0 28px", opacity: 0.88 }}>{unit.hero_subtitle || unit.description}</p> : null}
               <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
                 <Link href={ppdbHref} className="unit-site-cta">Daftar PPDB</Link>
                 {whatsapp ? <a href={whatsapp} target="_blank" rel="noopener noreferrer" className="unit-site-cta-outline unit-site-cta-outline--hero">Tanya via WhatsApp</a> : null}

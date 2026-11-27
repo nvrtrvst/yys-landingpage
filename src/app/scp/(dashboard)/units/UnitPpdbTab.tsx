@@ -9,21 +9,29 @@ import type { Unit } from "./UnitsManager";
 
 function UnitPpdbForm({ unit, refresh }: { unit: Unit; refresh: () => void }) {
   const [config, setConfig] = useState<PpdbConfig>(() => defaultPpdbConfig());
+  const [updatedAt, setUpdatedAt] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [reloadVersion, setReloadVersion] = useState(0);
+  const [loadError, setLoadError] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
       setLoading(true);
+      setLoadError(false);
       try {
         const res = await fetch(`/api/admin/units/${unit.id}/ppdb`);
         const data = await res.json().catch(() => ({}));
         if (cancelled) return;
         if (!res.ok) throw new Error(data.error || "Gagal memuat jadwal");
         setConfig(data.config ?? defaultPpdbConfig());
+        setUpdatedAt(typeof data.updated_at === "string" ? data.updated_at : null);
       } catch (error: unknown) {
-        if (!cancelled) toast.error(getErrorMessage(error));
+        if (!cancelled) {
+          setLoadError(true);
+          toast.error(getErrorMessage(error));
+        }
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -31,7 +39,7 @@ function UnitPpdbForm({ unit, refresh }: { unit: Unit; refresh: () => void }) {
     return () => {
       cancelled = true;
     };
-  }, [unit.id]);
+  }, [unit.id, reloadVersion]);
 
   const handleSave = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -41,10 +49,20 @@ function UnitPpdbForm({ unit, refresh }: { unit: Unit; refresh: () => void }) {
       const res = await fetch(`/api/admin/units/${unit.id}/ppdb`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(config),
+        body: JSON.stringify({ ...config, updated_at: updatedAt }),
       });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error || "Gagal menyimpan");
+      if (!res.ok) {
+        if (res.status === 409) {
+          toast.error(data.error, {
+            id: toastId,
+            action: { label: "Muat ulang", onClick: () => setReloadVersion((current) => current + 1) },
+          });
+          return;
+        }
+        throw new Error(data.error || "Gagal menyimpan");
+      }
+      if (typeof data.updated_at === "string") setUpdatedAt(data.updated_at);
       toast.success("Jadwal PPDB tersimpan", { id: toastId });
       refresh();
     } catch (error: unknown) {
@@ -55,6 +73,7 @@ function UnitPpdbForm({ unit, refresh }: { unit: Unit; refresh: () => void }) {
   };
 
   if (loading) return <p className="text-slate-500">Memuat jadwal PPDB...</p>;
+  if (loadError) return <button type="button" onClick={() => setReloadVersion((current) => current + 1)} className="min-h-11 text-primary-700">Jadwal gagal dimuat. Coba lagi</button>;
 
   return (
     <form onSubmit={handleSave} className="space-y-6">

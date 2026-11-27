@@ -70,7 +70,7 @@ export async function POST(request: Request) {
 
     if (!isPdf) {
       try {
-        const resized = sharp(buffer).resize({ width: maxWidth, withoutEnlargement: true });
+        const resized = sharp(buffer, { limitInputPixels: 50_000_000 }).resize({ width: maxWidth, height: maxWidth, fit: 'inside', withoutEnlargement: true });
         finalBuffer = outputPng
           ? await resized.png({ compressionLevel: 9 }).toBuffer()
           : await resized.webp({ quality: 80 }).toBuffer();

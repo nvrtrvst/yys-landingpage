@@ -22,8 +22,8 @@ export async function generateUnitSiteMetadata(slug: string): Promise<Metadata> 
   if (!data) return { robots: { index: false, follow: true } };
 
   const { unit } = data;
-  const description = (unit.description || (unit.tagline ? `${unit.name} — ${unit.tagline}` : `Informasi ${unit.name} di Yayasan Nuurul Muttaqiin.`)).slice(0, 160);
-  const image = realImage(unit.image_url);
+  const description = (unit.hero_subtitle || unit.description || (unit.tagline ? `${unit.name} — ${unit.tagline}` : `Informasi ${unit.name} di Yayasan Nuurul Muttaqiin.`)).slice(0, 160);
+  const image = realImage(unit.og_image) || realImage(unit.image_url);
   const images = image ? [{ url: image, alt: unit.name }] : await foundationImages();
   const url = `${foundationUrl()}/${slug}`;
 
