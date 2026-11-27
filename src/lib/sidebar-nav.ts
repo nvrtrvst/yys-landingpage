@@ -54,7 +54,6 @@ export const navSections: NavSection[] = [
     label: "Penerimaan Siswa",
     items: [
       { name: "Data Pendaftar", href: "/scp/ppdb", icon: Users, roles: ["superadmin", "admin"], module: "ppdb_data" },
-      { name: "Jadwal Pendaftaran Unit", href: "/scp/units?tab=ppdb", icon: Calendar, roles: ["superadmin", "admin", "admin_unit"], module: "units" },
       { name: "Pengaturan Kartu Peserta", href: "/scp/ppdb/settings", icon: SettingsIcon, roles: ["superadmin", "admin"], module: "ppdb_settings" },
     ],
   },
@@ -65,6 +64,7 @@ export const navSections: NavSection[] = [
       { name: "Identitas & Tampilan", group: "Website Unit Sekolah", href: "/scp/units", icon: Users, roles: ["superadmin", "admin", "admin_unit"], module: "units" },
       { name: "Program Unggulan", group: "Website Unit Sekolah", href: "/scp/units?tab=programs", icon: FileText, roles: ["superadmin", "admin", "admin_unit"], module: "units" },
       { name: "Foto & Video", group: "Website Unit Sekolah", href: "/scp/units?tab=media", icon: ImageIcon, roles: ["superadmin", "admin", "admin_unit"], module: "units" },
+      { name: "Jadwal PPDB", group: "Website Unit Sekolah", href: "/scp/units?tab=ppdb", icon: Calendar, roles: ["superadmin", "admin", "admin_unit"], module: "units" },
     ],
   },
   {
