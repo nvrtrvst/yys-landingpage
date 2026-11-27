@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { getUnitNewsDetail, getUnitSiteData, getUnitSiteUnit } from "./unit-site-data";
 import { foundationUrl } from "@/lib/unit-sites";
 import { getSettings } from "@/lib/db";
+import { readyUnitText } from "@/lib/unit-content-readiness";
 
 function plainText(html: string | null | undefined): string {
   return (html || "").replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
@@ -22,7 +23,8 @@ export async function generateUnitSiteMetadata(slug: string): Promise<Metadata> 
   if (!data) return { robots: { index: false, follow: true } };
 
   const { unit } = data;
-  const description = (unit.hero_subtitle || unit.description || (unit.tagline ? `${unit.name} — ${unit.tagline}` : `Informasi ${unit.name} di Yayasan Nuurul Muttaqiin.`)).slice(0, 160);
+  const tagline = readyUnitText(unit.tagline);
+  const description = (readyUnitText(unit.hero_subtitle) || readyUnitText(unit.description) || (tagline ? `${unit.name} — ${tagline}` : `Informasi ${unit.name} di Yayasan Nuurul Muttaqiin.`)).slice(0, 160);
   const image = realImage(unit.og_image) || realImage(unit.image_url);
   const images = image ? [{ url: image, alt: unit.name }] : await foundationImages();
   const url = `${foundationUrl()}/${slug}`;
@@ -70,7 +72,7 @@ export async function generateUnitListingMetadata(slug: string, kind: "berita" |
   if (!unit) return {};
   const labels = { berita: "Berita", agenda: "Agenda", galeri: "Galeri" };
   const title = `${labels[kind]} ${unit.name}`;
-  const description = (unit.description || `Informasi ${kind} di ${unit.name}.`).slice(0, 160);
+  const description = (readyUnitText(unit.description) || `Informasi ${kind} di ${unit.name}.`).slice(0, 160);
   const url = `${foundationUrl()}/${slug}/${kind}`;
   const images = await foundationImages();
 

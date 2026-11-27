@@ -62,6 +62,40 @@ export function scheduleRows(config: PpdbConfig | null): PpdbScheduleItem[] {
   return config.schedules.filter((item) => item.wave1 || item.wave2);
 }
 
+const MONTHS: Record<string, number> = {
+  januari: 0, februari: 1, maret: 2, april: 3, mei: 4, juni: 5,
+  juli: 6, agustus: 7, september: 8, oktober: 9, november: 10, desember: 11,
+};
+
+export function scheduleLastDate(value: string): Date | null {
+  const matches = [...value.matchAll(/\b(\d{1,2})\s+(januari|februari|maret|april|mei|juni|juli|agustus|september|oktober|november|desember)\s+(20\d{2})\b/gi)];
+  const last = matches.at(-1);
+  if (last) {
+    const date = new Date(Date.UTC(Number(last[3]), MONTHS[last[2].toLowerCase()], Number(last[1])));
+    return date.getUTCDate() === Number(last[1]) ? date : null;
+  }
+  const iso = [...value.matchAll(/\b(20\d{2})-(\d{2})-(\d{2})\b/g)].at(-1);
+  if (!iso) return null;
+  const date = new Date(Date.UTC(Number(iso[1]), Number(iso[2]) - 1, Number(iso[3])));
+  return date.getUTCFullYear() === Number(iso[1]) && date.getUTCMonth() === Number(iso[2]) - 1 && date.getUTCDate() === Number(iso[3]) ? date : null;
+}
+
+export function currentScheduleRows(config: PpdbConfig | null, today = new Date()): PpdbScheduleItem[] {
+  if (!config || !/^20\d{2}\s*[-/]\s*20\d{2}$/.test(config.academic_year)) return [];
+  const startOfToday = Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate());
+  return scheduleRows(config).map((row) => {
+    const isCurrent = (value: string) => {
+      const lastDate = scheduleLastDate(value);
+      return !!lastDate && lastDate.getTime() >= startOfToday;
+    };
+    return {
+      ...row,
+      wave1: isCurrent(row.wave1) ? row.wave1 : "",
+      wave2: isCurrent(row.wave2) ? row.wave2 : "",
+    };
+  }).filter((row) => row.wave1 || row.wave2);
+}
+
 export function activeWaves(config: PpdbConfig | null): { key: "wave1" | "wave2"; label: string }[] {
   const rows = scheduleRows(config);
   if (!config || rows.length === 0) return [];

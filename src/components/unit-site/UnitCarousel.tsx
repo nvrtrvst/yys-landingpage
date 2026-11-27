@@ -12,7 +12,7 @@ export function UnitCarousel({ images }: { images: string[] }) {
         <div className="unit-site-carousel-track" style={{ transform: `translateX(-${index * 100}%)` }}>
           {images.map((src, position) => (
             <div key={`${src}-${position}`} className="unit-site-carousel-slide">
-              <img src={src} alt={`Gambar ${position + 1}`} style={{ width: "100%", height: "auto", objectFit: "cover" }} loading={position === 0 ? "eager" : "lazy"} decoding="async" />
+              <img src={src} alt={`Media kegiatan ${position + 1}`} loading={position === 0 ? "eager" : "lazy"} decoding="async" />
             </div>
           ))}
         </div>
