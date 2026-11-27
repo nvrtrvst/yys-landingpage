@@ -12,7 +12,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
       - run: npm ci
       - run: npm run lint
@@ -35,7 +35,7 @@ jobs:
           ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null $USER@$HOST '
             set -e
             cd /var/www/yys-landingpage
-            source ~/.nvm/nvm.sh && nvm use 20
+            source ~/.nvm/nvm.sh && nvm use 22
             git fetch origin
             git reset --hard origin/main
             npm ci
