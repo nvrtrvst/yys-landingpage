@@ -240,9 +240,9 @@ export function SidebarLayout({
                   aria-label={section.label}
                   className={`mt-1 space-y-0.5 ${open ? "" : collapsed ? "hidden md:block" : "hidden"}`}
                 >
-                  {section.items.map((item) => (
+                  {section.items.map((item, index) => (
                     <div key={item.href}>
-                      {item.group ? (
+                      {item.group && item.group !== section.items[index - 1]?.group ? (
                         <p className={`px-3 pt-2 pb-1 text-[11px] font-medium text-slate-400 ${collapsed ? "md:hidden" : ""}`}>{item.group}</p>
                       ) : null}
                       <NavLink
