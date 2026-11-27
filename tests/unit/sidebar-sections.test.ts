@@ -32,8 +32,9 @@ describe("navSections", () => {
     ]);
   });
 
-  it("places unit schedule under admission and unit identity under the website group", () => {
-    expect(itemNamed("Jadwal Pendaftaran Unit").href).toBe("/scp/units?tab=ppdb");
+  it("groups all unit website settings together", () => {
+    expect(itemNamed("Jadwal PPDB").href).toBe("/scp/units?tab=ppdb");
+    expect(itemNamed("Jadwal PPDB").group).toBe("Website Unit Sekolah");
     expect(itemNamed("Identitas & Tampilan").group).toBe("Website Unit Sekolah");
     expect(itemNamed("Program Unggulan").href).toBe("/scp/units?tab=programs");
     expect(itemNamed("Foto & Video").href).toBe("/scp/units?tab=media");
@@ -46,8 +47,8 @@ describe("canSeeNavItem", () => {
     expect(canSeeNavItem(itemNamed("Website Yayasan"), "superadmin", [])).toBe(true);
   });
 
-  it("hides unit schedule from editors who cannot manage units", () => {
-    expect(canSeeNavItem(itemNamed("Jadwal Pendaftaran Unit"), "editor", [])).toBe(false);
+  it("hides unit PPDB schedule from editors who cannot manage units", () => {
+    expect(canSeeNavItem(itemNamed("Jadwal PPDB"), "editor", [])).toBe(false);
     expect(canSeeNavItem(itemNamed("Berita & Artikel"), "editor", [])).toBe(true);
   });
 
