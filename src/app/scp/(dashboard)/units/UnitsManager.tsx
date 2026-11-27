@@ -5,7 +5,7 @@ import { ProgramsTab } from "./ProgramsTab";
 import { UnitMediaTab } from "./UnitMediaTab";
 import { UnitPpdbTab } from "./UnitPpdbTab";
 
-export type Unit = { id: number, name: string, slug: string, description: string, content: string, image_url: string, logo_url: string, primary_color: string, secondary_color: string, tagline: string, history_html: string, vision: string, mission: string, profile_image: string, stat_students: string, stat_founded: string, hero_background: string, programs_background: string, carousel_images: string[], youtube_url: string, address: string, phone: string, contact_email: string, social_instagram: string, social_facebook: string, social_youtube: string, map_embed_url: string, map_coordinates: string, wa_number: string, wa_message: string, order_index: number, status: string };
+export type Unit = { id: number, name: string, slug: string, description: string, content: string, image_url: string, logo_url: string, og_image: string | null, primary_color: string, secondary_color: string, tagline: string, hero_title: string | null, hero_subtitle: string | null, history_html: string, vision: string, mission: string, profile_image: string, stat_students: string, stat_founded: string, hero_background: string, programs_background: string, carousel_images: string[], youtube_url: string, address: string, phone: string, contact_email: string, social_instagram: string, social_facebook: string, social_youtube: string, map_embed_url: string, map_coordinates: string, wa_number: string, wa_message: string, order_index: number, status: string, updated_at?: string };
 export type Program = { id: number, title: string, description: string, image_url: string, unit_id: number | null, order_index: number, status: string, unit_name?: string };
 
 export function UnitsManager({ userRole }: { userRole?: string }) {
@@ -56,27 +56,27 @@ export function UnitsManager({ userRole }: { userRole?: string }) {
 
   return (
     <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
-      <div className="flex border-b">
+      <div className="grid grid-cols-2 border-b md:flex">
         <button 
-          className={`flex-1 py-4 text-center font-semibold ${activeTab === 'units' ? 'border-b-2 border-primary-600 text-primary-700' : 'text-slate-500 hover:text-slate-700'}`}
+          className={`w-full min-h-11 px-3 py-3 text-center font-semibold md:flex-1 md:py-4 ${activeTab === 'units' ? 'border-b-2 border-primary-600 text-primary-700' : 'text-slate-500 hover:text-slate-700'}`}
           onClick={() => setActiveTab('units')}
         >
           Unit Sekolah
         </button>
         <button 
-          className={`flex-1 py-4 text-center font-semibold ${activeTab === 'programs' ? 'border-b-2 border-primary-600 text-primary-700' : 'text-slate-500 hover:text-slate-700'}`}
+          className={`w-full min-h-11 px-3 py-3 text-center font-semibold md:flex-1 md:py-4 ${activeTab === 'programs' ? 'border-b-2 border-primary-600 text-primary-700' : 'text-slate-500 hover:text-slate-700'}`}
           onClick={() => setActiveTab('programs')}
         >
           Program Unggulan
         </button>
         <button 
-          className={`flex-1 py-4 text-center font-semibold ${activeTab === 'media' ? 'border-b-2 border-primary-600 text-primary-700' : 'text-slate-500 hover:text-slate-700'}`}
+          className={`w-full min-h-11 px-3 py-3 text-center font-semibold md:flex-1 md:py-4 ${activeTab === 'media' ? 'border-b-2 border-primary-600 text-primary-700' : 'text-slate-500 hover:text-slate-700'}`}
           onClick={() => setActiveTab('media')}
         >
           Media Unit
         </button>
         <button 
-          className={`flex-1 py-4 text-center font-semibold ${activeTab === 'ppdb' ? 'border-b-2 border-primary-600 text-primary-700' : 'text-slate-500 hover:text-slate-700'}`}
+          className={`w-full min-h-11 px-3 py-3 text-center font-semibold md:flex-1 md:py-4 ${activeTab === 'ppdb' ? 'border-b-2 border-primary-600 text-primary-700' : 'text-slate-500 hover:text-slate-700'}`}
           onClick={() => setActiveTab('ppdb')}
         >
           Jadwal PPDB

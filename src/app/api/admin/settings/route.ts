@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { handleApiError } from '@/lib/errors';
-import pool from '@/lib/db';
+import pool, { invalidateSettingsCache } from '@/lib/db';
 import { requireModuleOrRoles } from '@/lib/api-auth';
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
@@ -69,6 +69,7 @@ export async function POST(request: Request) {
     }
 
     // Revalidate pages that read settings (homepage, PPDB, and layout metadata like favicon/OG).
+    invalidateSettingsCache();
     revalidatePath('/');
     revalidatePath('/ppdb');
     revalidatePath('/', 'layout');

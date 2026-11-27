@@ -34,6 +34,9 @@ export interface UnitSiteUnit extends RowDataPacket {
   wa_number: string | null;
   wa_message: string | null;
   ppdb_config: string | null;
+  hero_title: string | null;
+  hero_subtitle: string | null;
+  og_image: string | null;
 }
 
 export interface UnitSiteNews extends RowDataPacket {
@@ -129,7 +132,7 @@ export interface UnitGalleryData {
   galleries: UnitSiteGallery[];
 }
 
-const UNIT_COLUMNS = `id, name, slug, description, tagline, image_url, logo_url, primary_color, secondary_color, content, history_html, vision, mission, profile_image, stat_students, stat_founded, hero_background, programs_background, carousel_images, youtube_url, address, phone, contact_email, social_instagram, social_facebook, social_youtube, map_embed_url, wa_number, wa_message, ppdb_config`;
+const UNIT_COLUMNS = `id, name, slug, description, tagline, image_url, logo_url, primary_color, secondary_color, content, history_html, vision, mission, profile_image, stat_students, stat_founded, hero_background, programs_background, carousel_images, youtube_url, address, phone, contact_email, social_instagram, social_facebook, social_youtube, map_embed_url, wa_number, wa_message, ppdb_config, hero_title, hero_subtitle, og_image`;
 
 function fallbackUnit(slug: string): UnitSiteUnit | null {
   if (!isKnownUnitSlug(slug)) return null;
@@ -165,6 +168,9 @@ function fallbackUnit(slug: string): UnitSiteUnit | null {
     wa_number: null,
     wa_message: null,
     ppdb_config: null,
+    hero_title: null,
+    hero_subtitle: null,
+    og_image: null,
   } as UnitSiteUnit;
 }
 

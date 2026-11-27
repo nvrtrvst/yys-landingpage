@@ -29,7 +29,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     if (existing.length === 0) return NextResponse.json({ error: "Not Found" }, { status: 404 });
 
     await pool.execute(
-      "UPDATE units SET carousel_images = ?, youtube_url = ? WHERE id = ?",
+      "UPDATE units SET carousel_images = ?, youtube_url = ?, updated_at=GREATEST(CURRENT_TIMESTAMP(6), updated_at + INTERVAL 1 MICROSECOND) WHERE id = ?",
       [JSON.stringify(result.data.carousel_images), result.data.youtube_url?.trim() || null, id]
     );
     await revalidateUnitSites();

@@ -6,17 +6,18 @@ import { requireModuleOrRoles } from '@/lib/api-auth';
 import { revalidatePath } from 'next/cache';
 import { isReservedUnitSlug, revalidateUnitSites } from '@/lib/revalidate-unit-sites';
 import { UNIT_INSERT_SQL, UNIT_SELECT, unitParams, unitSchema } from '@/lib/unit-admin';
+import { rateLimitOrThrow, getClientIp } from '@/lib/rate-limit';
 
 export async function GET(request: Request) {
   try {
     const session = await requireModuleOrRoles('units', ['superadmin', 'admin', 'admin_unit']);
     if (session.user.role === 'admin_unit') {
       if (!session.user.unit_id) throw new ForbiddenError('Akun unit belum terhubung ke unit');
-      const [rows] = await pool.execute(`SELECT id, ${UNIT_SELECT} FROM units WHERE id = ?`, [session.user.unit_id]);
+      const [rows] = await pool.execute(`SELECT id, ${UNIT_SELECT}, DATE_FORMAT(updated_at, '%Y-%m-%d %H:%i:%s.%f') AS updated_at FROM units WHERE id = ?`, [session.user.unit_id]);
       return NextResponse.json(rows);
     }
 
-    const [rows] = await pool.execute(`SELECT id, ${UNIT_SELECT} FROM units ORDER BY order_index ASC, id DESC`);
+    const [rows] = await pool.execute(`SELECT id, ${UNIT_SELECT}, DATE_FORMAT(updated_at, '%Y-%m-%d %H:%i:%s.%f') AS updated_at FROM units ORDER BY order_index ASC, id DESC`);
     return NextResponse.json(rows);
   } catch (error) {
     return handleApiError(error);
@@ -26,6 +27,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     await requireModuleOrRoles('units', ['superadmin', 'admin']);
+    rateLimitOrThrow(`admin:units:${getClientIp(request)}`, 20, 60 * 1000);
 
     const body = await request.json();
     const result = unitSchema.safeParse(body);

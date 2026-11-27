@@ -9,6 +9,7 @@ import Link from "next/link";
 import DOMPurify from "isomorphic-dompurify";
 import { newsPath } from "@/lib/news-links";
 import { foundationUrl } from "@/lib/unit-sites";
+import { serializeJsonLd } from "@/lib/json-ld";
 
 export const revalidate = 60;
 
@@ -109,7 +110,7 @@ export default async function BeritaDetailPage({ params }: { params: Promise<{ s
     <main className="min-h-screen flex flex-col bg-white">
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: serializeJsonLd(jsonLd) }}
       />
       <div className="bg-primary-900">
         <Header />

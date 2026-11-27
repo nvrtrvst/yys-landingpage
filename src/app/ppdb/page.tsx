@@ -9,6 +9,7 @@ import type { PPDBUnit } from "./types";
 import { parsePpdbConfig, type PpdbConfig } from "@/lib/ppdb-config";
 import type { Metadata } from "next";
 import { foundationUrl } from "@/lib/unit-sites";
+import { serializeJsonLd } from "@/lib/json-ld";
 
 export const revalidate = 60;
 
@@ -73,7 +74,7 @@ export default async function PPDBPage({
     <main className="min-h-screen flex flex-col bg-gray-50">
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: serializeJsonLd(faqJsonLd) }}
       />
       <div className="bg-primary-900 pb-20">
         <Header />
