@@ -42,6 +42,7 @@ jobs:
             git reset --hard origin/main
             npm ci
             npm run build
+            command -v pm2 >/dev/null || npm install --global pm2
             pm2 reload ecosystem.config.js --update-env || pm2 start ecosystem.config.js --update-env
             pm2 save
           '
