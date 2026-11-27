@@ -2,6 +2,7 @@ import pool, { getSettings } from "@/lib/db";
 import { RowDataPacket } from "mysql2";
 import { isKnownUnitSlug, UNIT_FALLBACK } from "@/lib/unit-sites";
 import { parsePpdbConfig, type PpdbConfig } from "@/lib/ppdb-config";
+import { isPlaceholderContent, isPlaceholderGalleryTitle, isReadyNews, readyUnitText } from "@/lib/unit-content-readiness";
 
 export interface UnitSiteUnit extends RowDataPacket {
   id: number;
@@ -244,12 +245,18 @@ export async function getUnitSiteData(slug: string): Promise<UnitSiteData | null
 
   return {
     unit,
-    news: fulfilled<UnitSiteNews>(0),
+    news: fulfilled<UnitSiteNews>(0).filter((item) => isReadyNews(item.title, item.content)),
     events: fulfilled<UnitSiteEvent>(1),
-    testimonials: fulfilled<UnitSiteTestimonial>(2),
-    galleries: fulfilled<UnitSiteGallery>(3),
-    programs: fulfilled<UnitSiteProgram>(4),
-    faqs: fulfilled<UnitSiteFaq>(5),
+    testimonials: fulfilled<UnitSiteTestimonial>(2).filter((item) =>
+      !!readyUnitText(item.author_name) && !!readyUnitText(item.content) && !isPlaceholderContent(item.role)
+    ),
+    galleries: fulfilled<UnitSiteGallery>(3).filter((item) => !isPlaceholderGalleryTitle(item.title)),
+    programs: fulfilled<UnitSiteProgram>(4).filter((item) =>
+      !!readyUnitText(item.title) && !!readyUnitText(item.description)
+    ),
+    faqs: fulfilled<UnitSiteFaq>(5).filter((item) =>
+      !!readyUnitText(item.question) && !!readyUnitText(item.answer)
+    ),
     foundationLogo,
     ppdb,
   };
@@ -322,6 +329,6 @@ export async function getUnitGallery(unitSlug: string): Promise<UnitGalleryData 
      WHERE unit_id = ? ORDER BY created_at DESC LIMIT 60`,
     [unit.id]
   );
-  return { unit, galleries: rows };
+  return { unit, galleries: rows.filter((item) => !isPlaceholderGalleryTitle(item.title)) };
 }
 

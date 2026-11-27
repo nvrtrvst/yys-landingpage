@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { getErrorMessage } from "@/lib/get-error-message";
 import { PpdbScheduleEditor } from "@/components/scp/PpdbScheduleEditor";
-import { defaultPpdbConfig, type PpdbConfig } from "@/lib/ppdb-config";
+import { currentScheduleRows, defaultPpdbConfig, scheduleRows, type PpdbConfig } from "@/lib/ppdb-config";
 import type { Unit } from "./UnitsManager";
 
 function UnitPpdbForm({ unit, refresh }: { unit: Unit; refresh: () => void }) {
@@ -75,8 +75,17 @@ function UnitPpdbForm({ unit, refresh }: { unit: Unit; refresh: () => void }) {
   if (loading) return <p className="text-slate-500">Memuat jadwal PPDB...</p>;
   if (loadError) return <button type="button" onClick={() => setReloadVersion((current) => current + 1)} className="min-h-11 text-primary-700">Jadwal gagal dimuat. Coba lagi</button>;
 
+  const datedRows = scheduleRows(config);
+  const currentRows = currentScheduleRows(config);
+  const hasHiddenDates = JSON.stringify(datedRows) !== JSON.stringify(currentRows);
+
   return (
     <form onSubmit={handleSave} className="space-y-6">
+      {hasHiddenDates ? (
+        <div role="status" className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950">
+          Sebagian tanggal jadwal belum siap tayang karena sudah lewat atau tidak dapat dibaca. Periksa tahun ajaran dan isi tanggal lengkap, misalnya 1 Maret - 24 Agustus 2027.
+        </div>
+      ) : null}
       <PpdbScheduleEditor value={config} onChange={setConfig} />
       <div className="flex justify-end border-t pt-4">
         <button type="submit" disabled={saving} className="rounded bg-primary-600 px-4 py-2 text-white hover:bg-primary-700 disabled:opacity-50">

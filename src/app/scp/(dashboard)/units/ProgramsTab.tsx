@@ -4,6 +4,7 @@ import { getErrorMessage } from "@/lib/get-error-message";
 import { useState } from "react";
 import { Program, Unit } from "./UnitsManager";
 import { toast } from "sonner";
+import { isPlaceholderContent } from "@/lib/unit-content-readiness";
 
 export function ProgramsTab({ programs, units, refresh }: { programs: Program[], units: Unit[], refresh: () => void }) {
   const [editingProgram, setEditingProgram] = useState<Partial<Program> | null>(null);
@@ -74,12 +75,19 @@ export function ProgramsTab({ programs, units, refresh }: { programs: Program[],
   };
 
   if (editingProgram !== null) {
+    const sampleCopy = isPlaceholderContent(editingProgram.title) || isPlaceholderContent(editingProgram.description);
     return (
       <form onSubmit={handleSave} className="space-y-6">
         <div className="flex justify-between items-center mb-6">
           <h3 className="text-xl font-bold">{editingProgram.id ? "Edit Program" : "Tambah Program Baru"}</h3>
           <button type="button" onClick={() => setEditingProgram(null)} className="text-slate-500 hover:text-slate-700">Kembali ke Daftar</button>
         </div>
+
+        {sampleCopy ? (
+          <div role="status" className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950">
+            Nama atau deskripsi program masih berisi teks contoh. Program ini tidak akan tampil pada halaman unit sampai materinya diganti.
+          </div>
+        ) : null}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>

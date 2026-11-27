@@ -3,9 +3,11 @@ import {
   DEFAULT_WAVE1_LABEL,
   DEFAULT_WAVE2_LABEL,
   activeWaves,
+  currentScheduleRows,
   parsePpdbConfig,
   registrationWindow,
   scheduleRows,
+  scheduleLastDate,
 } from "@/lib/ppdb-config";
 
 describe("parsePpdbConfig", () => {
@@ -70,5 +72,28 @@ describe("schedule helpers", () => {
     expect(scheduleRows(null)).toEqual([]);
     expect(activeWaves(null)).toEqual([]);
     expect(registrationWindow(null)).toEqual([]);
+  });
+});
+
+describe("public schedule dates", () => {
+  it("hides an expired registration range", () => {
+    const config = parsePpdbConfig({
+      academic_year: "2027-2028",
+      schedules: [{ activity: "Pendaftaran", wave1: "1 Maret - 24 Agustus 2026" }],
+    });
+    expect(currentScheduleRows(config, new Date("2026-11-27T00:00:00Z"))).toEqual([]);
+  });
+
+  it("keeps a current date and rejects incomplete or invalid dates", () => {
+    const config = parsePpdbConfig({
+      academic_year: "2027-2028",
+      schedules: [
+        { activity: "Pendaftaran", wave1: "1 Maret - 24 Agustus 2027" },
+        { activity: "Pengumuman", wave1: "31 Februari 2027" },
+        { activity: "Daftar ulang", wave1: "1 Mei" },
+      ],
+    });
+    expect(currentScheduleRows(config, new Date("2026-11-27T00:00:00Z"))).toHaveLength(1);
+    expect(scheduleLastDate("31 Februari 2027")).toBeNull();
   });
 });

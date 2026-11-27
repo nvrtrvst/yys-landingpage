@@ -11,7 +11,8 @@ import { parseCarouselImages, safeMapEmbedUrl, youtubeEmbedUrl, youtubeWatchUrl 
 import { UnitCarousel } from "./UnitCarousel";
 import { UnitMobileMenu } from "./UnitMobileMenu";
 import { UnitPpdbSection } from "./UnitPpdbSection";
-import { scheduleRows } from "@/lib/ppdb-config";
+import { currentScheduleRows } from "@/lib/ppdb-config";
+import { readyUnitText } from "@/lib/unit-content-readiness";
 import type { UnitSiteData } from "./unit-site-data";
 
 function isRealImage(url: string | null | undefined): url is string {
@@ -59,14 +60,18 @@ export function UnitSite({ unit, news, events, testimonials, galleries, programs
   const programBackground = isRealImage(unit.programs_background) ? unit.programs_background : null;
   const logo = unitLogoUrl(unit, foundationLogo);
   const profileImage = isRealImage(unit.profile_image) ? unit.profile_image : null;
-  const historyHtml = unit.history_html ? DOMPurify.sanitize(unit.history_html) : "";
-  const contentHtml = unit.content && !/lorem ipsum/i.test(unit.content) ? DOMPurify.sanitize(unit.content) : "";
-  const missionLines = (unit.mission || "").split("\n").map((line) => line.trim()).filter(Boolean);
+  const historyHtml = readyUnitText(unit.history_html) ? DOMPurify.sanitize(unit.history_html || "") : "";
+  const contentHtml = readyUnitText(unit.content) ? DOMPurify.sanitize(unit.content || "") : "";
+  const vision = readyUnitText(unit.vision);
+  const heroTitle = readyUnitText(unit.hero_title) || readyUnitText(unit.tagline);
+  const heroSubtitle = readyUnitText(unit.hero_subtitle) || readyUnitText(unit.description);
+  const missionLines = (unit.mission || "").split("\n").map((line) => readyUnitText(line.trim())).filter(Boolean);
   const stats = [
     { value: unit.stat_students, label: "Siswa Aktif" },
     { value: unit.stat_founded, label: "Tahun Berdiri" },
   ].filter((item) => item.value && item.value !== "0");
-  const hasProfile = !!(historyHtml || unit.vision || missionLines.length || profileImage || stats.length || contentHtml);
+  const hasProfile = !!(historyHtml || vision || missionLines.length || profileImage || contentHtml);
+  const currentSchedule = currentScheduleRows(ppdb);
   const realGalleries = galleries.filter((item) => isRealImage(item.image_url));
   const carouselImages = parseCarouselImages(unit.carousel_images);
   const videoEmbed = youtubeEmbedUrl(unit.youtube_url);
@@ -100,7 +105,7 @@ export function UnitSite({ unit, news, events, testimonials, galleries, programs
     ...(realGalleries.length ? [{ label: "Galeri", href: "#galeri" }] : []),
     ...(hasMedia ? [{ label: "Media", href: "#media" }] : []),
     ...(faqs.length ? [{ label: "Tanya Jawab", href: "#tanya-jawab" }] : []),
-    ...(ppdb && scheduleRows(ppdb).length > 0 ? [{ label: "Pendaftaran", href: "#pendaftaran" }] : []),
+    ...(currentSchedule.length > 0 ? [{ label: "Pendaftaran", href: "#pendaftaran" }] : []),
   ];
   const rootStyle = {
     "--unit-primary": primary,
@@ -120,7 +125,7 @@ export function UnitSite({ unit, news, events, testimonials, galleries, programs
         url: canonicalUrl,
         logo: absoluteUrl(logo),
         image: heroImage ? absoluteUrl(heroImage) : undefined,
-        description: unit.description || undefined,
+        description: readyUnitText(unit.description) || undefined,
         telephone: unit.phone || undefined,
         email: unit.contact_email || undefined,
         address: unit.address ? { "@type": "PostalAddress", streetAddress: unit.address } : undefined,
@@ -180,12 +185,12 @@ export function UnitSite({ unit, news, events, testimonials, galleries, programs
               <h1 style={{ fontFamily: "var(--font-baloo), sans-serif", fontSize: "clamp(2rem, 6vw, 3.25rem)", lineHeight: 1.1, margin: "16px 0 10px" }}>
                 {unit.name}
               </h1>
-              {unit.hero_title || unit.tagline ? (
+              {heroTitle ? (
                 <p style={{ fontFamily: "var(--font-baloo), sans-serif", fontSize: "clamp(1.05rem, 2.6vw, 1.35rem)", fontWeight: 600, margin: "0 0 16px", opacity: 0.92 }}>
-                  {unit.hero_title || unit.tagline}
+                  {heroTitle}
                 </p>
               ) : null}
-              {unit.hero_subtitle || unit.description ? <p style={{ fontSize: "clamp(1rem, 2.5vw, 1.125rem)", lineHeight: 1.6, margin: "0 0 28px", opacity: 0.88 }}>{unit.hero_subtitle || unit.description}</p> : null}
+              {heroSubtitle ? <p style={{ fontSize: "clamp(1rem, 2.5vw, 1.125rem)", lineHeight: 1.6, margin: "0 0 28px", opacity: 0.88 }}>{heroSubtitle}</p> : null}
               <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
                 <Link href={ppdbHref} className="unit-site-cta">Daftar PPDB</Link>
                 {whatsapp ? <a href={whatsapp} target="_blank" rel="noopener noreferrer" className="unit-site-cta-outline unit-site-cta-outline--hero">Tanya via WhatsApp</a> : null}
@@ -211,7 +216,7 @@ export function UnitSite({ unit, news, events, testimonials, galleries, programs
         </div>
       </section>
 
-      {ppdb && scheduleRows(ppdb).length > 0 ? (
+      {currentSchedule.length > 0 ? (
         <UnitPpdbSection unit={unit} config={ppdb} whatsapp={whatsapp} />
       ) : null}
 
@@ -224,9 +229,9 @@ export function UnitSite({ unit, news, events, testimonials, galleries, programs
                 {profileImage ? <img src={profileImage} alt={unit.name} style={{ width: "100%", borderRadius: 14, marginBottom: 24 }} loading="lazy" decoding="async" /> : null}
                 {historyHtml ? <div dangerouslySetInnerHTML={{ __html: historyHtml }} /> : null}
                 {contentHtml ? <div dangerouslySetInnerHTML={{ __html: contentHtml }} /> : null}
-                {unit.vision ? (
+                {vision ? (
                   <figure style={{ margin: "28px 0", paddingLeft: 20, borderLeft: `3px solid ${primary}` }}>
-                    <blockquote style={{ margin: 0, fontFamily: "var(--font-baloo), sans-serif", fontSize: "1.15rem", lineHeight: 1.5 }}>{unit.vision}</blockquote>
+                    <blockquote style={{ margin: 0, fontFamily: "var(--font-baloo), sans-serif", fontSize: "1.15rem", lineHeight: 1.5 }}>{vision}</blockquote>
                     <figcaption style={{ marginTop: 8, fontSize: 12, fontWeight: 700, color: primary }}>Visi</figcaption>
                   </figure>
                 ) : null}

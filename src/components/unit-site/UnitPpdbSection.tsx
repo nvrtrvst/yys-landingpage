@@ -1,13 +1,14 @@
 import Link from "next/link";
-import { activeWaves, registrationWindow, scheduleRows, type PpdbConfig } from "@/lib/ppdb-config";
+import { activeWaves, currentScheduleRows, registrationWindow, type PpdbConfig } from "@/lib/ppdb-config";
 import type { UnitSiteUnit } from "@/components/unit-site/unit-site-data";
 
 export function UnitPpdbSection({ unit, config, whatsapp }: { unit: UnitSiteUnit; config: PpdbConfig | null; whatsapp: string | null }) {
-  const rows = scheduleRows(config);
+  const rows = currentScheduleRows(config);
   if (!config || rows.length === 0) return null;
 
-  const waves = activeWaves(config);
-  const windows = registrationWindow(config);
+  const currentConfig = { ...config, schedules: rows };
+  const waves = activeWaves(currentConfig);
+  const windows = rows.some((row) => /pendaftaran|spmb/i.test(row.activity)) ? registrationWindow(currentConfig) : [];
   const ppdbHref = `/ppdb?unit=${unit.slug}`;
 
   return (

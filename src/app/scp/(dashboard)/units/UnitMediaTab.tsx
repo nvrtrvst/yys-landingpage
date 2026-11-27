@@ -62,6 +62,9 @@ function UnitMediaForm({ unit, refresh }: { unit: Unit; refresh: () => void }) {
 
   return (
     <form onSubmit={handleSave} className="space-y-6">
+      <div role="status" className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950">
+        Periksa setiap gambar dan video sebelum disimpan. Hapus QR, wallpaper, rekaman layar, atau materi uji; gunakan dokumentasi kegiatan unit yang sudah disetujui.
+      </div>
       <div className="grid grid-cols-1 gap-4">
         <div>
           <label className="block text-sm font-medium mb-1">Gambar Carousel</label>

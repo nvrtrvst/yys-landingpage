@@ -4,6 +4,7 @@ import { getErrorMessage } from "@/lib/get-error-message";
 import { useState } from "react";
 import { Unit } from "./UnitsManager";
 import { toast } from "sonner";
+import { unitFieldWarnings } from "@/lib/unit-content-readiness";
 
 const PNG_UPLOADS: Record<string, number> = { og_image: 1200 };
 
@@ -155,12 +156,22 @@ export function UnitsTab({ units, refresh, userRole }: { units: Unit[], refresh:
   };
 
   if (editingUnit !== null) {
+    const readinessWarnings = unitFieldWarnings({ ...editingUnit });
     return (
       <form onSubmit={handleSave} className="space-y-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h3 className="text-xl font-bold">{editingUnit.id ? "Edit Unit" : "Tambah Unit Baru"}</h3>
           <button type="button" onClick={() => setEditingUnit(null)} className={btnSecondary}>Kembali ke Daftar</button>
         </div>
+
+        {readinessWarnings.length > 0 ? (
+          <div role="status" className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950">
+            <p className="font-semibold">Periksa konten sebelum unit ditayangkan</p>
+            <ul className="mt-2 list-disc space-y-1 pl-5">
+              {readinessWarnings.map((warning) => <li key={warning}>{warning}</li>)}
+            </ul>
+          </div>
+        ) : null}
 
         {saveError ? (
           <div role="alert" className="rounded-lg border border-rose-200 bg-rose-50 p-4 text-sm text-rose-900">
