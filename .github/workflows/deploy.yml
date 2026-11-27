@@ -35,7 +35,9 @@ jobs:
           ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null $USER@$HOST '
             set -e
             cd /var/www/yys-landingpage
-            source ~/.nvm/nvm.sh && nvm use 22
+            source ~/.nvm/nvm.sh
+            nvm install 22
+            nvm use 22
             git fetch origin
             git reset --hard origin/main
             npm ci
