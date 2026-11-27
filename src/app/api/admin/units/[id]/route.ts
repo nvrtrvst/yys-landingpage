@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
-import { ForbiddenError, handleApiError } from '@/lib/errors';
+import { ForbiddenError } from '@/lib/errors';
+import { handleUnitAdminError, unitValidationResponse } from '@/lib/unit-admin-errors';
 import pool from '@/lib/db';
 import { requireModuleOrRoles } from '@/lib/api-auth';
 import { revalidatePath } from 'next/cache';
@@ -20,7 +21,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     if (rows.length === 0) return NextResponse.json({ error: 'Not Found' }, { status: 404 });
     return NextResponse.json(rows[0]);
   } catch (error) {
-    return handleApiError(error);
+    return handleUnitAdminError(error);
   }
 }
 
@@ -39,7 +40,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
       return NextResponse.json({ error: CONFLICT_MESSAGE }, { status: 409 });
     }
     const result = unitSchema.safeParse(body);
-    if (!result.success) return NextResponse.json({ error: 'Invalid data' }, { status: 400 });
+    if (!result.success) return unitValidationResponse(result.error.issues);
 
     const data = result.data;
 
@@ -87,8 +88,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     await revalidateUnitSites([oldSlug, data.slug]);
     return NextResponse.json({ success: true, updated_at: newUpdatedAt });
   } catch(error: unknown) {
-    if ((error as { code?: string }).code === 'ER_DUP_ENTRY') return NextResponse.json({ error: 'Slug sudah digunakan.' }, { status: 400 });
-    return handleApiError(error);
+    return handleUnitAdminError(error);
   }
 }
 
@@ -108,6 +108,6 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
     await revalidateUnitSites([oldSlug]);
     return NextResponse.json({ success: true });
   } catch (error) {
-    return handleApiError(error);
+    return handleUnitAdminError(error);
   }
 }

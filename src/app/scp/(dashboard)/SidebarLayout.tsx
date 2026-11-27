@@ -1,13 +1,12 @@
 "use client";
 
 import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { Toaster } from "sonner";
 import Link from "next/link";
 import { Menu, X, PanelLeftClose, PanelLeftOpen, ChevronDown, ChevronRight } from "lucide-react";
 import { SignOutButton } from "./SignOutButton";
-import { dashboardItem, findActiveHref, navSections, type NavItem } from "@/lib/sidebar-nav";
-import { MODULES_BY_KEY } from "@/lib/modules";
+import { canSeeNavItem, dashboardItem, findActiveHref, navSections, type NavItem } from "@/lib/sidebar-nav";
 
 const PREF_EVENT = "scp-sidebar-prefs";
 const COLLAPSED_KEY = "scp_sidebar_collapsed";
@@ -117,6 +116,7 @@ export function SidebarLayout({
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const pathname = usePathname();
+  const search = useSearchParams().toString();
 
   const collapsedRaw = useSyncExternalStore(subscribePrefs, readCollapsed, serverCollapsed);
   const sectionsRaw = useSyncExternalStore(subscribePrefs, readSections, serverSections);
@@ -124,15 +124,7 @@ export function SidebarLayout({
   const openSections = useMemo(() => parseSections(sectionsRaw), [sectionsRaw]);
 
   const canSee = useMemo(
-    () =>
-      (item: NavItem) => {
-        if (userRole === "superadmin" || userRole === "admin") return true;
-        if (userRole === "petugas") {
-          if (item.module === "profile") return true;
-          return MODULES_BY_KEY[item.module].grantable && userPermissions.includes(item.module);
-        }
-        return item.roles.includes(userRole);
-      },
+    () => (item: NavItem) => canSeeNavItem(item, userRole, userPermissions),
     [userRole, userPermissions]
   );
 
@@ -156,7 +148,7 @@ export function SidebarLayout({
     [showDashboard, visibleSections]
 
   );
-  const activeHref = findActiveHref(pathname, visibleHrefs);
+  const activeHref = findActiveHref(pathname, visibleHrefs, search);
 
   useEffect(() => {
     if (!activeHref) return;
@@ -249,13 +241,17 @@ export function SidebarLayout({
                   className={`mt-1 space-y-0.5 ${open ? "" : collapsed ? "hidden md:block" : "hidden"}`}
                 >
                   {section.items.map((item) => (
-                    <NavLink
-                      key={item.href}
-                      item={item}
-                      active={activeHref === item.href}
-                      collapsed={collapsed}
-                      onNavigate={closeMobile}
-                    />
+                    <div key={item.href}>
+                      {item.group ? (
+                        <p className={`px-3 pt-2 pb-1 text-[11px] font-medium text-slate-400 ${collapsed ? "md:hidden" : ""}`}>{item.group}</p>
+                      ) : null}
+                      <NavLink
+                        item={item}
+                        active={activeHref === item.href}
+                        collapsed={collapsed}
+                        onNavigate={closeMobile}
+                      />
+                    </div>
                   ))}
                 </div>
               </div>

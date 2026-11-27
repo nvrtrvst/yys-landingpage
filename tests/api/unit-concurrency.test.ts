@@ -65,6 +65,20 @@ describe.each([["unit", saveUnit], ["PPDB", savePpdb]] as const)("%s optimistic 
     expect(mocks.getConnection).not.toHaveBeenCalled();
   });
 
+  it("returns a migration instruction and rolls back when the schema is incomplete", async () => {
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    mocks.execute.mockRejectedValueOnce(Object.assign(new Error("Unknown column in private SQL"), { code: "ER_BAD_FIELD_ERROR" }));
+    const result = await save(request(initialToken), { params: Promise.resolve({ id: "3" }) });
+    const body = await result.json();
+    expect(result.status).toBe(503);
+    expect(body.code).toBe("UNIT_MIGRATION_REQUIRED");
+    expect(body.error).toContain("migration_unit_site_settings.sql");
+    expect(body.error).not.toContain("private SQL");
+    expect(mocks.rollback).toHaveBeenCalledTimes(1);
+    expect(mocks.release).toHaveBeenCalledTimes(1);
+    vi.restoreAllMocks();
+  });
+
   it("forbids an admin_unit from changing another unit", async () => {
     mocks.requireAccess.mockResolvedValue({ user: { role: "admin_unit", unit_id: 4 } });
     const result = await save(request(initialToken), { params: Promise.resolve({ id: "3" }) });
