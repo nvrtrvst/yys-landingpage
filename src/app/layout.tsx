@@ -1,15 +1,18 @@
 import type { Metadata } from "next";
-import { Inter, Playfair_Display } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 import { Providers } from "@/components/Providers";
 import { WhatsAppWidget } from "@/components/WhatsAppWidget";
 import { getSettings } from "@/lib/db";
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
-const playfair = Playfair_Display({
-  subsets: ["latin"],
-  style: ["normal", "italic"],
+const inter = localFont({ src: "../fonts/Inter.ttf", weight: "100 900", variable: "--font-inter", display: "swap" });
+const playfair = localFont({
+  src: [
+    { path: "../fonts/PlayfairDisplay.ttf", weight: "400 900", style: "normal" },
+    { path: "../fonts/PlayfairDisplay-Italic.ttf", weight: "400 900", style: "italic" },
+  ],
   variable: "--font-playfair",
+  display: "swap",
 });
 
 export async function generateMetadata(): Promise<Metadata> {
